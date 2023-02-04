@@ -30,12 +30,12 @@ void Model3D::ProcessNode(aiNode* node, const aiScene* scene)
 
 Mesh Model3D::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
-	std::vector<VertexMesh> vertices;
+	std::vector<OpenGL::VertexMesh> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture*> textures;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-		VertexMesh v;
+		OpenGL::VertexMesh v;
 
 		glm::vec3 vector;
 		vector.x = mesh->mVertices[i].x;

@@ -6,14 +6,18 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size)
     GLCall(glGenBuffers(1, &m_RendererID));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID));
     GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+
+	m_BufferSize = (size_t)size;
 }
 
-VertexBuffer::VertexBuffer(unsigned int size)
+VertexBuffer::VertexBuffer(unsigned int count, size_t elementSize)
 	:m_DataPtr(0)
 {
     GLCall(glGenBuffers(1, &m_RendererID));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(OpenGL::VertexTextured2D) * size, nullptr, GL_DYNAMIC_DRAW));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, count * elementSize, nullptr, GL_DYNAMIC_DRAW));
+
+	m_BufferSize = (size_t)count * elementSize;
 }
 
 void VertexBuffer::AddVertexData(const void* data, int size, int offset) {
@@ -25,6 +29,12 @@ void VertexBuffer::AddVertexData(const void* data, int size) {
 	Bind();
 	GLCall(glBufferSubData(GL_ARRAY_BUFFER, m_DataPtr, size, data));
 	m_DataPtr += size;
+}
+
+void VertexBuffer::Empty()
+{
+	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, m_BufferSize, nullptr));
+	m_DataPtr = 0;
 }
 
 VertexBuffer::~VertexBuffer()

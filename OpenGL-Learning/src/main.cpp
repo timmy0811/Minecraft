@@ -1,6 +1,8 @@
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <yaml-cpp/yaml.h>
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -15,8 +17,9 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#define c_win_Width 1920
-#define c_win_Height 1080
+#include "config.h"
+
+#include "Game/Handler.h"
 
 ImGuiIO& ImGuiInit() {
     ImGui::CreateContext();
@@ -61,8 +64,12 @@ void ImGuiShutdown() {
     ImGui::DestroyContext();
 };
 
+#include "vendor/yaml/yaml_wrapper.hpp"
+
 int main(void)
 {
+
+    YAML::TestWrite();
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -108,6 +115,9 @@ int main(void)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
+    // Game
+    Handler GameHandler = Handler(window);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -116,6 +126,11 @@ int main(void)
         GLCall(glClearColor(0.f, 0.f, 0.f, 1.f));
 
         ImGuiNewFrame();
+
+        //Game
+        GameHandler.OnInput(window);
+        GameHandler.OnUpdate();
+        GameHandler.OnRender();
 
         ImGuiRender(io);
 

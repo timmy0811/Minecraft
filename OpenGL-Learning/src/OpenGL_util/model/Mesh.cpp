@@ -1,13 +1,13 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<VertexMesh> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures)
+Mesh::Mesh(std::vector<OpenGL::VertexMesh> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures)
 	:m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
 {
 	// Load members
 	m_IB = std::make_unique<IndexBuffer>(&m_Indices[0], (unsigned int)m_Indices.size());
 
 	// Basic Setup
-	m_VB = std::make_unique<VertexBuffer>(&m_Vertices[0], (unsigned int)(sizeof(VertexMesh) * m_Vertices.size()));
+	m_VB = std::make_unique<VertexBuffer>(&m_Vertices[0], (unsigned int)(sizeof(OpenGL::VertexMesh) * m_Vertices.size()));
 	m_VBLayout = std::make_unique<VertexBufferLayout>();
 
 	m_VBLayout->Push<float>(3);	// Position

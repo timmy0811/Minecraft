@@ -11,11 +11,12 @@
 #include "../core/Renderer.h"
 
 #include "../texture/Texture.h"
+#include "../misc/Vertex.hpp"
 
 class Mesh
 {
 private:
-	std::vector<VertexMesh> m_Vertices;
+	std::vector<OpenGL::VertexMesh> m_Vertices;
 	std::vector<unsigned int> m_Indices;
 	std::vector<Texture*> m_Textures;
 
@@ -29,7 +30,7 @@ private:
 	void LoadTextures(Shader& shader);
 
 public:
-	Mesh(std::vector<VertexMesh> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures);
+	Mesh(std::vector<OpenGL::VertexMesh> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures);
 
 	void Draw(Shader& shader);
 };

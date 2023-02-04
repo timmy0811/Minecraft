@@ -1,0 +1,3 @@
+Word: "Hello"
+height: 12
+width: 14
