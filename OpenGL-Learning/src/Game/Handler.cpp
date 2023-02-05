@@ -1,5 +1,10 @@
 #include "Handler.h"
 
+void Handler::OnInit()
+{
+	// TexturePacker::PackTextures("res/images/block/");
+}
+
 Handler::Handler(GLFWwindow* window)
 	:r_Window(window), m_World(window)
 {
@@ -15,6 +20,8 @@ Handler::Handler(GLFWwindow* window)
 	GLCall(glEnable(GL_CULL_FACE));
 	GLCall(glCullFace(GL_BACK));
 	GLCall(glFrontFace(GL_CCW));
+
+	OnInit();
 }
 
 void Handler::OnInput(GLFWwindow* window)

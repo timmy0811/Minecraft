@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "PerlinNoise/Noise.hpp"
+
 #include "config.h"
 
 #include "OpenGL_util/core/VertexBuffer.h"
@@ -49,7 +51,7 @@ private:
 public:
 	Chunk();
 
-	void Generate();
+	void Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise);
 
 	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage);
 	void OnUpdate();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "world/World.h"
+#include "Game/application/TexturePacker.h"
 
 class Handler
 {
@@ -12,6 +13,8 @@ private:
 	float v_LastFrame;
 
 	GLFWwindow* r_Window;
+
+	void OnInit();
 
 public:
 	Handler(GLFWwindow* window);

@@ -143,8 +143,6 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 
 Chunk::Chunk()
 {
-	m_Position = { 0.f, 0.f, 0.f };
-
 	// Heap allocate Indix-Buffer
 	unsigned int* indices = new unsigned int[c_BatchFaceCount * 6];
 	unsigned int offset = 0;
@@ -178,14 +176,30 @@ Chunk::Chunk()
 
 #pragma warning( pop )
 
-void Chunk::Generate()
+void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise)
 {
-	// Example Setup 
+	m_Position = position;
+
+	constexpr double noiseStep = 1.f / c_ChunkSize;
+	glm::vec2 noiseStepOffset = { 0.f, 0.f };
+
+	// Generate Chunk using Perlin Noise offset
 	for (int z = 0; z < c_ChunkSize; z++) {
+		noiseStepOffset.x = 0.f;
 		for (int x = 0; x < c_ChunkSize; x++) {
-			m_BlockStatic.push_back(CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + 0 * c_BlockSize, m_Position.z + z * c_BlockSize }, 0));
-			AddVertexBufferData(m_BlockStatic[m_BlockStatic.size() - 1].vertices, sizeof(Minecraft::Vertex) * 24);
+			double noiseOnTile = noise.octave2D_01(noiseOffset.x + noiseStepOffset.x, noiseOffset.y + noiseStepOffset.y, 1.f);
+			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch);
+
+			// Build Pillar depending on Noise
+			for (int i = 0; i < pillarHeight; i++) {
+				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, 0);
+				m_BlockStatic.push_back(block);
+				AddVertexBufferData(block.vertices, sizeof(Minecraft::Vertex) * 24);
+			}
+
+			noiseStepOffset.x += noiseStep;
 		}
+		noiseStepOffset.y += noiseStep;
 	}
 }
 

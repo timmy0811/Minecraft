@@ -8,8 +8,8 @@
 
 #include "Chunk.h"
 #include "../View/Camera.h"
-#include "OpenGL_util/texture/Texture.h"
 
+#include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
 
 class World
@@ -19,9 +19,13 @@ private:
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
 
+	// Noise
+	siv::PerlinNoise::seed_type m_NoiseSeed = 123456u;
+	siv::PerlinNoise m_Noise;
+
 	// Objects
 	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk> m_Chunks;
+	std::vector<Chunk*> m_Chunks;
 
 	// Textures
 	Texture m_Texture_Log_Top;
@@ -39,8 +43,12 @@ private:
 	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
 	void ProcessMouse();
 
+	// Generation
+	void GenerateTerrain();
+
 public:
 	World(GLFWwindow* window);
+	~World();
 
 	void OnInput(GLFWwindow* window, double deltaTime);
 	void OnRender();

@@ -84,6 +84,9 @@
     <ClCompile Include="src\Game\world\Chunk.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\application\TexturePacker.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -494,6 +497,8 @@
     <None Include="src\vendor\glm\gtx\wrap.inl">
       <Filter>Headerdateien</Filter>
     </None>
+    <None Include="docs\block.yaml" />
+    <None Include="docs\texture.yaml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\OpenGL_util\core\VertexBuffer.h">
@@ -1433,6 +1438,15 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\View\Camera.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\PerlinNoise\Noise.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\application\TexturePacker.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\stb_image\stb_image_write.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

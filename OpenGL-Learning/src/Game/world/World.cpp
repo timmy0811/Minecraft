@@ -3,7 +3,8 @@
 World::World(GLFWwindow* window)
 	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
-	m_Texture_Log_Side("res/images/block/oak_log.png"), m_Texture_Log_Top("res/images/block/oak_log_top.png")
+	m_Texture_Log_Side("res/images/block/diamond_block.png"), m_Texture_Log_Top("res/images/block/diamond_block.png"),
+	m_Noise(m_NoiseSeed)
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)c_win_Width / (float)c_win_Height, 0.1f, 100.f);
@@ -19,22 +20,27 @@ World::World(GLFWwindow* window)
 
 	m_ShaderPackage.shaderBlockStatic->SetUniform1iv("u_Textures", 2, sampler);
 
-	// Generate one chunk
-	m_Chunks.push_back(Chunk());
+	GenerateTerrain();
+}
 
-	m_Chunks[0].Generate();
+World::~World()
+{
+	for (Chunk* chunk : m_Chunks) {
+		delete chunk;
+	}
+	m_Chunks.clear();
 }
 
 void World::OnRender()
 {
-	for (Chunk& chunk : m_Chunks) {
-		chunk.OnRender(m_ShaderPackage);
+	for (Chunk* chunk : m_Chunks) {
+		chunk->OnRender(m_ShaderPackage);
 	}
 }
 
 void World::OnUpdate()
 {
-	glfwSetCursorPosCallback(r_Window, OnMouseCallback);				// Camera not yet working
+	glfwSetCursorPosCallback(r_Window, OnMouseCallback);
 
 	ProcessMouse();
 	m_MatrixView = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Front, m_Camera.Up);
@@ -89,6 +95,25 @@ void World::ProcessMouse()
 	direction.y = sin(glm::radians(m_Camera.pitch));
 	direction.z = sin(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch));
 	m_Camera.Front = glm::normalize(direction);
+}
+
+void World::GenerateTerrain()
+{
+	glm::vec3 chunkRootPosition = {- c_RenderDistanceStatic * c_ChunkSize * c_BlockSize, 0.f, - c_RenderDistanceStatic * c_ChunkSize * c_BlockSize };
+
+	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };
+
+	for (int chunkX = 0; chunkX < 2 * c_RenderDistanceStatic; chunkX++) {
+		chunkOffset.z = 0.f;
+		for (int chunkZ = 0; chunkZ < 2 * c_RenderDistanceStatic; chunkZ++) {
+			Chunk* chnk = new Chunk();
+			chnk->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
+			m_Chunks.push_back(chnk);
+
+			chunkOffset.z += c_BlockSize * c_ChunkSize;
+		}
+		chunkOffset.x += c_BlockSize * c_ChunkSize;
+	}
 }
 
 void World::OnMouseCallback(GLFWwindow* window, double xpos, double ypos)

@@ -163,8 +163,11 @@
     <ClCompile Include="src\OpenGL_util\texture\Texture.cpp" />
     <ClCompile Include="src\Game\world\World.cpp" />
     <ClCompile Include="src\vendor\yaml\yaml_wrapper.cpp" />
+    <ClCompile Include="src\Game\application\TexturePacker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="docs\block.yaml" />
+    <None Include="docs\texture.yaml" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
@@ -609,13 +612,16 @@
     <ClInclude Include="src\vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="src\vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="src\vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\vendor\PerlinNoise\Noise.hpp" />
     <ClInclude Include="src\vendor\stb_image\stb_image.h" />
     <ClInclude Include="src\OpenGL_util\core\VertexBuffer.h" />
     <ClInclude Include="src\OpenGL_util\core\VertexArray.h" />
     <ClInclude Include="src\OpenGL_util\core\VertexBufferLayout.h" />
     <ClInclude Include="src\OpenGL_util\texture\Texture.h" />
     <ClInclude Include="src\Game\world\World.h" />
+    <ClInclude Include="src\vendor\stb_image\stb_image_write.h" />
     <ClInclude Include="src\vendor\yaml\yaml_wrapper.hpp" />
+    <ClInclude Include="src\Game\application\TexturePacker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
