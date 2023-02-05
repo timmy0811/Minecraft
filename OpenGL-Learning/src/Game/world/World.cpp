@@ -3,7 +3,7 @@
 World::World(GLFWwindow* window)
 	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
-	m_Texture_Log_Side("res/images/block/diamond_block.png"), m_Texture_Log_Top("res/images/block/diamond_block.png"),
+	m_TextureMap("res/images/sheets/blocksheet_static.png"),
 	m_Noise(m_NoiseSeed)
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
@@ -13,12 +13,9 @@ World::World(GLFWwindow* window)
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	// Experimental Texture Setup
-	m_Texture_Log_Side.Bind(0);
-	m_Texture_Log_Top.Bind(1);
+	m_TextureMap.Bind(0);
 
-	int sampler[2] = { m_Texture_Log_Side.GetBoundPort(), m_Texture_Log_Top.GetBoundPort() };
-
-	m_ShaderPackage.shaderBlockStatic->SetUniform1iv("u_Textures", 2, sampler);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
@@ -109,7 +106,7 @@ void World::GenerateTerrain()
 	for (int chunkX = 0; chunkX < 2 * c_RenderDistanceStatic; chunkX++) {
 		chunkOffset.z = 0.f;
 		for (int chunkZ = 0; chunkZ < 2 * c_RenderDistanceStatic; chunkZ++) {
-			Chunk* chnk = new Chunk();
+			Chunk* chnk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 			chnk->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
 			m_Chunks.push_back(chnk);
 
@@ -135,7 +132,7 @@ void World::ParseBlocks(const std::string& path)
 		blockFormat.texture_bottom = block.second["texture_bottom"].as<std::string>();
 		blockFormat.texture_left = block.second["texture_left"].as<std::string>();
 		blockFormat.texture_right = block.second["texture_right"].as<std::string>();
-		blockFormat.texture_Back = block.second["texture_Back"].as<std::string>();
+		blockFormat.texture_back = block.second["texture_Back"].as<std::string>();
 		blockFormat.texture_front = block.second["texture_front"].as<std::string>();
 
 		m_BlockFormats[blockFormat.id] = blockFormat;

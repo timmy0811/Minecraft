@@ -9,12 +9,12 @@ in vec3 v_Normal;
 flat in int v_TexIndex;
 in vec3 v_FragPos;
 
-uniform sampler2D u_Textures[2];
+uniform sampler2D u_TextureMap;
 
 uniform vec3 u_ViewPosition;
 
 void main(){
-    o_Color = vec4(texture(u_Textures[v_TexIndex], v_UV).rgb, 1.0);
+    o_Color = vec4(texture(u_TextureMap, v_UV).rgb, 1.0);
     // o_Color = vec4(v_Normal.x, v_Normal.y, v_Normal.z, 1.0);
     // o_Color = vec4(1.0);
 }

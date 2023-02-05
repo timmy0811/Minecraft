@@ -30,7 +30,7 @@ namespace Minecraft {
 		std::string texture_bottom;
 		std::string texture_left;
 		std::string texture_right;
-		std::string texture_Back;
+		std::string texture_back;
 		std::string texture_front;
 	};
 

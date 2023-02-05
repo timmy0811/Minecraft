@@ -21,7 +21,7 @@ void Chunk::AddVertexBufferData(const void* data, size_t size)
 Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
 {
 	Minecraft::Block_static block;
-	block.name = "";
+	block.name = (*m_BlockFormats)[id].name;
 	block.id = id;
 	block.position = position;
 
@@ -37,13 +37,6 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 		{position.x + 0, position.y + 1, position.z - 1}	// 7 BUL
 	};
 
-	glm::vec2 uvs[4] = {
-		{0.f, 0.f},
-		{1.f, 0.f},
-		{1.f, 1.f},
-		{0.f, 1.f}
-	};
-
 	glm::vec3 normals[6] = {
 		{ 0, 0, 1 }, // F
 		{ 1, 0, 0 }, // R
@@ -53,37 +46,40 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 		{ 0, -1, 0 }  // D
 	};
 
-	// TODO: Determine Texture ID
-
 	// Setting Texture IDs
+	for (int i = 0; i < 24; i++) {
+		block.vertices[i].TexID = 0.f;
+	}
+
+	// UVs
 	// Front
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i].TexID = (float)0;
+		block.vertices[i].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_front].uv[i];
 	}
 
 	// Right
-	for (int i = 4; i < 8; i++) {
-		block.vertices[i].TexID = (float)0;
+	for (int i = 0; i < 4; i++) {
+		block.vertices[i + 4].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_right].uv[i];
 	}
 
 	// Left
-	for (int i = 8; i < 12; i++) {
-		block.vertices[i].TexID = (float)0;
+	for (int i = 0; i < 4; i++) {
+		block.vertices[i + 8].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_left].uv[i];
 	}
 
 	// Back
-	for (int i = 12; i < 16; i++) {
-		block.vertices[i].TexID = (float)0;
+	for (int i = 0; i < 4; i++) {
+		block.vertices[i + 12].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_back].uv[i];
 	}
 
 	// Top
-	for (int i = 16; i < 20; i++) {
-		block.vertices[i].TexID = (float)1;
+	for (int i = 0; i < 4; i++) {
+		block.vertices[i + 16].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_top].uv[i];
 	}
 
 	// Bottom
-	for (int i = 20; i < 24; i++) {
-		block.vertices[i].TexID = (float)1;
+	for (int i = 0; i < 4; i++) {
+		block.vertices[i + 20].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_bottom].uv[i];
 	}
 
 	// Vertex position
@@ -122,11 +118,6 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 	unsigned int face = 0;
 	// UVs and Normals
 	for (int i = 0; i < 24; i += 4) {
-		block.vertices[i + 0].TexCoords = uvs[0];
-		block.vertices[i + 1].TexCoords = uvs[1];
-		block.vertices[i + 2].TexCoords = uvs[2];
-		block.vertices[i + 3].TexCoords = uvs[3];
-
 		block.vertices[i + 0].Normal = normals[face];
 		block.vertices[i + 1].Normal = normals[face];
 		block.vertices[i + 2].Normal = normals[face];
@@ -141,7 +132,8 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 #pragma warning( push )
 #pragma warning( disable : 4244 )
 
-Chunk::Chunk()
+Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* textureFormatMap)
+	:m_BlockFormats(blockFormatMap), m_TextureFormats(textureFormatMap)
 {
 	// Heap allocate Indix-Buffer
 	unsigned int* indices = new unsigned int[c_BatchFaceCount * 6];
@@ -172,6 +164,9 @@ Chunk::Chunk()
 
 	m_VAstatic = std::make_unique<VertexArray>();
 	m_VAstatic->AddBuffer(*m_VBstatic, *m_VBLayoutStatic);
+
+	// Setting seed for random integers
+	std::srand((unsigned)time(NULL));
 }
 
 #pragma warning( pop )
@@ -192,7 +187,8 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 
 			// Build Pillar depending on Noise
 			for (int i = 0; i < pillarHeight; i++) {
-				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, 0);
+				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * m_BlockFormats->size()));
+				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
 				m_BlockStatic.push_back(block);
 				AddVertexBufferData(block.vertices, sizeof(Minecraft::Vertex) * 24);
 			}

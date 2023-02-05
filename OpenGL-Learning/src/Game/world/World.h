@@ -36,8 +36,7 @@ private:
 	void ParseTextures(const std::string& path);
 
 	// Textures
-	Texture m_Texture_Log_Top;
-	Texture m_Texture_Log_Side;
+	Texture m_TextureMap;
 
 	// Shader 
 	Minecraft::Helper::ShaderPackage m_ShaderPackage;

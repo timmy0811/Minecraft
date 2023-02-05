@@ -10,3 +10,27 @@ podzol:
   texture_right: podzol_side
   texture_Back: podzol_side
   texture_front: podzol_side
+
+stone:
+  type: 0
+  id: 1
+
+  texture_top: stone
+  texture_bottom: stone
+
+  texture_left: stone
+  texture_right: stone
+  texture_Back: stone
+  texture_front: stone
+
+stone_rough:
+  type: 0
+  id: 2
+
+  texture_top: stone_rough
+  texture_bottom: stone_rough
+
+  texture_left: stone_rough
+  texture_right: stone_rough
+  texture_Back: stone_rough
+  texture_front: stone_rough

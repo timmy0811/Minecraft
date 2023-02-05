@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <map>
+#include <time.h>
 
 #include "PerlinNoise/Noise.hpp"
 
@@ -46,10 +48,13 @@ private:
 	// Game
 	glm::vec3 m_Position;
 
+	std::map<unsigned int, Minecraft::Block_format>* m_BlockFormats;
+	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
+
 	Minecraft::Block_static CreateBlockStatic(const glm::vec3& position, unsigned int id);
 
 public:
-	Chunk();
+	Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
 
 	void Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise);
 
