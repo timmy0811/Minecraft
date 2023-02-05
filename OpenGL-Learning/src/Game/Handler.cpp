@@ -10,6 +10,11 @@ Handler::Handler(GLFWwindow* window)
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	GLCall(glEnable(GL_BLEND));
 	GLCall(glEnable(GL_DEPTH_TEST));
+
+	// Enabling Face Culling
+	GLCall(glEnable(GL_CULL_FACE));
+	GLCall(glCullFace(GL_BACK));
+	GLCall(glFrontFace(GL_CCW));
 }
 
 void Handler::OnInput(GLFWwindow* window)
