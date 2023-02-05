@@ -1,15 +1,12 @@
----
-blocks:
-   Podzol:
-      type: "static"
-      name: "podzol"
-      id: 0
 
-      texture_top: "podzol_top"
-      texture_bottom: "podzol_top"
+podzol:
+  type: 0
+  id: 0
 
-      texture_left: "podzol_side"
-      texture_right: "podzol_side"
-      texture_Back: "podzol_side"
-      texture_front: "podzol_side"
+  texture_top: podzol_top
+  texture_bottom: podzol_top
 
+  texture_left: podzol_side
+  texture_right: podzol_side
+  texture_Back: podzol_side
+  texture_front: podzol_side

@@ -20,6 +20,9 @@ World::World(GLFWwindow* window)
 
 	m_ShaderPackage.shaderBlockStatic->SetUniform1iv("u_Textures", 2, sampler);
 
+	ParseBlocks("docs/block.yaml");
+	ParseTextures("docs/texture.yaml");
+
 	GenerateTerrain();
 }
 
@@ -113,6 +116,53 @@ void World::GenerateTerrain()
 			chunkOffset.z += c_BlockSize * c_ChunkSize;
 		}
 		chunkOffset.x += c_BlockSize * c_ChunkSize;
+	}
+}
+
+#include <iostream>
+
+void World::ParseBlocks(const std::string& path)
+{
+	YAML::Node mainNode = YAML::LoadFile(path);
+	for (auto block : mainNode) {
+		Minecraft::Block_format blockFormat;
+
+		blockFormat.type = static_cast<Minecraft::BLOCKTYPE>(block.second["type"].as<unsigned int>());
+		blockFormat.name = block.first.as<std::string>();
+		blockFormat.id = block.second["id"].as<int>();
+
+		blockFormat.texture_top = block.second["texture_top"].as<std::string>();
+		blockFormat.texture_bottom = block.second["texture_bottom"].as<std::string>();
+		blockFormat.texture_left = block.second["texture_left"].as<std::string>();
+		blockFormat.texture_right = block.second["texture_right"].as<std::string>();
+		blockFormat.texture_Back = block.second["texture_Back"].as<std::string>();
+		blockFormat.texture_front = block.second["texture_front"].as<std::string>();
+
+		m_BlockFormats[blockFormat.id] = blockFormat;
+	}
+}
+
+void World::ParseTextures(const std::string& path)
+{
+	YAML::Node mainNode = YAML::LoadFile(path);
+	for (auto texture : mainNode) {
+		Minecraft::Texture_Format textureFormat;
+
+		textureFormat.name = texture.first.as<std::string>();
+
+		textureFormat.uv[0].x = texture.second["uvs"]["0"][0].as<float>();
+		textureFormat.uv[0].y = texture.second["uvs"]["0"][1].as<float>();
+
+		textureFormat.uv[1].x = texture.second["uvs"]["1"][0].as<float>();
+		textureFormat.uv[1].y = texture.second["uvs"]["1"][1].as<float>();
+
+		textureFormat.uv[2].x = texture.second["uvs"]["2"][0].as<float>();
+		textureFormat.uv[2].y = texture.second["uvs"]["2"][1].as<float>();
+
+		textureFormat.uv[3].x = texture.second["uvs"]["3"][0].as<float>();
+		textureFormat.uv[3].y = texture.second["uvs"]["3"][1].as<float>();
+
+		m_TextureFormats[textureFormat.name] = textureFormat;
 	}
 }
 

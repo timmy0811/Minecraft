@@ -5,9 +5,11 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <vector>
+#include <map>
 
 #include "Chunk.h"
 #include "../View/Camera.h"
+#include "vendor/yaml/yaml_wrapper.hpp"
 
 #include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
@@ -26,6 +28,12 @@ private:
 	// Objects
 	Minecraft::Camera3D m_Camera;
 	std::vector<Chunk*> m_Chunks;
+
+	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
+	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
+
+	void ParseBlocks(const std::string& path);
+	void ParseTextures(const std::string& path);
 
 	// Textures
 	Texture m_Texture_Log_Top;
