@@ -21,6 +21,9 @@ private:
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
 
+	// Debug
+	unsigned int m_DrawCalls = 0;
+
 	// Noise
 	siv::PerlinNoise::seed_type m_NoiseSeed = 123456u;
 	siv::PerlinNoise m_Noise;
@@ -67,4 +70,11 @@ public:
 
 	const glm::mat4& getMatrixProjection() const;
 	const glm::mat4& getMatrixView() const;
+
+	const unsigned int getAmountBlockStatic() const;
+	inline const unsigned int getAmountChunk() const { return m_Chunks.size(); }
+	inline const unsigned int getAmountBlockFormat() const { return m_BlockFormats.size(); };
+	inline const unsigned int getAmountTextureFormat() const { return m_TextureFormats.size(); }
+
+	inline const unsigned int getDrawCalls() const { return m_DrawCalls; }
 };

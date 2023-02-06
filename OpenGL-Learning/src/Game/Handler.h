@@ -1,5 +1,9 @@
 #pragma once
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_glfw.h"
+
 #include "world/World.h"
 #include "view/Skybox.h"
 
@@ -18,6 +22,7 @@ private:
 	GLFWwindow* r_Window;
 
 	void OnInit();
+	void DebugWindow();
 
 public:
 	Handler(GLFWwindow* window);

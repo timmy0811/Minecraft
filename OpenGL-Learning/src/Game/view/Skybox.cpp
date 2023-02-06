@@ -113,8 +113,10 @@ const unsigned int Skybox::Bind(const unsigned int slot)
     return slot;
 }
 
-void Skybox::OnRender() const
+void Skybox::OnRender()
 {
+    m_DrawCalls++;
+
     glDepthMask(GL_FALSE);
     GLCall(glDepthFunc(GL_LEQUAL));
     Renderer::DrawArray(*m_VA, m_Shader, 0, 36);

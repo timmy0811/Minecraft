@@ -201,6 +201,7 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 
 void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage)
 {
+	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
 }

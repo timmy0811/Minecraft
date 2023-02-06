@@ -25,14 +25,21 @@ private:
 	std::unique_ptr<VertexBuffer> m_VB;
 	std::unique_ptr<VertexBufferLayout> m_VBLayout;
 
+	// Debug
+	unsigned int m_DrawCalls = 0;
+
 public:
 	Skybox(const std::string& cubemapPathPrefix, const std::string& fileFormat = ".png");
 	~Skybox();
 
 	void Unbind();
 	const unsigned int Bind(const unsigned int slot);
-	void OnRender() const;
+	void OnRender();
 
 	void setMatrix(const glm::mat4& projection, const glm::mat4& view);
+
+	// Members
+	inline const unsigned int getDrawCalls() const { return m_DrawCalls; }
+
 };
 

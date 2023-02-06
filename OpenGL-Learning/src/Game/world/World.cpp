@@ -60,9 +60,19 @@ const glm::mat4& World::getMatrixView() const
 	return m_MatrixView;
 }
 
+const unsigned int World::getAmountBlockStatic() const
+{
+	unsigned int amount = 0;
+	for (Chunk* chunk : m_Chunks) {
+		amount += chunk->getAmountBlockStatic();
+	}
+
+	return amount;
+}
+
 void World::OnInput(GLFWwindow* window, double deltaTime)
 {
-	const float cameraSpeed = 5.f * (float)deltaTime; // adjust accordingly
+	const float cameraSpeed = 10.f * (float)deltaTime; // adjust accordingly
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		m_Camera.Position += cameraSpeed * m_Camera.Front;

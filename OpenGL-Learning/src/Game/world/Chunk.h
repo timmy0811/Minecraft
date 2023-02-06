@@ -53,6 +53,9 @@ private:
 
 	Minecraft::Block_static CreateBlockStatic(const glm::vec3& position, unsigned int id);
 
+	// Debug
+	unsigned int m_DrawCalls = 0;
+
 public:
 	Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
 
@@ -60,4 +63,8 @@ public:
 
 	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage);
 	void OnUpdate();
+
+	// Members
+	inline const unsigned int getAmountBlockStatic() const { return m_BlockStatic.size(); }
+	inline const unsigned int getDrawCalls() const { return m_DrawCalls; }
 };
