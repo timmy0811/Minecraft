@@ -5,12 +5,12 @@
 #define c_win_Height 1080
 
 // Rendering
-#define c_BatchFaceCount 20000
+#define c_BatchFaceCount 2000
 
 // Game
 #define c_ChunkSize 16
 #define c_BlockSize 1.f
-#define c_TerrainYStretch 5.f
+#define c_TerrainYStretch 2.f
 
 #define c_RenderDistanceStatic 1
 

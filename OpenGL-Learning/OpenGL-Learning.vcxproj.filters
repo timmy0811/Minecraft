@@ -87,6 +87,9 @@
     <ClCompile Include="src\Game\application\TexturePacker.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\view\Skybox.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -1437,7 +1440,7 @@
     <ClInclude Include="src\config.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="src\Game\View\Camera.h">
+    <ClInclude Include="src\Game\view\Camera.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\vendor\PerlinNoise\Noise.hpp">
@@ -1447,6 +1450,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\vendor\stb_image\stb_image_write.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\view\Skybox.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

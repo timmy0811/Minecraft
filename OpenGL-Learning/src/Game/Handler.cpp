@@ -6,7 +6,7 @@ void Handler::OnInit()
 }
 
 Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_World(window)
+	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky1/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -31,12 +31,14 @@ void Handler::OnInput(GLFWwindow* window)
 
 void Handler::OnRender()
 {
+	m_Skybox.OnRender();
 	m_World.OnRender();
 }
 
 void Handler::OnUpdate()
 {
 	m_World.OnUpdate();
+	m_Skybox.setMatrix(m_World.getMatrixProjection(), m_World.getMatrixView());
 
 	float currentFrame = (float)glfwGetTime();
 	v_DeltaTime = currentFrame - v_LastFrame;

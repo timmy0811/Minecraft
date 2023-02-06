@@ -14,7 +14,5 @@ uniform sampler2D u_TextureMap;
 uniform vec3 u_ViewPosition;
 
 void main(){
-    o_Color = vec4(texture(u_TextureMap, v_UV).rgb, 1.0);
-    // o_Color = vec4(v_Normal.x, v_Normal.y, v_Normal.z, 1.0);
-    // o_Color = vec4(1.0);
+    o_Color = texture(u_TextureMap, v_UV);
 }

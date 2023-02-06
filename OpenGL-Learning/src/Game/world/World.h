@@ -64,4 +64,7 @@ public:
 	// Members
 	inline static float s_MouseX = 0;
 	inline static float s_MouseY = 0;
+
+	const glm::mat4& getMatrixProjection() const;
+	const glm::mat4& getMatrixView() const;
 };

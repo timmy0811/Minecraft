@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Game\view\Skybox.cpp" />
     <ClCompile Include="src\Game\world\Chunk.cpp" />
     <ClCompile Include="src\Game\Handler.cpp" />
     <ClCompile Include="src\OpenGL_util\model\Model3D.cpp" />
@@ -306,8 +307,9 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Game\view\Skybox.h" />
     <ClInclude Include="src\config.h" />
-    <ClInclude Include="src\Game\View\Camera.h" />
+    <ClInclude Include="src\Game\view\Camera.h" />
     <ClInclude Include="src\Game\world\Chunk.h" />
     <ClInclude Include="src\Game\block\Block.hpp" />
     <ClInclude Include="src\Game\Handler.h" />

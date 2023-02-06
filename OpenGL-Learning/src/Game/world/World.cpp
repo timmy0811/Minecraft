@@ -50,6 +50,16 @@ void World::OnUpdate()
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
 }
 
+const glm::mat4& World::getMatrixProjection() const
+{
+	return m_MatrixProjection;
+}
+
+const glm::mat4& World::getMatrixView() const
+{
+	return m_MatrixView;
+}
+
 void World::OnInput(GLFWwindow* window, double deltaTime)
 {
 	const float cameraSpeed = 5.f * (float)deltaTime; // adjust accordingly

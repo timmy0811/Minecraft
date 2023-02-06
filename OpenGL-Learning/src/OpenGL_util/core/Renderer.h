@@ -12,4 +12,5 @@ class Renderer {
 public:
     static void Clear();
     static void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader);
+    static void DrawArray(const VertexArray& va, const Shader& shader, size_t first, size_t count);
 };
