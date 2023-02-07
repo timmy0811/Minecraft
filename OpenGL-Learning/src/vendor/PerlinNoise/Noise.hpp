@@ -654,6 +654,11 @@ namespace siv
 	}
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4067 )
+
 # undef SIVPERLIN_NODISCARD_CXX20
 # undef SIVPERLIN_CONCEPT_URBG
 # undef SIVPERLIN_CONCEPT_URBG_#pragma once
+
+#pragma warning( pop )

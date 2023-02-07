@@ -77,7 +77,7 @@ Skybox::Skybox(const std::string& cubemapPathPrefix, const std::string& fileForm
          1.0f, -1.0f,  1.0f
     };
 
-    m_VB = std::make_unique<VertexBuffer>(skyboxVertices, sizeof(skyboxVertices));  // ???
+    m_VB = std::make_unique<VertexBuffer>(skyboxVertices, (unsigned int)sizeof(skyboxVertices));  // ???
     m_VA = std::make_unique<VertexArray>();
 
     m_VBLayout = std::make_unique<VertexBufferLayout>();

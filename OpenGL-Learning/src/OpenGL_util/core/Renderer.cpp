@@ -18,5 +18,5 @@ void Renderer::DrawArray(const VertexArray& va, const Shader& shader, size_t fir
 {
     shader.Bind();
     va.Bind();
-    glDrawArrays(GL_TRIANGLES, first, count);
+    glDrawArrays(GL_TRIANGLES, (int)first, (int)count);
 }

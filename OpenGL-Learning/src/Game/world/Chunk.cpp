@@ -191,11 +191,11 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 	for (int z = 0; z < c_ChunkSize; z++) {
 		noiseStepOffset.x = 0.f;
 		for (int x = 0; x < c_ChunkSize; x++) {
-			double noiseOnTile = noise.octave2D_01(noiseOffset.x + noiseStepOffset.x, noiseOffset.y + noiseStepOffset.y, 1.f);
+			double noiseOnTile = noise.octave2D_01(noiseOffset.x + noiseStepOffset.x, noiseOffset.y + noiseStepOffset.y, 1);
 			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch);
 
 			// Build Pillar depending on Noise
-			for (int i = 0; i < pillarHeight; i++) {
+			for (unsigned int i = 0; i < pillarHeight; i++) {
 				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * m_BlockFormats->size()));
 				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
 				m_BlockStatic.push_back(block);

@@ -72,9 +72,9 @@ public:
 	const glm::mat4& getMatrixView() const;
 
 	const unsigned int getAmountBlockStatic() const;
-	inline const unsigned int getAmountChunk() const { return m_Chunks.size(); }
-	inline const unsigned int getAmountBlockFormat() const { return m_BlockFormats.size(); };
-	inline const unsigned int getAmountTextureFormat() const { return m_TextureFormats.size(); }
+	inline const size_t getAmountChunk() const { return m_Chunks.size(); }
+	inline const size_t getAmountBlockFormat() const { return m_BlockFormats.size(); };
+	inline const size_t getAmountTextureFormat() const { return m_TextureFormats.size(); }
 
 	const unsigned int getDrawCalls() const;
 	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
