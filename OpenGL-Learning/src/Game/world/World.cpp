@@ -157,6 +157,7 @@ void World::ParseBlocks(const std::string& path)
 		blockFormat.type = static_cast<Minecraft::BLOCKTYPE>(block.second["type"].as<unsigned int>());
 		blockFormat.name = block.first.as<std::string>();
 		blockFormat.id = block.second["id"].as<int>();
+		blockFormat.reflection = block.second["reflection"].as<float>();
 
 		blockFormat.texture_top = block.second["texture_top"].as<std::string>();
 		blockFormat.texture_bottom = block.second["texture_bottom"].as<std::string>();

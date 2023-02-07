@@ -34,6 +34,7 @@ public:
 
 	void Unbind();
 	const unsigned int Bind(const unsigned int slot);
+	const unsigned int Bind(const unsigned int slot, Shader& shader);
 	void OnRender();
 
 	void setMatrix(const glm::mat4& projection, const glm::mat4& view);

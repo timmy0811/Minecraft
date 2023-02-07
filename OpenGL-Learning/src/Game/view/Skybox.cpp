@@ -113,6 +113,19 @@ const unsigned int Skybox::Bind(const unsigned int slot)
     return slot;
 }
 
+const unsigned int Skybox::Bind(const unsigned int slot, Shader& shader)
+{
+    shader.Bind();
+
+    GLCall(glActiveTexture(GL_TEXTURE0 + slot));
+    GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID));
+    m_BoundID = static_cast<int>(slot);
+
+    m_Shader.SetUniform1i("u_Cubemap", slot);
+
+    return slot;
+}
+
 void Skybox::OnRender()
 {
     m_DrawCalls++;

@@ -17,6 +17,8 @@ namespace Minecraft {
 		std::string name;
 		unsigned int id;
 
+		float reflection = 0.f;
+
 		glm::vec3 position;
 		float size = 1.f;
 	};
@@ -25,6 +27,8 @@ namespace Minecraft {
 		BLOCKTYPE type;
 		std::string name;
 		unsigned int id;
+
+		float reflection = 0.f;
 
 		std::string texture_top;
 		std::string texture_bottom;

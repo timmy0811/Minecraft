@@ -77,4 +77,5 @@ public:
 	inline const unsigned int getAmountTextureFormat() const { return m_TextureFormats.size(); }
 
 	const unsigned int getDrawCalls() const;
+	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
 };

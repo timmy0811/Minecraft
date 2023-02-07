@@ -20,10 +20,13 @@ void Chunk::AddVertexBufferData(const void* data, size_t size)
 
 Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
 {
+	Minecraft::Block_format& formatBlock = (*m_BlockFormats)[id];
 	Minecraft::Block_static block;
+
 	block.name = (*m_BlockFormats)[id].name;
 	block.id = id;
 	block.position = position;
+	block.reflection = formatBlock.reflection;
 
 	glm::vec3 positions[8] = {
 		{position.x + 0, position.y + 0, position.z - 0},	// 0 FDL
@@ -123,6 +126,11 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 		block.vertices[i + 2].Normal = normals[face];
 		block.vertices[i + 3].Normal = normals[face];
 
+		block.vertices[i + 0].reflection = formatBlock.reflection;
+		block.vertices[i + 1].reflection = formatBlock.reflection;
+		block.vertices[i + 2].reflection = formatBlock.reflection;
+		block.vertices[i + 3].reflection = formatBlock.reflection;
+
 		face++;
 	}
 
@@ -161,6 +169,7 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	m_VBLayoutStatic->Push<float>(2);	// TexCoords
 	m_VBLayoutStatic->Push<float>(3);   // Normal
 	m_VBLayoutStatic->Push<float>(1);	// Texture Index
+	m_VBLayoutStatic->Push<float>(1);	// Reflection
 
 	m_VAstatic = std::make_unique<VertexArray>();
 	m_VAstatic->AddBuffer(*m_VBstatic, *m_VBLayoutStatic);

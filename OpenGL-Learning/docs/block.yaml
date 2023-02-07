@@ -3,6 +3,8 @@ podzol:
   type: 0
   id: 0
 
+  reflection: 0.0
+
   texture_top: podzol_top
   texture_bottom: podzol_top
 
@@ -15,6 +17,8 @@ stone:
   type: 0
   id: 1
 
+  reflection: 0.5
+
   texture_top: stone
   texture_bottom: stone
 
@@ -26,6 +30,22 @@ stone:
 stone_rough:
   type: 0
   id: 2
+
+  reflection: 0.5
+
+  texture_top: stone_rough
+  texture_bottom: stone_rough
+
+  texture_left: stone_rough
+  texture_right: stone_rough
+  texture_Back: stone_rough
+  texture_front: stone_rough
+
+glass:
+  type: 1
+  id: 2
+
+  reflection: 0.5
 
   texture_top: stone_rough
   texture_bottom: stone_rough

@@ -9,5 +9,6 @@ namespace Minecraft {
 		glm::vec2 TexCoords;
 		glm::vec3 Normal;
 		float TexID;
+		float reflection;
 	};
 }

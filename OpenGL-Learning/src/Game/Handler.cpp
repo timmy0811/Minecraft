@@ -3,6 +3,9 @@
 void Handler::OnInit()
 {
 	// TexturePacker::PackTextures("res/images/block/");
+
+	// Bind Cubemap to static blocks
+	m_Skybox.Bind(1, *(m_World.getShaderPackage().shaderBlockStatic));
 }
 
 void Handler::DebugWindow()
