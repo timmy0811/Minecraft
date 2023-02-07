@@ -4,7 +4,7 @@ World::World(GLFWwindow* window)
 	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
 	m_TextureMap("res/images/sheets/blocksheet_static.png"),
-	m_Noise(m_NoiseSeed)
+	m_Noise(std::time(NULL))
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)c_win_Width / (float)c_win_Height, 0.1f, 100.f);
@@ -68,6 +68,16 @@ const unsigned int World::getAmountBlockStatic() const
 	}
 
 	return amount;
+}
+
+const unsigned int World::getDrawCalls() const
+{
+	unsigned int calls = 0;
+	for (Chunk* chunk : m_Chunks) {
+		calls += chunk->getDrawCalls();
+	}
+
+	return calls;
 }
 
 void World::OnInput(GLFWwindow* window, double deltaTime)

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+#include <time.h>
 
 #include "Chunk.h"
 #include "../View/Camera.h"
@@ -25,7 +26,6 @@ private:
 	unsigned int m_DrawCalls = 0;
 
 	// Noise
-	siv::PerlinNoise::seed_type m_NoiseSeed = 123456u;
 	siv::PerlinNoise m_Noise;
 
 	// Objects
@@ -76,5 +76,5 @@ public:
 	inline const unsigned int getAmountBlockFormat() const { return m_BlockFormats.size(); };
 	inline const unsigned int getAmountTextureFormat() const { return m_TextureFormats.size(); }
 
-	inline const unsigned int getDrawCalls() const { return m_DrawCalls; }
+	const unsigned int getDrawCalls() const;
 };

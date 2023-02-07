@@ -117,11 +117,9 @@ void Skybox::OnRender()
 {
     m_DrawCalls++;
 
-    glDepthMask(GL_FALSE);
     GLCall(glDepthFunc(GL_LEQUAL));
     Renderer::DrawArray(*m_VA, m_Shader, 0, 36);
     GLCall(glDepthFunc(GL_LESS));
-    glDepthMask(GL_TRUE);
 }
 
 void Skybox::setMatrix(const glm::mat4& projection, const glm::mat4& view)

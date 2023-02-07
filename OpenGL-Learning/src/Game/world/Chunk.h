@@ -66,5 +66,9 @@ public:
 
 	// Members
 	inline const unsigned int getAmountBlockStatic() const { return m_BlockStatic.size(); }
-	inline const unsigned int getDrawCalls() const { return m_DrawCalls; }
+	inline const unsigned int getDrawCalls() {
+		const unsigned int calls = m_DrawCalls;
+		m_DrawCalls = 0;
+		return calls;
+	}
 };

@@ -5,7 +5,6 @@ void Handler::OnInit()
 	// TexturePacker::PackTextures("res/images/block/");
 }
 
-
 void Handler::DebugWindow()
 {
 	ImGui::SetNextWindowSize(ImVec2(380.f, 210.f));
@@ -35,7 +34,6 @@ void Handler::DebugWindow()
 	ImGui::End();
 }
 
-
 Handler::Handler(GLFWwindow* window)
 	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky2/sky", ".jpg")
 {
@@ -62,8 +60,10 @@ void Handler::OnInput(GLFWwindow* window)
 
 void Handler::OnRender()
 {
-	m_Skybox.OnRender();
 	m_World.OnRender();
+
+	// Draw Skybox at end
+	m_Skybox.OnRender();
 }
 
 void Handler::OnUpdate()
@@ -75,5 +75,7 @@ void Handler::OnUpdate()
 	v_DeltaTime = currentFrame - v_LastFrame;
 	v_LastFrame = currentFrame;
 
+#ifdef _DEBUG
 	DebugWindow();
+#endif // !_DEBUG
 }
