@@ -33,8 +33,14 @@ World::~World()
 
 void World::OnRender()
 {
+	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
-		chunk->OnRender(m_ShaderPackage);
+		chunk->OnRender(m_ShaderPackage, m_Camera.Position);
+	}
+
+	// Render transparent objects
+	for (Chunk* chunk : m_Chunks) {
+		chunk->OnRenderTransparents(m_ShaderPackage, m_Camera.Position);
 	}
 }
 

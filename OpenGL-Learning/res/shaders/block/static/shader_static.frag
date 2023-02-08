@@ -18,5 +18,11 @@ uniform vec3 u_ViewPosition;
 void main(){
     vec3 I = normalize(v_FragPos - u_ViewPosition);
     vec3 R = reflect(I, normalize(v_Normal));
-    o_Color = texture(u_TextureMap, v_UV) * (1.0 - v_Reflection) + vec4(texture(u_Cubemap, R).rgb, 1.0) * v_Reflection;
+    vec4 color = texture(u_TextureMap, v_UV);
+    // if(color.a < 0.1) discard;
+   
+    o_Color = color * (1.0 - v_Reflection) + vec4(texture(u_Cubemap, R).rgb, 1.0) * v_Reflection;
+
+
 }
+

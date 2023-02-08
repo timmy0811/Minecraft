@@ -11,4 +11,8 @@ namespace Minecraft {
 		float TexID;
 		float reflection;
 	};
+
+	struct Face {
+		Vertex vertices[4];
+	};
 }

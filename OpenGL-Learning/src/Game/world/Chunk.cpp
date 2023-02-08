@@ -1,21 +1,54 @@
 #include "Chunk.h"
 
-void Chunk::FlushVertexBuffer()
+void Chunk::OrderTransparentStatics(glm::vec3 cameraPosition)
 {
-	m_VBstatic->Empty();
-}
+	m_TransparentStaticsOrdered.clear();
+	unsigned int identifier = 0;
+	for (Minecraft::Block_static& block : m_BlockTransparenStatic) {
+		for (int i = 0; i < 25; i += 4) {
+			float distance = glm::length(cameraPosition - block.vertices[i].Position);
+			distance += identifier++ * 0.000001f; // Add unique identifier
 
-void Chunk::LoadVertexBuffer()
-{
-	m_VBstatic->Empty();
-	for (Minecraft::Block_static& block : m_BlockStatic) {
-		m_VBstatic->AddVertexData(block.vertices, sizeof(Minecraft::Vertex) * 24);
+			Minecraft::Face face{};
+			face.vertices[0] = block.vertices[i + 0];
+			face.vertices[1] = block.vertices[i + 1];
+			face.vertices[2] = block.vertices[i + 2];
+			face.vertices[3] = block.vertices[i + 3];
+
+			m_TransparentStaticsOrdered[distance] = face;
+		}
 	}
 }
 
-void Chunk::AddVertexBufferData(const void* data, size_t size)
+void Chunk::FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 {
-	m_VBstatic->AddVertexData(data, (int)size);
+	buffer->Empty();
+}
+
+void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
+{
+	buffer->Empty();
+	for (Minecraft::Block_static& block : m_BlockStatic) {
+		buffer->AddVertexData(block.vertices, sizeof(Minecraft::Vertex) * 24);
+	}
+}
+
+void Chunk::LoadVertexBufferFromMap()
+{
+	for (std::map<float, Minecraft::Face>::reverse_iterator it = m_TransparentStaticsOrdered.rbegin(); it != m_TransparentStaticsOrdered.rend(); ++it) {
+		AddVertexBufferData(m_VBtransparentStatic, it->second.vertices, sizeof(Minecraft::Vertex) * 4);
+	}
+
+	/*auto iter = m_TransparentStaticsOrdered.begin();
+	while (iter != m_TransparentStaticsOrdered.end()) {
+		AddVertexBufferData(m_VBtransparentStatic, iter->second.vertices, sizeof(Minecraft::Vertex) * 4);
+		iter++;
+	}*/
+}
+
+void Chunk::AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size)
+{
+	buffer->AddVertexData(data, (int)size);
 }
 
 Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
@@ -27,6 +60,7 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 	block.id = id;
 	block.position = position;
 	block.reflection = formatBlock.reflection;
+	block.subtype = formatBlock.type;
 
 	glm::vec3 positions[8] = {
 		{position.x + 0, position.y + 0, position.z - 0},	// 0 FDL
@@ -162,6 +196,8 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	m_IBstatic = std::make_unique<IndexBuffer>(indices, c_BatchFaceCount * 6);
 	m_VBstatic = std::make_unique<VertexBuffer>(c_BatchFaceCount, sizeof(Minecraft::Vertex));
 
+	m_VBtransparentStatic = std::make_unique<VertexBuffer>(c_BatchFaceCount, sizeof(Minecraft::Vertex));
+
 	delete[] indices;
 
 	m_VBLayoutStatic = std::make_unique<VertexBufferLayout>();
@@ -172,7 +208,10 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	m_VBLayoutStatic->Push<float>(1);	// Reflection
 
 	m_VAstatic = std::make_unique<VertexArray>();
+	m_VAtransparentStatic = std::make_unique<VertexArray>();
+
 	m_VAstatic->AddBuffer(*m_VBstatic, *m_VBLayoutStatic);
+	m_VAtransparentStatic->AddBuffer(*m_VBtransparentStatic, *m_VBLayoutStatic);
 
 	// Setting seed for random integers
 	std::srand((unsigned)time(NULL));
@@ -181,7 +220,7 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 #pragma warning( pop )
 
 void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise)
-{
+ {
 	m_Position = position;
 
 	constexpr double noiseStep = 1.f / c_ChunkSize;
@@ -196,21 +235,43 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 
 			// Build Pillar depending on Noise
 			for (unsigned int i = 0; i < pillarHeight; i++) {
-				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * m_BlockFormats->size()));
+				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size())));	// Exclude last Block-ID -> Glass
 				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
-				m_BlockStatic.push_back(block);
-				AddVertexBufferData(block.vertices, sizeof(Minecraft::Vertex) * 24);
+				
+				// Add block to specific buffer
+				switch (block.subtype) {
+				case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
+					m_BlockStatic.push_back(block);
+					m_VBstatic->AddVertexData(block.vertices, (int)(sizeof(Minecraft::Vertex) * 24));
+					break;
+				case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
+					m_BlockTransparenStatic.push_back(block);
+					// m_VBtransparentStatic->AddVertexData(block.vertices, (int)(sizeof(Minecraft::Vertex) * 24));
+					break;
+				}
 			}
-
 			noiseStepOffset.x += noiseStep;
 		}
 		noiseStepOffset.y += noiseStep;
 	}
 }
 
-void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage)
+void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
 {
+	// Draw default static blocks
 	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
+}
+
+void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
+{
+	// Draw transparent static blocks
+	OrderTransparentStatics(cameraPosition);
+	FlushVertexBuffer(m_VBtransparentStatic);
+	LoadVertexBufferFromMap();
+
+	m_DrawCalls++;
+	shaderPackage.shaderBlockStatic->Bind();
+	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
 }

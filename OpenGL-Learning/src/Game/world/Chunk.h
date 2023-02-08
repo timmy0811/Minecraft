@@ -35,15 +35,26 @@ class Chunk
 private:
 	// Graphics
 	std::vector<Minecraft::Block_static> m_BlockStatic;
+	std::vector<Minecraft::Block_static> m_BlockTransparenStatic;
 
+	// block_static
 	std::unique_ptr<VertexArray> m_VAstatic;
 	std::unique_ptr<VertexBuffer> m_VBstatic;
 	std::unique_ptr<IndexBuffer> m_IBstatic;
 	std::unique_ptr<VertexBufferLayout> m_VBLayoutStatic;
 
-	void FlushVertexBuffer();
-	void LoadVertexBuffer();
-	void AddVertexBufferData(const void* data, size_t size);
+	// block_transparent_static
+	std::unique_ptr<VertexArray> m_VAtransparentStatic;
+	std::unique_ptr<VertexBuffer> m_VBtransparentStatic;
+
+	std::map<float, Minecraft::Face> m_TransparentStaticsOrdered;
+
+	void OrderTransparentStatics(glm::vec3 cameraPosition);
+
+	void FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer);
+	void LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer);
+	void LoadVertexBufferFromMap();
+	void AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size);
 
 	// Game
 	glm::vec3 m_Position;
@@ -61,7 +72,8 @@ public:
 
 	void Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise);
 
-	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage);
+	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
+	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
 	void OnUpdate();
 
 	// Members

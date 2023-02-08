@@ -38,14 +38,13 @@ void Handler::DebugWindow()
 }
 
 Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky2/sky", ".jpg")
+	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky3/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// GL Flags
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	GLCall(glEnable(GL_BLEND));
 	GLCall(glEnable(GL_DEPTH_TEST));
 
 	// Enabling Face Culling

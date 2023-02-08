@@ -8,14 +8,15 @@
 #include "../primitive/Primitive.hpp"
 
 namespace Minecraft {
-	enum class BLOCKTYPE { STATIC = 0, DYNAMIC = 1, MESH = 2, VOID = 3};
+	enum class BLOCKTYPE { STATIC_DEFAULT = 0, STATIC_TRANSPARENT = 1, DYNAMIC = 2, MESH = 3, VOID = 4 };
 
 	struct Block_static {
-		glm::mat4 matrixModel{ 1.f };
-
+		//glm::mat4 matrixModel{ 1.f };
 		Minecraft::Vertex vertices[24];
+
 		std::string name;
 		unsigned int id;
+		BLOCKTYPE subtype;
 
 		float reflection = 0.f;
 
