@@ -291,11 +291,22 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 		noiseStepOffset.x = 0.f;
 		for (int x = 0; x < c_ChunkSize; x++) {
 			double noiseOnTile = noise.octave2D_01(noiseOffset.x + noiseStepOffset.x, noiseOffset.y + noiseStepOffset.y, 1);
-			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch);
+			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch) + c_TerrainMinHeight;
+
+			// Temporary generation parameters
+			unsigned int maxHeightStone = pillarHeight / 2.f;
+			unsigned int maxHeightDirt = pillarHeight - 1.f;
 
 			// Build Pillar depending on Noise
+			unsigned int id = 0;
 			for (unsigned int i = 0; i < pillarHeight; i++) {
-				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass
+				if (i < maxHeightStone) id = 4;
+				else if (i < maxHeightDirt) id = 5;
+				else id = 0;
+				
+				// Used for shuffling
+				//id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass
+
 				Minecraft::Block_static* block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
 				
 				// Add block to specific buffer

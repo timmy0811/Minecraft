@@ -27,6 +27,8 @@ stone:
   texture_Back: stone
   texture_front: stone
 
+
+
 stone_rough:
   type: 0
   id: 2
@@ -41,9 +43,37 @@ stone_rough:
   texture_Back: stone_rough
   texture_front: stone_rough
 
+cobble:
+  type: 0
+  id: 4
+
+  reflection: 0.02
+
+  texture_top: cobble
+  texture_bottom: cobble
+
+  texture_left: cobble
+  texture_right: cobble
+  texture_Back: dicobblert
+  texture_front: cobble
+
+dirt:
+  type: 0
+  id: 5
+
+  reflection: 0.02
+
+  texture_top: dirt
+  texture_bottom: dirt
+
+  texture_left: dirt
+  texture_right: dirt
+  texture_Back: dirt
+  texture_front: dirt
+
 glass:
   type: 1
-  id: 3
+  id: 30
 
   reflection: 0.6
 
