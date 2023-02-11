@@ -75,6 +75,7 @@ public:
 	inline const size_t getAmountChunk() const { return m_Chunks.size(); }
 	inline const size_t getAmountBlockFormat() const { return m_BlockFormats.size(); };
 	inline const size_t getAmountTextureFormat() const { return m_TextureFormats.size(); }
+	const size_t getDrawnVertices() const;
 
 	const unsigned int getDrawCalls() const;
 	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };

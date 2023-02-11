@@ -34,8 +34,8 @@ class Chunk
 {
 private:
 	// Graphics
-	std::vector<Minecraft::Block_static> m_BlockStatic;
-	std::vector<Minecraft::Block_static> m_BlockTransparenStatic;
+	std::map<std::vector<float>, Minecraft::Block_static*> m_BlockStatic;
+	std::map<std::vector<float>, Minecraft::Block_static*> m_BlockTransparenStatic;
 
 	// block_static
 	std::unique_ptr<VertexArray> m_VAstatic;
@@ -57,18 +57,21 @@ private:
 	void AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size);
 
 	// Game
+	size_t m_DrawnVertices;
 	glm::vec3 m_Position;
 
 	std::map<unsigned int, Minecraft::Block_format>* m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
 
-	Minecraft::Block_static CreateBlockStatic(const glm::vec3& position, unsigned int id);
+	Minecraft::Block_static* CreateBlockStatic(const glm::vec3& position, unsigned int id);
+	bool IsNotCovered(const glm::vec3& pos) const;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
 
 public:
 	Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
+	~Chunk();
 
 	void Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise);
 
@@ -77,6 +80,7 @@ public:
 	void OnUpdate();
 
 	// Members
+	inline const size_t getDrawnVertices() const { return m_DrawnVertices; }
 	inline const size_t getAmountBlockStatic() const { return m_BlockStatic.size(); }
 	inline const unsigned int getDrawCalls() {
 		const unsigned int calls = m_DrawCalls;

@@ -76,6 +76,16 @@ const unsigned int World::getAmountBlockStatic() const
 	return amount;
 }
 
+const size_t World::getDrawnVertices() const
+{
+	size_t verts = 0;
+	for (Chunk* chunk : m_Chunks) {
+		verts += chunk->getDrawnVertices();
+	}
+
+	return verts;
+}
+
 const unsigned int World::getDrawCalls() const
 {
 	unsigned int calls = 0;

@@ -10,7 +10,7 @@ void Handler::OnInit()
 
 void Handler::DebugWindow()
 {
-	ImGui::SetNextWindowSize(ImVec2(380.f, 210.f));
+	ImGui::SetNextWindowSize(ImVec2(380.f, 240.f));
 	ImGui::SetNextWindowPos(ImVec2(10.f, 10.f));
 
 	unsigned int drawCalls = 0;
@@ -26,7 +26,10 @@ void Handler::DebugWindow()
 	ImGui::Text(("Avail Blocks: " + std::to_string(m_World.getAmountBlockFormat())).c_str());
 	ImGui::Text(("Avail Textures: " + std::to_string(m_World.getAmountTextureFormat())).c_str());
 
+	ImGui::Separator();
 	ImGui::Text(("Draw Calls: " + std::to_string(drawCalls)).c_str());
+	size_t verts = m_World.getDrawnVertices();
+	ImGui::Text(("Vertices: " + std::to_string(verts) + "     (" + std::to_string(((((float)verts / (c_RenderDistanceStatic * c_RenderDistanceStatic)) / (c_BatchFaceCount * 4)) * 100.f)) + "%% of VBO used)").c_str());
 
 	ImGui::Separator();
 	ImGui::Text(("Vertex Buffer Face Size: " + std::to_string(c_BatchFaceCount)).c_str());

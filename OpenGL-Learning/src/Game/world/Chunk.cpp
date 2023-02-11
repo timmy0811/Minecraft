@@ -4,8 +4,9 @@ void Chunk::OrderTransparentStatics(glm::vec3 cameraPosition)
 {
 	m_TransparentStaticsOrdered.clear();
 	unsigned int identifier = 0;
-	for (Minecraft::Block_static& block : m_BlockTransparenStatic) {
-		for (int i = 0; i < 25; i += 4) {
+	for (auto iter = m_BlockTransparenStatic.begin(); iter != m_BlockTransparenStatic.end(); iter++) {
+		Minecraft::Block_static block = *iter->second;
+		for (int i = 0; i < 24; i += 4) {	// ???
 			float distance = glm::length(cameraPosition - block.vertices[i].Position);
 			distance += identifier++ * 0.000001f; // Add unique identifier
 
@@ -27,9 +28,50 @@ void Chunk::FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 
 void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 {
+	// Prevent covered faces from getting drawn on the screen
 	buffer->Empty();
-	for (Minecraft::Block_static& block : m_BlockStatic) {
-		buffer->AddVertexData(block.vertices, sizeof(Minecraft::Vertex) * 24);
+	m_DrawnVertices = 0;
+	auto iter = m_BlockStatic.begin();
+	while (iter != m_BlockStatic.end()) {
+		const glm::vec3 position = iter->second->position;
+
+		// Front Face
+		if (IsNotCovered({ position.x + 0, position.y + 0, position.z + c_BlockSize })) {
+			buffer->AddVertexData(iter->second->vertices, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		// Right Face
+		if (IsNotCovered({ position.x + c_BlockSize, position.y + 0, position.z + 0 })) {
+			buffer->AddVertexData(iter->second->vertices + 4, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		// Left Face
+		if (IsNotCovered({ position.x - c_BlockSize, position.y + 0, position.z + 0 })) {
+			buffer->AddVertexData(iter->second->vertices + 8, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		// Back Face
+		if (IsNotCovered({ position.x + 0, position.y + 0, position.z - c_BlockSize })) {
+			buffer->AddVertexData(iter->second->vertices + 12, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		//  Top Face
+		if (IsNotCovered({ position.x + 0, position.y + c_BlockSize, position.z + 0 })) {
+			buffer->AddVertexData(iter->second->vertices + 16, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		// Bottom Face
+		if (IsNotCovered({ position.x + 0, position.y - c_BlockSize, position.z + 0 })) {
+			buffer->AddVertexData(iter->second->vertices + 20, sizeof(Minecraft::Vertex) * 4);
+			m_DrawnVertices++;
+		}
+
+		iter++;
 	}
 }
 
@@ -38,12 +80,6 @@ void Chunk::LoadVertexBufferFromMap()
 	for (std::map<float, Minecraft::Face>::reverse_iterator it = m_TransparentStaticsOrdered.rbegin(); it != m_TransparentStaticsOrdered.rend(); ++it) {
 		AddVertexBufferData(m_VBtransparentStatic, it->second.vertices, sizeof(Minecraft::Vertex) * 4);
 	}
-
-	/*auto iter = m_TransparentStaticsOrdered.begin();
-	while (iter != m_TransparentStaticsOrdered.end()) {
-		AddVertexBufferData(m_VBtransparentStatic, iter->second.vertices, sizeof(Minecraft::Vertex) * 4);
-		iter++;
-	}*/
 }
 
 void Chunk::AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size)
@@ -51,16 +87,16 @@ void Chunk::AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const voi
 	buffer->AddVertexData(data, (int)size);
 }
 
-Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
+Minecraft::Block_static* Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
 {
 	Minecraft::Block_format& formatBlock = (*m_BlockFormats)[id];
-	Minecraft::Block_static block;
+	Minecraft::Block_static* block = new Minecraft::Block_static();
 
-	block.name = (*m_BlockFormats)[id].name;
-	block.id = id;
-	block.position = position;
-	block.reflection = formatBlock.reflection;
-	block.subtype = formatBlock.type;
+	block->name = (*m_BlockFormats)[id].name;
+	block->id = id;
+	block->position = position;
+	block->reflection = formatBlock.reflection;
+	block->subtype = formatBlock.type;
 
 	glm::vec3 positions[8] = {
 		{position.x + 0, position.y + 0, position.z - 0},	// 0 FDL
@@ -85,90 +121,99 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 
 	// Setting Texture IDs
 	for (int i = 0; i < 24; i++) {
-		block.vertices[i].TexID = 0.f;
+		block->vertices[i].TexID = 0.f;
 	}
 
 	// UVs
 	// Front
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_front].uv[i];
+		block->vertices[i].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_front].uv[i];
 	}
 
 	// Right
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i + 4].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_right].uv[i];
+		block->vertices[i + 4].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_right].uv[i];
 	}
 
 	// Left
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i + 8].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_left].uv[i];
+		block->vertices[i + 8].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_left].uv[i];
 	}
 
 	// Back
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i + 12].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_back].uv[i];
+		block->vertices[i + 12].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_back].uv[i];
 	}
 
 	// Top
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i + 16].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_top].uv[i];
+		block->vertices[i + 16].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_top].uv[i];
 	}
 
 	// Bottom
 	for (int i = 0; i < 4; i++) {
-		block.vertices[i + 20].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_bottom].uv[i];
+		block->vertices[i + 20].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_bottom].uv[i];
 	}
 
 	// Vertex position
 	{
-		block.vertices[0].Position = positions[0];
-		block.vertices[1].Position = positions[1];
-		block.vertices[2].Position = positions[5];
-		block.vertices[3].Position = positions[4];
+		block->vertices[0].Position = positions[0];
+		block->vertices[1].Position = positions[1];
+		block->vertices[2].Position = positions[5];
+		block->vertices[3].Position = positions[4];
 
-		block.vertices[4].Position = positions[1];
-		block.vertices[5].Position = positions[2];
-		block.vertices[6].Position = positions[6];
-		block.vertices[7].Position = positions[5];
+		block->vertices[4].Position = positions[1];
+		block->vertices[5].Position = positions[2];
+		block->vertices[6].Position = positions[6];
+		block->vertices[7].Position = positions[5];
 
-		block.vertices[8].Position = positions[3];
-		block.vertices[9].Position = positions[0];
-		block.vertices[10].Position = positions[4];
-		block.vertices[11].Position = positions[7];
+		block->vertices[8].Position = positions[3];
+		block->vertices[9].Position = positions[0];
+		block->vertices[10].Position = positions[4];
+		block->vertices[11].Position = positions[7];
 
-		block.vertices[12].Position = positions[2];
-		block.vertices[13].Position = positions[3];
-		block.vertices[14].Position = positions[7];
-		block.vertices[15].Position = positions[6];
+		block->vertices[12].Position = positions[2];
+		block->vertices[13].Position = positions[3];
+		block->vertices[14].Position = positions[7];
+		block->vertices[15].Position = positions[6];
 
-		block.vertices[16].Position = positions[4];
-		block.vertices[17].Position = positions[5];
-		block.vertices[18].Position = positions[6];
-		block.vertices[19].Position = positions[7];
+		block->vertices[16].Position = positions[4];
+		block->vertices[17].Position = positions[5];
+		block->vertices[18].Position = positions[6];
+		block->vertices[19].Position = positions[7];
 
-		block.vertices[20].Position = positions[3];
-		block.vertices[21].Position = positions[2];
-		block.vertices[22].Position = positions[1];
-		block.vertices[23].Position = positions[0];
+		block->vertices[20].Position = positions[3];
+		block->vertices[21].Position = positions[2];
+		block->vertices[22].Position = positions[1];
+		block->vertices[23].Position = positions[0];
 	}
 
 	unsigned int face = 0;
 	// UVs and Normals
 	for (int i = 0; i < 24; i += 4) {
-		block.vertices[i + 0].Normal = normals[face];
-		block.vertices[i + 1].Normal = normals[face];
-		block.vertices[i + 2].Normal = normals[face];
-		block.vertices[i + 3].Normal = normals[face];
+		block->vertices[i + 0].Normal = normals[face];
+		block->vertices[i + 1].Normal = normals[face];
+		block->vertices[i + 2].Normal = normals[face];
+		block->vertices[i + 3].Normal = normals[face];
 
-		block.vertices[i + 0].reflection = formatBlock.reflection;
-		block.vertices[i + 1].reflection = formatBlock.reflection;
-		block.vertices[i + 2].reflection = formatBlock.reflection;
-		block.vertices[i + 3].reflection = formatBlock.reflection;
+		block->vertices[i + 0].reflection = formatBlock.reflection;
+		block->vertices[i + 1].reflection = formatBlock.reflection;
+		block->vertices[i + 2].reflection = formatBlock.reflection;
+		block->vertices[i + 3].reflection = formatBlock.reflection;
 
 		face++;
 	}
 
 	return block;
+}
+
+bool Chunk::IsNotCovered(const glm::vec3& pos) const
+{
+	auto neighbor = m_BlockStatic.find({ pos.x, pos.y, pos.z });
+	if (neighbor == m_BlockStatic.end() || neighbor->second->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) {
+		return true;
+	}
+	else return false;
 }
 
 #pragma warning( push )
@@ -217,6 +262,21 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	std::srand((unsigned)time(NULL));
 }
 
+Chunk::~Chunk()
+{
+	// Freeing memory for opac objects
+	for (auto iter = m_BlockStatic.begin(); iter != m_BlockStatic.end(); iter++) {
+		delete iter->second;
+	}
+	m_BlockStatic.clear();
+
+	// Freeing memory for transparent objects
+	for (auto iter = m_BlockTransparenStatic.begin(); iter != m_BlockTransparenStatic.end(); iter++) {
+		delete iter->second;
+	}
+	m_BlockTransparenStatic.clear();
+}
+
 #pragma warning( pop )
 
 void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise)
@@ -235,17 +295,17 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 
 			// Build Pillar depending on Noise
 			for (unsigned int i = 0; i < pillarHeight; i++) {
-				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size())));	// Exclude last Block-ID -> Glass
-				const Minecraft::Block_static& block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
+				unsigned int id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass
+				Minecraft::Block_static* block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
 				
 				// Add block to specific buffer
-				switch (block.subtype) {
+				switch (block->subtype) {
 				case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
-					m_BlockStatic.push_back(block);
-					m_VBstatic->AddVertexData(block.vertices, (int)(sizeof(Minecraft::Vertex) * 24));
+					m_BlockStatic[{block->position.x, block->position.y, block->position.z}] = block;
+					//m_VBstatic->AddVertexData(block.vertices, (int)(sizeof(Minecraft::Vertex) * 24));		// Moved buffer loading into seperate function
 					break;
 				case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
-					m_BlockTransparenStatic.push_back(block);
+					m_BlockTransparenStatic[{block->position.x, block->position.y, block->position.z}] = block;
 					// m_VBtransparentStatic->AddVertexData(block.vertices, (int)(sizeof(Minecraft::Vertex) * 24));
 					break;
 				}
@@ -254,6 +314,7 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 		}
 		noiseStepOffset.y += noiseStep;
 	}
+	LoadVertexBuffer(m_VBstatic);
 }
 
 void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
