@@ -3,7 +3,7 @@
 World::World(GLFWwindow* window)
 	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
-	m_TextureMap("res/images/sheets/blocksheet_static.png"),
+	m_TextureMap("res/images/sheets/blocksheet.png", false),
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL)))
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));

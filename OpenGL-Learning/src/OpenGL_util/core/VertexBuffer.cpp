@@ -13,9 +13,11 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size)
 VertexBuffer::VertexBuffer(unsigned int count, size_t elementSize)
 	:m_DataPtr(0)
 {
+	//void* mem = std::malloc(count * elementSize);
     GLCall(glGenBuffers(1, &m_RendererID));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID));
     GLCall(glBufferData(GL_ARRAY_BUFFER, count * elementSize, nullptr, GL_DYNAMIC_DRAW));
+	//free(mem);
 
 	m_BufferSize = (size_t)count * elementSize;
 }

@@ -158,12 +158,13 @@
     <ClCompile Include="src\vendor\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\vendor\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="src\OpenGL_util\core\VertexBuffer.cpp" />
     <ClCompile Include="src\OpenGL_util\core\VertexArray.cpp" />
     <ClCompile Include="src\OpenGL_util\core\VertexBufferLayout.cpp" />
     <ClCompile Include="src\OpenGL_util\texture\Texture.cpp" />
     <ClCompile Include="src\Game\world\World.cpp" />
+    <ClCompile Include="src\vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="src\vendor\stb_image\stb_image_write.cpp" />
     <ClCompile Include="src\vendor\yaml\yaml_wrapper.cpp" />
     <ClCompile Include="src\Game\application\TexturePacker.cpp" />
   </ItemGroup>
@@ -315,6 +316,7 @@
     <ClInclude Include="src\Game\block\Block.hpp" />
     <ClInclude Include="src\Game\Handler.h" />
     <ClInclude Include="src\Game\primitive\Primitive.hpp" />
+    <ClInclude Include="src\imgui_helper\imgui.h" />
     <ClInclude Include="src\OpenGL_util\misc\Light.hpp" />
     <ClInclude Include="src\OpenGL_util\misc\Material.hpp" />
     <ClInclude Include="src\OpenGL_util\misc\Vertex.hpp" />

@@ -1,11 +1,17 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <string>
 #include <filesystem>
+#include <iostream>
 #include <list>
+#include <windows.h>
 
+#include "vendor/stb_image/stb_image.h"
 #include "vendor/stb_image/stb_image_write.h"
+
+#include "vendor/yaml/yaml_wrapper.hpp"
 
 #include "config.h"
 
@@ -19,8 +25,10 @@ class TexturePacker
 {
 private:
 	static std::vector<std::string> m_PackedTextures;	
+	static int roundUp(int numToRound, int multiple);
+	inline static int CoordinateToIndex(int x, int y, int width);
 
 public:
-	static const bool PackTextures(const std::string& path);
+	static const bool PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float accur = 1.f);
 };
 

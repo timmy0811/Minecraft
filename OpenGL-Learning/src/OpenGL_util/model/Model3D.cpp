@@ -114,7 +114,7 @@ std::vector<Texture*> Model3D::LoadMaterialTextures(aiMaterial* mat, aiTextureTy
 		}
 
 		if (!skip) {
-			Texture* texture = new Texture(path); // m_Directory + str ???
+			Texture* texture = new Texture(path, false); // m_Directory + str ???
 
 			switch (type) {
 			case aiTextureType_DIFFUSE: {

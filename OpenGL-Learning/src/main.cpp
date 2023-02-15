@@ -1,3 +1,4 @@
+
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -13,63 +14,18 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_opengl3.h"
-#include "imgui/imgui_impl_glfw.h"
-
 #include "config.h"
 
 #include "Game/Handler.h"
 
-ImGuiIO& ImGuiInit() {
-    ImGui::CreateContext();
+#include "imgui_helper/imgui.h"
 
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
-    ImGui::StyleColorsDark();
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        style.WindowRounding = 0.5f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
-    return io;
-}
-
-void ImGuiNewFrame() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-}
-
-void ImGuiRender(ImGuiIO& io){
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        glfwMakeContextCurrent(backup_current_context);
-    }
-}
-
-void ImGuiShutdown() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-};
-
-#include "vendor/yaml/yaml_wrapper.hpp"
+#include "Game/application/TexturePacker.h"
 
 int main(void)
 {
+    TexturePacker Packer{};
 
-    YAML::TestWrite();
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -80,7 +36,7 @@ int main(void)
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(c_win_Width, c_win_Height, "Hello World", NULL, NULL);
@@ -131,6 +87,23 @@ int main(void)
         GameHandler.OnInput(window);
         GameHandler.OnUpdate();
         GameHandler.OnRender();
+
+        // Application Window
+        ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
+        ImGui::SetNextWindowPos(ImVec2(10.f, 260.f));
+
+        ImGui::Begin("Application");
+        static float acc = 1000.f;
+
+        ImGui::Text("Pack Textures");
+        ImGui::SameLine();
+        ImGui::InputFloat("Accuracy", &acc);
+
+        if (ImGui::Button("Pack", { 350.f , 20.f })) {
+            Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", acc);
+        }
+
+        ImGui::End();
 
         ImGuiRender(io);
 

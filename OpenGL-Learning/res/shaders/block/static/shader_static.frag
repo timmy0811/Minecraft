@@ -1,6 +1,6 @@
 #shader fragment
 #version 330 core
-precision mediump float;
+precision highp float;
 
 layout(location = 0) out vec4 o_Color;
 

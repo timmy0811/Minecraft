@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../core/Renderer.h"
-#include "stb_image/stb_image.h"
+#include "vendor/stb_image/stb_image.h"
 
 enum class TextureType { DIFFUSE, SPECULAR, SHINE, NORMAL, HEIGHT, DEFAULT };
 
@@ -17,7 +17,7 @@ private:
 	TextureType m_Type;
 
 public:
-	Texture(const std::string& path);
+	Texture(const std::string& path, const bool flipUV);
 	~Texture();
 
 	void Bind(const unsigned int slot = 0) const;
