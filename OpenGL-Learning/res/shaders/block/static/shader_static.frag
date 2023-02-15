@@ -12,16 +12,20 @@ in float v_Reflection;
 
 uniform sampler2D u_TextureMap;
 uniform samplerCube u_Cubemap;
+uniform float u_Refraction;
 
 uniform vec3 u_ViewPosition;
 
 void main(){
     vec3 I = normalize(v_FragPos - u_ViewPosition);
-    vec3 R = reflect(I, normalize(v_Normal));
+    vec3 Rf = reflect(I, normalize(v_Normal));
     vec4 color = texture(u_TextureMap, v_UV);
-    // if(color.a < 0.1) discard;
+
+    float ratio = 1.00 / 1.52;
+    vec3 Rr = refract(I, normalize(v_Normal), ratio);
    
-    o_Color = color * (1.0 - v_Reflection) + vec4(texture(u_Cubemap, R).rgb, 1.0) * v_Reflection;
+    o_Color = (color * (1.0 - v_Reflection) + vec4(texture(u_Cubemap, Rr).rgb, 1.0) * v_Reflection) * (1.0 - 0.1 * u_Refraction)
+                + vec4(texture(u_Cubemap, Rr).rgb, 1.0) * u_Refraction * 0.1;
 
 
 }

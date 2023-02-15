@@ -75,7 +75,7 @@ glass:
   type: 1
   id: 30
 
-  reflection: 0.6
+  reflection: 0.3
 
   texture_top: glass
   texture_bottom: glass
