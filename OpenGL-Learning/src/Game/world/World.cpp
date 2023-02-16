@@ -21,6 +21,7 @@ World::World(GLFWwindow* window)
 	ParseTextures("docs/texture.yaml");
 
 	GenerateTerrain();
+	SetupLight();
 }
 
 World::~World()
@@ -44,12 +45,14 @@ void World::OnRender()
 	}
 }
 
-void World::OnUpdate()
+void World::OnUpdate(double deltaTime)
 {
 	glfwSetCursorPosCallback(r_Window, OnMouseCallback);
 
 	ProcessMouse();
 	m_MatrixView = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Front, m_Camera.Up);
+
+	updateLight();
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
@@ -153,6 +156,7 @@ void World::GenerateTerrain()
 		chunkOffset.z = 0.f;
 		for (int chunkZ = 0; chunkZ < 2 * c_RenderDistanceStatic; chunkZ++) {
 			Chunk* chnk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+			std::cout << "Generating Chunk " << std::to_string(chunkX * c_RenderDistanceStatic * 2 + chunkZ) << '\n';
 			chnk->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
 			m_Chunks.push_back(chnk);
 
@@ -208,6 +212,23 @@ void World::ParseTextures(const std::string& path)
 
 		m_TextureFormats[textureFormat.name] = textureFormat;
 	}
+}
+
+void World::SetupLight()
+{
+	// Direct Light
+	m_DirLight.ambient = { 0.3f, 0.3f, 0.3f };
+	m_DirLight.diffuse = { 1.0f, 1.0f, 1.0f };
+	m_DirLight.specular = { 0.25f, 0.25f, 0.25f };
+	m_DirLight.direction = { 1.f, -1.f, 0.5f };
+
+	m_ShaderPackage.shaderBlockStatic->Bind();
+	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);
+}
+
+void World::updateLight()
+{
+
 }
 
 void World::OnMouseCallback(GLFWwindow* window, double xpos, double ypos)

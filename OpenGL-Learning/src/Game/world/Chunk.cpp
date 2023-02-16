@@ -302,7 +302,7 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 			for (unsigned int i = 0; i < pillarHeight; i++) {
 				if (i < maxHeightStone) id = 4;
 				else if (i < maxHeightDirt) id = 5;
-				else id = 30;
+				else id = 0;
 				
 				// Used for shuffling
 				//id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass

@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <time.h>
+#include <iostream>
 
 #include "Chunk.h"
 #include "../View/Camera.h"
@@ -14,6 +15,7 @@
 
 #include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
+#include "OpenGL_util/misc/Light.hpp"
 
 class World
 {
@@ -41,6 +43,12 @@ private:
 	// Textures
 	Texture m_TextureMap;
 
+	// Light
+	OpenGL::DirectionalLight m_DirLight;
+
+	void SetupLight();
+	void updateLight();
+	
 	// Shader 
 	Minecraft::Helper::ShaderPackage m_ShaderPackage;
 
@@ -62,7 +70,7 @@ public:
 
 	void OnInput(GLFWwindow* window, double deltaTime);
 	void OnRender();
-	void OnUpdate();
+	void OnUpdate(double deltaTime);
 
 	// Members
 	inline static float s_MouseX = 0;
