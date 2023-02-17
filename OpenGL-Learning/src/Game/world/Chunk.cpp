@@ -188,34 +188,33 @@ Minecraft::Block_static* Chunk::CreateBlockStatic(const glm::vec3& position, uns
 	}
 
 	// UVs
-	// Front
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_front].uv[i];
+	// Only retreiving elemts from map once
+	std::set<std::string> uniqueFormats;
+	std::map<std::string, Minecraft::Texture_Format*> formats;
+
+	std::string textures[6] = {
+		(*m_BlockFormats)[id].texture_front,
+		(*m_BlockFormats)[id].texture_right,
+		(*m_BlockFormats)[id].texture_left,
+
+		(*m_BlockFormats)[id].texture_back,
+		(*m_BlockFormats)[id].texture_top,
+		(*m_BlockFormats)[id].texture_bottom
+	};
+
+	for (char i = 0; i < 6; i++) {
+		uniqueFormats.insert(textures[i]);
 	}
 
-	// Right
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i + 4].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_right].uv[i];
+	for (const std::string& str : uniqueFormats) {
+		formats[str] = &(*m_TextureFormats)[str];
 	}
 
-	// Left
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i + 8].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_left].uv[i];
-	}
-
-	// Back
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i + 12].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_back].uv[i];
-	}
-
-	// Top
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i + 16].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_top].uv[i];
-	}
-
-	// Bottom
-	for (int i = 0; i < 4; i++) {
-		block->vertices[i + 20].TexCoords = (*m_TextureFormats)[(*m_BlockFormats)[id].texture_bottom].uv[i];
+	for (char i = 0; i < 6; i++) {
+		Minecraft::Texture_Format* f = formats[textures[i]];
+		for (char j = 0; j < 4; j++) {
+			block->vertices[i * 4 + j].TexCoords = f->uv[j];
+		}
 	}
 
 	// Vertex position
@@ -290,7 +289,7 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 	for (int z = 0; z < c_ChunkSize; z++) {
 		noiseStepOffset.x = 0.f;
 		for (int x = 0; x < c_ChunkSize; x++) {
-			double noiseOnTile = noise.octave2D_01(noiseOffset.x + noiseStepOffset.x, noiseOffset.y + noiseStepOffset.y, 1);
+			double noiseOnTile = noise.octave2D_01((noiseOffset.x + noiseStepOffset.x) * c_TerrainXStretch, (noiseOffset.y + noiseStepOffset.y) * c_TerrainXStretch, 1);
 			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch) + c_TerrainMinHeight;
 
 			// Temporary generation parameters

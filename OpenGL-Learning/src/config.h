@@ -11,9 +11,12 @@
 // Terrain
 #define c_ChunkSize 16
 #define c_BlockSize 1.f
-#define c_TerrainYStretch 4.f
-#define c_TerrainMinHeight 1.f
 
-#define c_RenderDistanceStatic 2
+#define c_TerrainYStretch 5
+#define c_TerrainXStretch 1.f
+
+#define c_TerrainMinHeight 20.f
+
+#define c_RenderDistanceStatic 1
 
 #define c_TextureSize 16

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <time.h>
 #include <iostream>
 
@@ -36,6 +37,7 @@ private:
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
+	std::set<std::string> m_UsedTextures;
 
 	void ParseBlocks(const std::string& path);
 	void ParseTextures(const std::string& path);

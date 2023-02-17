@@ -17,6 +17,7 @@ World::World(GLFWwindow* window)
 
 	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
+	// Parse blocks before textures!!!
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
 
@@ -186,6 +187,14 @@ void World::ParseBlocks(const std::string& path)
 		blockFormat.texture_back = block.second["texture_Back"].as<std::string>();
 		blockFormat.texture_front = block.second["texture_front"].as<std::string>();
 
+		m_UsedTextures.insert(blockFormat.texture_top);
+		m_UsedTextures.insert(blockFormat.texture_bottom);
+		m_UsedTextures.insert(blockFormat.texture_left);
+
+		m_UsedTextures.insert(blockFormat.texture_right);
+		m_UsedTextures.insert(blockFormat.texture_back);
+		m_UsedTextures.insert(blockFormat.texture_front);
+
 		m_BlockFormats[blockFormat.id] = blockFormat;
 	}
 }
@@ -197,6 +206,7 @@ void World::ParseTextures(const std::string& path)
 		Minecraft::Texture_Format textureFormat;
 
 		textureFormat.name = texture.first.as<std::string>();
+		if (m_UsedTextures.find(textureFormat.name) == m_UsedTextures.end()) continue;
 
 		textureFormat.uv[0].x = texture.second["uvs"]["0"][0].as<float>();
 		textureFormat.uv[0].y = texture.second["uvs"]["0"][1].as<float>();
