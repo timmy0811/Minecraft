@@ -33,7 +33,7 @@ private:
 
 	// Objects
 	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk*> m_Chunks;
+	std::vector<Chunk*> m_Chunks{ c_RenderDistanceStatic * c_RenderDistanceStatic * 4 };
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
@@ -65,6 +65,8 @@ private:
 
 	// Generation
 	void GenerateTerrain();
+	inline unsigned int CoordToIndex(const glm::vec2& coord) const;
+	inline const glm::vec2& IndexToCoord(unsigned int index) const;
 
 public:
 	World(GLFWwindow* window);
@@ -80,6 +82,7 @@ public:
 
 	const glm::mat4& getMatrixProjection() const;
 	const glm::mat4& getMatrixView() const;
+	const glm::vec3& getCameraPosition() const;
 
 	const unsigned int getAmountBlockStatic() const;
 	inline const size_t getAmountChunk() const { return m_Chunks.size(); }

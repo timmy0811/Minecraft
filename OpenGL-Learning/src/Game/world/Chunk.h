@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <time.h>
 
 #include "PerlinNoise/Noise.hpp"
@@ -64,6 +64,9 @@ private:
 	std::map<unsigned int, Minecraft::Block_format>* m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
 
+	// Chunk neighbors
+	Chunk* m_ChunkNeighbors[4];
+
 	Minecraft::Block_static CreateBlockStatic(const glm::vec3& position, unsigned int id);
 	bool IsNotCovered(const glm::vec3 pos);
 	inline unsigned int CoordToIndex(const glm::vec3& coord);
@@ -82,7 +85,12 @@ public:
 	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
 	void OnUpdate();
 
+	void UpdateVertexBuffer();
+
 	// Members
+	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
+	Minecraft::Block_static** getBlocklistAllocator();
+
 	inline const size_t getDrawnVertices() const { return m_DrawnVertices; }
 	inline const size_t getAmountBlockStatic() const { return m_BlockStatic.size(); }
 	inline const unsigned int getDrawCalls() {

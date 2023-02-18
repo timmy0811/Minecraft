@@ -10,7 +10,7 @@ void Handler::OnInit()
 
 void Handler::DebugWindow()
 {
-	ImGui::SetNextWindowSize(ImVec2(380.f, 240.f));
+	ImGui::SetNextWindowSize(ImVec2(380.f, 260.f));
 	ImGui::SetNextWindowPos(ImVec2(10.f, 10.f));
 
 	unsigned int drawCalls = 0;
@@ -19,6 +19,8 @@ void Handler::DebugWindow()
 
 	ImGui::Begin("Debug");
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	const glm::vec3& position = m_World.getCameraPosition();
+	ImGui::Text(("Position: " + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z)).c_str());
 	ImGui::Separator();
 
 	ImGui::Text(("Count [Block_Static]: " + std::to_string(m_World.getAmountBlockStatic())).c_str());
@@ -29,7 +31,7 @@ void Handler::DebugWindow()
 	ImGui::Separator();
 	ImGui::Text(("Draw Calls: " + std::to_string(drawCalls)).c_str());
 	size_t verts = m_World.getDrawnVertices();
-	ImGui::Text(("Vertices: " + std::to_string(verts) + "     (" + std::to_string(((((float)verts / (c_RenderDistanceStatic * c_RenderDistanceStatic)) / (c_BatchFaceCount * 4)) * 100.f)) + "%% of VBO used)").c_str());
+	ImGui::Text(("Vertices: " + std::to_string(verts) + "  (avrg. " + std::to_string(((((float)verts / (c_RenderDistanceStatic * c_RenderDistanceStatic * 4)) / (c_BatchFaceCount * 4)) * 100.f)) + "%% of VBO used)").c_str());
 
 	ImGui::Separator();
 	ImGui::Text(("Vertex Buffer Face Size: " + std::to_string(c_BatchFaceCount)).c_str());

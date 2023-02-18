@@ -101,27 +101,64 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 		Minecraft::Block_static* blockPtr = m_BlockStatic[i];
 		if (!blockPtr) continue;
 		const glm::vec3 coord = IndexToCoord(i);
+		bool doDraw;
 
 		// Front Face
-		if (coord.z == c_ChunkSize - 1 || IsNotCovered({ coord.x, coord.y, coord.z + 1 })) {
+		doDraw = false;
+		if (coord.z == c_ChunkSize - 1) {
+			if (m_ChunkNeighbors[2]) {
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[2]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, 0 }));
+				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
+			}
+			else doDraw = true;
+		}
+		else if (IsNotCovered({ coord.x, coord.y, coord.z + 1 })) doDraw = true;
+		if (doDraw) {
 			buffer->AddVertexData(blockPtr->vertices, sizeof(Minecraft::Vertex) * 4);
 			m_DrawnVertices++;
 		}
 
 		// Right Face
-		if (coord.x == c_ChunkSize - 1 || IsNotCovered({ coord.x + 1, coord.y, coord.z })) {
+		doDraw = false;
+		if (coord.x == c_ChunkSize - 1) {
+			if (m_ChunkNeighbors[1]) {
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[1]->getBlocklistAllocator() + CoordToIndex({ 0, coord.y, coord.z }));
+				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
+			}
+			else doDraw = true;
+		}
+		else if (IsNotCovered({ coord.x + 1, coord.y, coord.z })) doDraw = true;
+		if (doDraw) {
 			buffer->AddVertexData(blockPtr->vertices + 4, sizeof(Minecraft::Vertex) * 4);
 			m_DrawnVertices++;
 		}
 
 		// Left Face
-		if (coord.x == 0 || IsNotCovered({ coord.x - 1, coord.y, coord.z })) {
+		doDraw = false;
+		if (coord.x == 0) {
+			if (m_ChunkNeighbors[3]) {
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[3]->getBlocklistAllocator() + CoordToIndex({ c_ChunkSize - 1, coord.y, coord.z }));
+				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
+			}
+			else doDraw = true;
+		}
+		else if (IsNotCovered({ coord.x - 1, coord.y, coord.z })) doDraw = true;
+		if (doDraw) {
 			buffer->AddVertexData(blockPtr->vertices + 8, sizeof(Minecraft::Vertex) * 4);
 			m_DrawnVertices++;
 		}
 
 		// Back Face
-		if (coord.z == 0 || IsNotCovered({ coord.x, coord.y, coord.z - 1 })) {
+		doDraw = false;
+		if (coord.z == 0) {
+			if (m_ChunkNeighbors[0]) {
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[0]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, c_ChunkSize - 1 }));
+				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
+			}
+			else doDraw = true;
+		}
+		else if (IsNotCovered({ coord.x, coord.y, coord.z - 1 })) doDraw = true;
+		if (doDraw) {
 			buffer->AddVertexData(blockPtr->vertices + 12, sizeof(Minecraft::Vertex) * 4);
 			m_DrawnVertices++;
 		}
@@ -200,8 +237,10 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 
 	// UVs
 	// Only retreiving elemts from map once
-	std::set<std::string> uniqueFormats;
+	std::unordered_set<std::string> uniqueFormats;
 	std::map<std::string, Minecraft::Texture_Format*> formats;
+
+	uniqueFormats.reserve(6);
 
 	std::string textures[6] = {
 		(*m_BlockFormats)[id].texture_front,
@@ -214,12 +253,14 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 	};
 
 	for (char i = 0; i < 6; i++) {
-		uniqueFormats.insert(textures[i]);	// TODO: Why insert so slow???
+		uniqueFormats.emplace(textures[i]);	// TODO: Why insert so slow???
 	}
 
 	for (const std::string& str : uniqueFormats) {
 		formats[str] = &(*m_TextureFormats)[str];
 	}
+
+	uniqueFormats.clear();
 
 	for (char i = 0; i < 6; i++) {
 		Minecraft::Texture_Format* f = formats[textures[i]];
@@ -346,7 +387,6 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 		}
 		noiseStepOffset.y += noiseStep;
 	}
-	LoadVertexBuffer(m_VBstatic);
 }
 
 void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
@@ -369,4 +409,22 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 	shaderPackage.shaderBlockStatic->Bind();
 	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 1.f);
 	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
+}
+
+void Chunk::UpdateVertexBuffer()
+{
+	LoadVertexBuffer(m_VBstatic);
+}
+
+void Chunk::setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4)
+{
+	m_ChunkNeighbors[0] = c1;
+	m_ChunkNeighbors[1] = c2;
+	m_ChunkNeighbors[2] = c3;
+	m_ChunkNeighbors[3] = c4;
+}
+
+Minecraft::Block_static** Chunk::getBlocklistAllocator()
+{
+	return &m_BlockStatic[0];
 }

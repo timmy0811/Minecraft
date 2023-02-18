@@ -21,6 +21,7 @@ World::World(GLFWwindow* window)
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
 
+	m_Chunks.reserve(c_RenderDistanceStatic * c_RenderDistanceStatic * 4);
 	GenerateTerrain();
 	SetupLight();
 }
@@ -68,6 +69,11 @@ const glm::mat4& World::getMatrixProjection() const
 const glm::mat4& World::getMatrixView() const
 {
 	return m_MatrixView;
+}
+
+const glm::vec3& World::getCameraPosition() const
+{
+	return m_Camera.Position;
 }
 
 const unsigned int World::getAmountBlockStatic() const
@@ -151,20 +157,51 @@ void World::GenerateTerrain()
 {
 	glm::vec3 chunkRootPosition = {- c_RenderDistanceStatic * c_ChunkSize * c_BlockSize, 0.f, - c_RenderDistanceStatic * c_ChunkSize * c_BlockSize };
 
-	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };
+	// Instantiation Phase
+	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
+	for (int i = 0; i < c_RenderDistanceStatic * c_RenderDistanceStatic * 4; i++) {
+		m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
+	}
 
+	// Neighboring Phase
+	for (int i = 0; i < m_Chunks.size(); i++) {
+		glm::vec2 coord = IndexToCoord(i);
+
+		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
+		Chunk* c2 = coord.x < c_RenderDistanceStatic * 2 - 1	? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
+		Chunk* c3 = coord.y < c_RenderDistanceStatic * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
+		Chunk* c4 = coord.x > 0									? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
+
+		m_Chunks[i]->setChunkNeighbors(c1, c2, c3, c4);
+	}
+
+	// Terrain Generation Phase
+	size_t offset = 0;
 	for (int chunkX = 0; chunkX < 2 * c_RenderDistanceStatic; chunkX++) {
 		chunkOffset.z = 0.f;
 		for (int chunkZ = 0; chunkZ < 2 * c_RenderDistanceStatic; chunkZ++) {
-			Chunk* chnk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 			std::cout << "Generating Chunk " << std::to_string(chunkX * c_RenderDistanceStatic * 2 + chunkZ) << '\n';
-			chnk->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
-			m_Chunks.push_back(chnk);
-
+			m_Chunks[offset]->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
 			chunkOffset.z += c_BlockSize * c_ChunkSize;
+			offset++;
 		}
 		chunkOffset.x += c_BlockSize * c_ChunkSize;
 	}
+
+	// Buffering Phase
+	for (Chunk* chunk : m_Chunks) {
+		chunk->UpdateVertexBuffer();
+	}
+}
+
+inline unsigned int World::CoordToIndex(const glm::vec2& coord) const
+{
+	return coord.x * c_RenderDistanceStatic * 2 + coord.y;
+}
+
+inline const glm::vec2& World::IndexToCoord(unsigned int index) const
+{
+	return { std::floor(index / (c_RenderDistanceStatic * 2)), index % (c_RenderDistanceStatic * 2) };
 }
 
 #include <iostream>
@@ -227,9 +264,9 @@ void World::ParseTextures(const std::string& path)
 void World::SetupLight()
 {
 	// Direct Light
-	m_DirLight.ambient = { 0.3f, 0.3f, 0.3f };
+	m_DirLight.ambient = { 0.5f, 0.5f, 0.5f };
 	m_DirLight.diffuse = { 1.0f, 1.0f, 1.0f };
-	m_DirLight.specular = { 0.25f, 0.25f, 0.25f };
+	m_DirLight.specular = { 0.2f, 0.20f, 0.20f };
 	m_DirLight.direction = { 1.f, -1.f, 0.5f };
 
 	m_ShaderPackage.shaderBlockStatic->Bind();

@@ -90,7 +90,7 @@ int main(void)
 
         // Application Window
         ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
-        ImGui::SetNextWindowPos(ImVec2(10.f, 260.f));
+        ImGui::SetNextWindowPos(ImVec2(10.f, 280.f));
 
         ImGui::Begin("Application");
         static float acc = 1000.f;
