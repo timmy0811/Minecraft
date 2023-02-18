@@ -35,8 +35,8 @@ class Chunk
 {
 private:
 	// Graphics
-	std::map<std::vector<float>, Minecraft::Block_static*> m_BlockStatic;
-	std::map<std::vector<float>, Minecraft::Block_static*> m_BlockTransparenStatic;
+	std::vector<Minecraft::Block_static*> m_BlockStatic{ c_ChunkSize * c_ChunkSize * c_ChunkHeight };
+	std::vector<Minecraft::Block_static*> m_BlockTransparenStatic;
 
 	// block_static
 	std::unique_ptr<VertexArray> m_VAstatic;
@@ -64,8 +64,10 @@ private:
 	std::map<unsigned int, Minecraft::Block_format>* m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
 
-	Minecraft::Block_static* CreateBlockStatic(const glm::vec3& position, unsigned int id);
-	bool IsNotCovered(const glm::vec3& pos) const;
+	Minecraft::Block_static CreateBlockStatic(const glm::vec3& position, unsigned int id);
+	bool IsNotCovered(const glm::vec3 pos);
+	inline unsigned int CoordToIndex(const glm::vec3& coord);
+	inline const glm::vec3& IndexToCoord(unsigned int index);
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
