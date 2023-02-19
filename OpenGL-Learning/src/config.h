@@ -10,6 +10,7 @@
 #define c_BatchFaceCount 5000
 #define c_TextureSize 16
 #define c_RenderDistanceStatic 3
+#define c_TextureInverseOffset 1000.0
 
 // Game
 // Terrain
@@ -18,11 +19,11 @@
 #define c_ChunkHeight 20
 #define c_ChunkVolume c_ChunkHeight * c_ChunkSize * c_ChunkSize
 
-#define c_TerrainYStretch 5
+#define c_TerrainYStretch 10
 #define c_TerrainXStretch 1.f
 
-#define c_TerrainMinHeight 2.f
+#define c_TerrainMinHeight 10.f
 
 // Environment
-#define c_FogAffectDistance 18.f
-#define c_FogDensity 0.3f
+#define c_FogAffectDistance 20.f
+#define c_FogDensity 0.25f

@@ -15,6 +15,9 @@ private:
 	World m_World;
 	Skybox m_Skybox;
 
+	// Application
+	TexturePacker Packer;
+
 	// Time 
 	float v_DeltaTime;
 	float v_LastFrame;

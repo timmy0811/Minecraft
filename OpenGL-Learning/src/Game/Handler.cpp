@@ -39,6 +39,42 @@ void Handler::DebugWindow()
 	ImGui::Text(("Terrain Y-Stretch: " + std::to_string(c_TerrainYStretch)).c_str());
 	ImGui::Text(("Render Distance: " + std::to_string(c_RenderDistanceStatic)).c_str());
 
+	// Keybindings
+	ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
+	ImGui::SetNextWindowPos(ImVec2(10.f, 280.f));
+	ImGui::Begin("Keybindings");
+
+	ImGui::Text("X:    Toggle Wireframe");
+	ImGui::Text("P:    Pack Textures");
+
+	ImGui::End();
+
+	static bool toggleWireframe = false;
+
+	static bool keyPressedX = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_X) == GLFW_PRESS && !keyPressedX)
+	{
+		keyPressedX = true;
+		if (toggleWireframe) {
+			GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+			toggleWireframe = false;
+		}
+		else {
+			GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+			toggleWireframe = true;
+		}
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_X) == GLFW_RELEASE && keyPressedX) keyPressedX = false;
+
+	static bool keyPressedP = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_P) == GLFW_PRESS && !keyPressedP)
+	{
+		keyPressedP = true;
+		std::cout << "Packing Textures..." << '\n';
+		Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", c_TextureInverseOffset);
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_X) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
+
 	ImGui::End();
 }
 

@@ -20,12 +20,8 @@
 
 #include "imgui_helper/imgui.h"
 
-#include "Game/application/TexturePacker.h"
-
 int main(void)
 {
-    TexturePacker Packer{};
-
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -75,8 +71,6 @@ int main(void)
     // Game
     Handler GameHandler = Handler(window);
 
-    //Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", 1000.f);
-
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -90,23 +84,6 @@ int main(void)
         GameHandler.OnInput(window);
         GameHandler.OnUpdate();
         GameHandler.OnRender();
-
-        // Application Window
-        ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
-        ImGui::SetNextWindowPos(ImVec2(10.f, 280.f));
-
-        ImGui::Begin("Application");
-        static float acc = 1000.f;
-
-        ImGui::Text("Pack Textures");
-        ImGui::SameLine();
-        ImGui::InputFloat("Accuracy", &acc);
-
-        if (ImGui::Button("Pack", { 350.f , 20.f })) {
-            Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", acc);
-        }
-
-        ImGui::End();
 
         ImGuiRender(io);
 
