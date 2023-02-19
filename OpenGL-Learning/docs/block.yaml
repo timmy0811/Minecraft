@@ -27,8 +27,6 @@ stone:
   texture_Back: stone
   texture_front: stone
 
-
-
 stone_rough:
   type: 0
   id: 2
@@ -70,6 +68,20 @@ dirt:
   texture_right: dirt
   texture_Back: dirt
   texture_front: dirt
+
+grass:
+  type: 0
+  id: 6
+
+  reflection: 0.02
+
+  texture_top: grass_top
+  texture_bottom: dirt
+
+  texture_left: grass_side
+  texture_right: grass_side
+  texture_Back: grass_side
+  texture_front: grass_side
 
 glass:
   type: 1

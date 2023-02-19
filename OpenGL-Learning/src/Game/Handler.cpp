@@ -43,10 +43,11 @@ void Handler::DebugWindow()
 }
 
 Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky2/sky", ".jpg")
+	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky5/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	// GL Flags
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -56,6 +57,9 @@ Handler::Handler(GLFWwindow* window)
 	GLCall(glEnable(GL_CULL_FACE));
 	GLCall(glCullFace(GL_BACK));
 	GLCall(glFrontFace(GL_CCW));
+
+	// Anti Aliasing
+	GLCall(glEnable(GL_MULTISAMPLE));
 
 	OnInit();
 }

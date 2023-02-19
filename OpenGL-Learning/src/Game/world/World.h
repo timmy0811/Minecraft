@@ -66,7 +66,7 @@ private:
 	// Generation
 	void GenerateTerrain();
 	inline unsigned int CoordToIndex(const glm::vec2& coord) const;
-	inline const glm::vec2& IndexToCoord(unsigned int index) const;
+	inline const glm::vec2 IndexToCoord(unsigned int index) const;
 
 public:
 	World(GLFWwindow* window);

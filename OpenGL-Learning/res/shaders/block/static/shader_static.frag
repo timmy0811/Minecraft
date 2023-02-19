@@ -25,6 +25,12 @@ uniform float u_Refraction;
 
 uniform vec3 u_ViewPosition;
 
+// Fog
+uniform float u_FogAffectDistance;
+uniform float u_FogDensity;
+
+uniform vec3 u_SkyBoxColor;
+
 // Lights
 uniform DirectionalLight u_DirLight;
 
@@ -35,6 +41,10 @@ void main(){
     vec3 Rf = reflect(I, normalize(v_Normal));
     vec4 color = texture(u_TextureMap, v_UV);
 
+    // Fog
+    float distanceToCamera = length(v_FragPos - u_ViewPosition);
+    float fogFactor = (1.0 / (1 + pow(2.71828183, (-u_FogDensity * (distanceToCamera - u_FogAffectDistance)))));
+
     float ratio = 1.00 / 1.52;
     vec3 Rr = refract(I, normalize(v_Normal), ratio);
    
@@ -43,7 +53,7 @@ void main(){
 
     vec3 viewDirection = normalize(u_ViewPosition - v_FragPos);
 
-    o_Color = blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0);
+    o_Color = (blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0)) * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
 }
 
 // Light Functions

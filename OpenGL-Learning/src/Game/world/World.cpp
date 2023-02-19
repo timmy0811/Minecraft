@@ -196,10 +196,10 @@ void World::GenerateTerrain()
 
 inline unsigned int World::CoordToIndex(const glm::vec2& coord) const
 {
-	return coord.x * c_RenderDistanceStatic * 2 + coord.y;
+	return (unsigned int)(coord.x * (float)c_RenderDistanceStatic * 2.f + coord.y);
 }
 
-inline const glm::vec2& World::IndexToCoord(unsigned int index) const
+inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 {
 	return { std::floor(index / (c_RenderDistanceStatic * 2)), index % (c_RenderDistanceStatic * 2) };
 }
@@ -264,13 +264,18 @@ void World::ParseTextures(const std::string& path)
 void World::SetupLight()
 {
 	// Direct Light
-	m_DirLight.ambient = { 0.5f, 0.5f, 0.5f };
+	m_DirLight.ambient = { 0.65f, 0.65f, 0.65f };
 	m_DirLight.diffuse = { 1.0f, 1.0f, 1.0f };
 	m_DirLight.specular = { 0.2f, 0.20f, 0.20f };
 	m_DirLight.direction = { 1.f, -1.f, 0.5f };
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);
+
+	// Fog
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", c_FogAffectDistance);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", c_FogDensity);
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.7568627f, 0.850980f, 0.858823f);
 }
 
 void World::updateLight()

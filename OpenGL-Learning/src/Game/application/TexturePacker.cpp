@@ -30,7 +30,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 		amountFiles++;
 	}
 
-	unsigned int pngOutWidth = roundUp(sqrt(amountFiles * c_TextureSize * c_TextureSize), c_TextureSize);
+	unsigned int pngOutWidth = roundUp((int)sqrt(amountFiles * c_TextureSize * c_TextureSize), c_TextureSize);
 	unsigned int pngOutHeight = 0;
 
 	Minecraft::Image::Pixel* imageBuffer = (Minecraft::Image::Pixel*)std::malloc(pngOutWidth * pngOutWidth * sizeof(Minecraft::Image::Pixel));
@@ -41,7 +41,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 
 	unsigned int offsetX = 0, offsetY = 0;
 	char const* out = sheetPath.c_str();
-	unsigned int lineHeight = 0;
+	int lineHeight = 0;
 
 	YAML::Node node;
 

@@ -97,7 +97,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 	buffer->Empty();
 	m_DrawnVertices = 0;
 
-	for (register unsigned int i = 0; i < m_BlockStatic.size(); i++) {
+	for (unsigned int i = 0; i < m_BlockStatic.size(); i++) {
 		Minecraft::Block_static* blockPtr = m_BlockStatic[i];
 		if (!blockPtr) continue;
 		const glm::vec3 coord = IndexToCoord(i);
@@ -323,7 +323,7 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 
 inline unsigned int Chunk::CoordToIndex(const glm::vec3& coord)
 {
-	return coord.z * c_ChunkSize * c_ChunkHeight + coord.x * c_ChunkHeight + coord.y;
+	return (unsigned int)(coord.z * c_ChunkSize * c_ChunkHeight + coord.x * c_ChunkHeight + coord.y);
 }
 
 inline const glm::vec3& Chunk::IndexToCoord(unsigned int index)
@@ -331,10 +331,10 @@ inline const glm::vec3& Chunk::IndexToCoord(unsigned int index)
 	glm::vec3 coord{};
 	constexpr unsigned int planeSize = c_ChunkSize * c_ChunkHeight;
 
-	coord.z = index / planeSize;
-	index -= coord.z * planeSize;
-	coord.x = index / c_ChunkHeight;
-	coord.y = index % c_ChunkHeight;
+	coord.z = (float)(index / planeSize);
+	index -= (unsigned int)coord.z * planeSize;
+	coord.x = (float)(index / c_ChunkHeight);
+	coord.y = (float)(index % c_ChunkHeight);
 
 	return coord;
 }
@@ -354,15 +354,15 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch) + c_TerrainMinHeight;
 
 			// Temporary generation parameters
-			unsigned int maxHeightStone = pillarHeight / 2.f;
-			unsigned int maxHeightDirt = pillarHeight - 1.f;
+			unsigned int maxHeightStone = pillarHeight / 2;
+			unsigned int maxHeightDirt = pillarHeight - 1;
 
 			// Build Pillar depending on Noise
 			unsigned int id = 0;
 			for (unsigned int i = 0; i < pillarHeight; i++) {
 				if (i < maxHeightStone) id = 4;
 				else if (i < maxHeightDirt) id = 5;
-				else id = 0;
+				else id = 6;
 
 				if (i >= c_ChunkHeight) break;
 				

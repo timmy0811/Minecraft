@@ -33,6 +33,7 @@ int main(void)
         return -1;
 
     // Window hints for glfw
+    glfwWindowHint(GLFW_DEPTH_BITS, 32);
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -73,6 +74,8 @@ int main(void)
 
     // Game
     Handler GameHandler = Handler(window);
+
+    //Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", 1000.f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
