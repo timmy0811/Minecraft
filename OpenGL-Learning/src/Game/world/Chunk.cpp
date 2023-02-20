@@ -7,13 +7,13 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	:m_BlockFormats(blockFormatMap), m_TextureFormats(textureFormatMap)
 {
 	// Pre-allocate Vectors
-	m_BlockStatic.reserve(c_ChunkSize * c_ChunkSize * c_ChunkHeight);
+	m_BlockStatic.reserve(conf.c_CHUNK_SIZE * conf.c_CHUNK_SIZE * conf.c_CHUNK_HEIGHT);
 
 	// Heap allocate Indix-Buffer
-	unsigned int* indices = new unsigned int[c_BatchFaceCount * 6];
+	unsigned int* indices = new unsigned int[conf.c_MAX_BUFFER_FACES * 6];
 	unsigned int offset = 0;
 
-	for (size_t i = 0; i < c_BatchFaceCount * 6; i += 6) {
+	for (size_t i = 0; i < conf.c_MAX_BUFFER_FACES * 6; i += 6) {
 		indices[i + 0] = 0 + offset;
 		indices[i + 1] = 1 + offset;
 		indices[i + 2] = 2 + offset;
@@ -25,10 +25,10 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 		offset += 4;
 	}
 
-	m_IBstatic = std::make_unique<IndexBuffer>(indices, c_BatchFaceCount * 6);
-	m_VBstatic = std::make_unique<VertexBuffer>(c_BatchFaceCount, sizeof(Minecraft::Vertex));
+	m_IBstatic = std::make_unique<IndexBuffer>(indices, conf.c_MAX_BUFFER_FACES * 6);
+	m_VBstatic = std::make_unique<VertexBuffer>(conf.c_MAX_BUFFER_FACES, sizeof(Minecraft::Vertex));
 
-	m_VBtransparentStatic = std::make_unique<VertexBuffer>(c_BatchFaceCount, sizeof(Minecraft::Vertex));
+	m_VBtransparentStatic = std::make_unique<VertexBuffer>(conf.c_MAX_BUFFER_FACES, sizeof(Minecraft::Vertex));
 
 	delete[] indices;
 
@@ -105,7 +105,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 
 		// Front Face
 		doDraw = false;
-		if (coord.z == c_ChunkSize - 1) {
+		if (coord.z == conf.c_CHUNK_SIZE - 1) {
 			if (m_ChunkNeighbors[2]) {
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[2]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, 0 }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
@@ -120,7 +120,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 
 		// Right Face
 		doDraw = false;
-		if (coord.x == c_ChunkSize - 1) {
+		if (coord.x == conf.c_CHUNK_SIZE - 1) {
 			if (m_ChunkNeighbors[1]) {
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[1]->getBlocklistAllocator() + CoordToIndex({ 0, coord.y, coord.z }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
@@ -137,7 +137,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 		doDraw = false;
 		if (coord.x == 0) {
 			if (m_ChunkNeighbors[3]) {
-				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[3]->getBlocklistAllocator() + CoordToIndex({ c_ChunkSize - 1, coord.y, coord.z }));
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[3]->getBlocklistAllocator() + CoordToIndex({ conf.c_CHUNK_SIZE - 1, coord.y, coord.z }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
 			else doDraw = true;
@@ -152,7 +152,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 		doDraw = false;
 		if (coord.z == 0) {
 			if (m_ChunkNeighbors[0]) {
-				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[0]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, c_ChunkSize - 1 }));
+				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[0]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, conf.c_CHUNK_SIZE - 1 }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
 			else doDraw = true;
@@ -164,7 +164,7 @@ void Chunk::LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 		}
 
 		//  Top Face
-		if (coord.y == c_ChunkHeight - 1 || IsNotCovered({ coord.x, coord.y + 1, coord.z })) {
+		if (coord.y == conf.c_CHUNK_HEIGHT - 1 || IsNotCovered({ coord.x, coord.y + 1, coord.z })) {
 			buffer->AddVertexData(blockPtr->vertices + 16, sizeof(Minecraft::Vertex) * 4);
 			m_DrawnVertices++;
 		}
@@ -323,18 +323,18 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 
 inline unsigned int Chunk::CoordToIndex(const glm::vec3& coord)
 {
-	return (unsigned int)(coord.z * c_ChunkSize * c_ChunkHeight + coord.x * c_ChunkHeight + coord.y);
+	return (unsigned int)(coord.z * conf.c_CHUNK_SIZE * conf.c_CHUNK_HEIGHT + coord.x * conf.c_CHUNK_HEIGHT + coord.y);
 }
 
 inline const glm::vec3& Chunk::IndexToCoord(unsigned int index)
 {
 	glm::vec3 coord{};
-	constexpr unsigned int planeSize = c_ChunkSize * c_ChunkHeight;
+	const unsigned int planeSize = conf.c_CHUNK_SIZE * conf.c_CHUNK_HEIGHT;
 
 	coord.z = (float)(index / planeSize);
 	index -= (unsigned int)coord.z * planeSize;
-	coord.x = (float)(index / c_ChunkHeight);
-	coord.y = (float)(index % c_ChunkHeight);
+	coord.x = (float)(index / conf.c_CHUNK_HEIGHT);
+	coord.y = (float)(index % conf.c_CHUNK_HEIGHT);
 
 	return coord;
 }
@@ -343,15 +343,15 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
  {
 	m_Position = position;
 
-	constexpr double noiseStep = 1.f / c_ChunkSize;
+	const double noiseStep = 1.f / conf.c_CHUNK_SIZE;
 	glm::vec2 noiseStepOffset = { 0.f, 0.f };
 
 	// Generate Chunk using Perlin Noise offset
-	for (int z = 0; z < c_ChunkSize; z++) {
+	for (int z = 0; z < conf.c_CHUNK_SIZE; z++) {
 		noiseStepOffset.x = 0.f;
-		for (int x = 0; x < c_ChunkSize; x++) {
-			double noiseOnTile = noise.octave2D_01((noiseOffset.x + noiseStepOffset.x) * c_TerrainXStretch, (noiseOffset.y + noiseStepOffset.y) * c_TerrainXStretch, 1);
-			unsigned int pillarHeight = (unsigned int)(noiseOnTile * c_TerrainYStretch) + c_TerrainMinHeight;
+		for (int x = 0; x < conf.c_CHUNK_SIZE; x++) {
+			double noiseOnTile = noise.octave2D_01((noiseOffset.x + noiseStepOffset.x) * conf.c_TERRAIN_STRETCH_X, (noiseOffset.y + noiseStepOffset.y) * conf.c_TERRAIN_STRETCH_X, 1);
+			unsigned int pillarHeight = (unsigned int)(noiseOnTile * conf.c_TERRAIN_STRETCH_Y) + conf.c_TERRAIN_MIN_HEIGHT;
 
 			// Temporary generation parameters
 			unsigned int maxHeightStone = pillarHeight / 2;
@@ -364,12 +364,12 @@ void Chunk::Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise
 				else if (i < maxHeightDirt) id = 5;
 				else id = 6;
 
-				if (i >= c_ChunkHeight) break;
+				if (i >= conf.c_CHUNK_HEIGHT) break;
 				
 				// Used for shuffling
 				//id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass
 
-				Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * c_BlockSize, m_Position.y + i * c_BlockSize, m_Position.z + z * c_BlockSize }, id);
+				Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.c_BLOCK_SIZE, m_Position.y + i * conf.c_BLOCK_SIZE, m_Position.z + z * conf.c_BLOCK_SIZE }, id);
 				unsigned int index;
 				// Add block to specific buffer
 				switch (block.subtype) {

@@ -1,0 +1,23 @@
+config:
+  window:
+    Height: 1080
+    Width: 1920
+
+  rendering:
+    MaxBufferFaces: 5000
+    TextureSize: 16
+    RenderDistance: 2
+    TextureInverseOffset: 1000
+
+  game:
+    terrain:
+      ChunkSize: 16
+      BlockSize: 1.0
+      ChunkHeight: 20
+      YStretch: 5.0
+      XStretch: 1.0
+      MinHeight: 2
+
+    environment:
+      FogAffectDistance: 20.0
+      FogDensity: 0.25

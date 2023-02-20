@@ -31,13 +31,13 @@ void Handler::DebugWindow()
 	ImGui::Separator();
 	ImGui::Text(("Draw Calls: " + std::to_string(drawCalls)).c_str());
 	size_t verts = m_World.getDrawnVertices();
-	ImGui::Text(("Vertices: " + std::to_string(verts) + "  (avrg. " + std::to_string(((((float)verts / (c_RenderDistanceStatic * c_RenderDistanceStatic * 4)) / (c_BatchFaceCount * 4)) * 100.f)) + "%% of VBO used)").c_str());
+	ImGui::Text(("Vertices: " + std::to_string(verts) + "  (avrg. " + std::to_string(((((float)verts / (conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4)) / (conf.c_MAX_BUFFER_FACES * 4)) * 100.f)) + "%% of VBO used)").c_str());
 
 	ImGui::Separator();
-	ImGui::Text(("Vertex Buffer Face Size: " + std::to_string(c_BatchFaceCount)).c_str());
-	ImGui::Text(("Chunk Size: " + std::to_string(c_ChunkSize)).c_str());
-	ImGui::Text(("Terrain Y-Stretch: " + std::to_string(c_TerrainYStretch)).c_str());
-	ImGui::Text(("Render Distance: " + std::to_string(c_RenderDistanceStatic)).c_str());
+	ImGui::Text(("Vertex Buffer Face Size: " + std::to_string(conf.c_MAX_BUFFER_FACES)).c_str());
+	ImGui::Text(("Chunk Size: " + std::to_string(conf.c_CHUNK_SIZE)).c_str());
+	ImGui::Text(("Terrain Y-Stretch: " + std::to_string(conf.c_TERRAIN_STRETCH_Y)).c_str());
+	ImGui::Text(("Render Distance: " + std::to_string(conf.c_RENDER_DISTANCE)).c_str());
 
 	// Keybindings
 	ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
@@ -71,7 +71,7 @@ void Handler::DebugWindow()
 	{
 		keyPressedP = true;
 		std::cout << "Packing Textures..." << '\n';
-		Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", c_TextureInverseOffset);
+		Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", conf.c_TEXTURE_INVERSE_OFFSET);
 	}
 	else if (glfwGetKey(r_Window, GLFW_KEY_X) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
 

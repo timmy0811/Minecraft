@@ -33,7 +33,7 @@ private:
 
 	// Objects
 	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk*> m_Chunks{ c_RenderDistanceStatic * c_RenderDistanceStatic * 4 };
+	std::vector<Chunk*> m_Chunks{ conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4 };
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;

@@ -35,7 +35,7 @@ class Chunk
 {
 private:
 	// Graphics
-	std::vector<Minecraft::Block_static*> m_BlockStatic{ c_ChunkSize * c_ChunkSize * c_ChunkHeight };
+	std::vector<Minecraft::Block_static*> m_BlockStatic{ conf.c_CHUNK_SIZE * conf.c_CHUNK_SIZE * conf.c_CHUNK_HEIGHT };
 	std::vector<Minecraft::Block_static*> m_BlockTransparenStatic;
 
 	// block_static

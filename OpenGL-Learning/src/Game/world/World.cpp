@@ -7,7 +7,7 @@ World::World(GLFWwindow* window)
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL)))
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
-	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)c_win_Width / (float)c_win_Height, 0.1f, 100.f);
+	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.c_WIN_WIDTH / (float)conf.c_WIN_HEIGHT, 0.1f, 100.f);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -21,7 +21,7 @@ World::World(GLFWwindow* window)
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
 
-	m_Chunks.reserve(c_RenderDistanceStatic * c_RenderDistanceStatic * 4);
+	m_Chunks.reserve(conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4);
 	GenerateTerrain();
 	SetupLight();
 }
@@ -155,11 +155,11 @@ void World::ProcessMouse()
 
 void World::GenerateTerrain()
 {
-	glm::vec3 chunkRootPosition = {- c_RenderDistanceStatic * c_ChunkSize * c_BlockSize, 0.f, - c_RenderDistanceStatic * c_ChunkSize * c_BlockSize };
+	glm::vec3 chunkRootPosition = {- (int)(conf.c_RENDER_DISTANCE * conf.c_CHUNK_SIZE * conf.c_BLOCK_SIZE), 0.f, - (int)(conf.c_RENDER_DISTANCE * conf.c_CHUNK_SIZE * conf.c_BLOCK_SIZE) };
 
 	// Instantiation Phase
 	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
-	for (int i = 0; i < c_RenderDistanceStatic * c_RenderDistanceStatic * 4; i++) {
+	for (int i = 0; i < conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4; i++) {
 		m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
 	}
 
@@ -168,8 +168,8 @@ void World::GenerateTerrain()
 		glm::vec2 coord = IndexToCoord(i);
 
 		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
-		Chunk* c2 = coord.x < c_RenderDistanceStatic * 2 - 1	? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
-		Chunk* c3 = coord.y < c_RenderDistanceStatic * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
+		Chunk* c2 = coord.x < conf.c_RENDER_DISTANCE * 2 - 1	? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
+		Chunk* c3 = coord.y < conf.c_RENDER_DISTANCE * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
 		Chunk* c4 = coord.x > 0									? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
 
 		m_Chunks[i]->setChunkNeighbors(c1, c2, c3, c4);
@@ -177,15 +177,15 @@ void World::GenerateTerrain()
 
 	// Terrain Generation Phase
 	size_t offset = 0;
-	for (int chunkX = 0; chunkX < 2 * c_RenderDistanceStatic; chunkX++) {
+	for (int chunkX = 0; chunkX < 2 * conf.c_RENDER_DISTANCE; chunkX++) {
 		chunkOffset.z = 0.f;
-		for (int chunkZ = 0; chunkZ < 2 * c_RenderDistanceStatic; chunkZ++) {
-			std::cout << "Generating Chunk " << std::to_string(chunkX * c_RenderDistanceStatic * 2 + chunkZ) << '\n';
+		for (int chunkZ = 0; chunkZ < 2 * conf.c_RENDER_DISTANCE; chunkZ++) {
+			LOG("Generating Chunk " + std::to_string(chunkX * conf.c_RENDER_DISTANCE * 2 + chunkZ));
 			m_Chunks[offset]->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
-			chunkOffset.z += c_BlockSize * c_ChunkSize;
+			chunkOffset.z += conf.c_BLOCK_SIZE * conf.c_CHUNK_SIZE;
 			offset++;
 		}
-		chunkOffset.x += c_BlockSize * c_ChunkSize;
+		chunkOffset.x += conf.c_BLOCK_SIZE * conf.c_CHUNK_SIZE;
 	}
 
 	// Buffering Phase
@@ -196,12 +196,12 @@ void World::GenerateTerrain()
 
 inline unsigned int World::CoordToIndex(const glm::vec2& coord) const
 {
-	return (unsigned int)(coord.x * (float)c_RenderDistanceStatic * 2.f + coord.y);
+	return (unsigned int)(coord.x * (float)conf.c_RENDER_DISTANCE * 2.f + coord.y);
 }
 
 inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 {
-	return { std::floor(index / (c_RenderDistanceStatic * 2)), index % (c_RenderDistanceStatic * 2) };
+	return { std::floor(index / (conf.c_RENDER_DISTANCE * 2)), index % (conf.c_RENDER_DISTANCE * 2) };
 }
 
 #include <iostream>
@@ -273,8 +273,8 @@ void World::SetupLight()
 	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);
 
 	// Fog
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", c_FogAffectDistance);
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", c_FogDensity);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.c_FOG_AFFECT_DISTANCE);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.c_FOG_DENSITY);
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.7568627f, 0.850980f, 0.858823f);
 }
 

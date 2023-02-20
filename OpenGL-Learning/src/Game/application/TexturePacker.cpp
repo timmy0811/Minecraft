@@ -30,7 +30,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 		amountFiles++;
 	}
 
-	unsigned int pngOutWidth = roundUp((int)sqrt(amountFiles * c_TextureSize * c_TextureSize), c_TextureSize);
+	unsigned int pngOutWidth = roundUp((int)sqrt(amountFiles * conf.c_TEXTURE_SIZE * conf.c_TEXTURE_SIZE), conf.c_TEXTURE_SIZE);
 	unsigned int pngOutHeight = 0;
 
 	Minecraft::Image::Pixel* imageBuffer = (Minecraft::Image::Pixel*)std::malloc(pngOutWidth * pngOutWidth * sizeof(Minecraft::Image::Pixel));
