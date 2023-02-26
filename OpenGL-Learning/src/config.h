@@ -6,6 +6,8 @@
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
+#define VertexLoadBufferSize 4 * ((16+1)*16 + (16+1)*16 + 16 * 16) * 2 // Faces = ((n + 1) + m + (m + 1) * n + n * m) * CHUNK_HEIGHT
+
 #include <string>
 class Config {
 public:
@@ -13,52 +15,59 @@ public:
 		LOG("Parsing Config");
 		YAML::Node mainNode = YAML::LoadFile(path);
 
-		c_WIN_WIDTH = mainNode["config"]["window"]["Width"].as<unsigned int>();
-		c_WIN_HEIGHT = mainNode["config"]["window"]["Height"].as<unsigned int>();
+		WIN_WIDTH = mainNode["config"]["window"]["Width"].as<unsigned int>();
+		WIN_HEIGHT = mainNode["config"]["window"]["Height"].as<unsigned int>();
 
-		c_MAX_BUFFER_FACES = mainNode["config"]["rendering"]["MaxBufferFaces"].as<unsigned int>();
-		c_TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
-		c_RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
-		c_TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
+		MAX_BUFFER_FACES = mainNode["config"]["rendering"]["MaxBufferFaces"].as<unsigned int>();
+		TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
+		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
+		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
 
-		c_CHUNK_SIZE = mainNode["config"]["game"]["terrain"]["ChunkSize"].as<unsigned int>();
-		c_BLOCK_SIZE = mainNode["config"]["game"]["terrain"]["BlockSize"].as<float>();
-		c_CHUNK_HEIGHT = mainNode["config"]["game"]["terrain"]["ChunkHeight"].as<unsigned int>();
-		c_TERRAIN_STRETCH_Y = mainNode["config"]["game"]["terrain"]["YStretch"].as<float>();
-		c_TERRAIN_STRETCH_X = mainNode["config"]["game"]["terrain"]["XStretch"].as<float>();
-		c_TERRAIN_MIN_HEIGHT = mainNode["config"]["game"]["terrain"]["MinHeight"].as<unsigned int>();
+		CHUNK_SIZE = mainNode["config"]["game"]["terrain"]["ChunkSize"].as<unsigned int>();
+		BLOCK_SIZE = mainNode["config"]["game"]["terrain"]["BlockSize"].as<float>();
+		CHUNK_HEIGHT = mainNode["config"]["game"]["terrain"]["ChunkHeight"].as<unsigned int>();
+		TERRAIN_STRETCH_Y = mainNode["config"]["game"]["terrain"]["YStretch"].as<float>();
+		TERRAIN_STRETCH_X = mainNode["config"]["game"]["terrain"]["XStretch"].as<float>();
+		TERRAIN_MIN_HEIGHT = mainNode["config"]["game"]["terrain"]["MinHeight"].as<unsigned int>();
 
-		c_FOG_AFFECT_DISTANCE = mainNode["config"]["game"]["environment"]["FogAffectDistance"].as<float>();
-		c_FOG_DENSITY = mainNode["config"]["game"]["environment"]["FogDensity"].as<float>();
+		FOG_AFFECT_DISTANCE = mainNode["config"]["game"]["environment"]["FogAffectDistance"].as<float>();
+		FOG_DENSITY = mainNode["config"]["game"]["environment"]["FogDensity"].as<float>();
+		
+		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
+		GENERATION_THREADS = mainNode["config"]["system"]["GenerationThreads"].as<unsigned int>();
 
-		c_CHUNK_VOLUME = c_CHUNK_HEIGHT * c_CHUNK_SIZE * c_CHUNK_SIZE;
+		CHUNK_VOLUME = CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE;
 	}
 
+	// System
+	bool ENABLE_MULTITHREADING = false;
+	unsigned int GENERATION_THREADS = 0;
+	
 	// Window
-	unsigned int c_WIN_WIDTH = 0;
-	unsigned int c_WIN_HEIGHT = 0;
+	unsigned int WIN_WIDTH = 0;
+	unsigned int WIN_HEIGHT = 0;
 
 	// Rendering
-	unsigned int c_MAX_BUFFER_FACES = 0;
-	unsigned int c_TEXTURE_SIZE = 0;
-	unsigned int c_RENDER_DISTANCE = 0;
-	unsigned int c_TEXTURE_INVERSE_OFFSET = 0;
+	unsigned int MAX_BUFFER_FACES = 0;
+	unsigned int TEXTURE_SIZE = 0;
+	unsigned int RENDER_DISTANCE = 0;
+	unsigned int TEXTURE_INVERSE_OFFSET = 0;
 
 	// Game
 	// Terrain
-	unsigned int c_CHUNK_SIZE = 0;
-	float c_BLOCK_SIZE = 0;
-	unsigned int c_CHUNK_HEIGHT = 0;
-	unsigned int c_CHUNK_VOLUME = 0;
+	unsigned int CHUNK_SIZE = 0;
+	float BLOCK_SIZE = 0;
+	unsigned int CHUNK_HEIGHT = 0;
+	unsigned int CHUNK_VOLUME = 0;
 
-	float c_TERRAIN_STRETCH_Y = 0;
-	float c_TERRAIN_STRETCH_X = 0;
+	float TERRAIN_STRETCH_Y = 0;
+	float TERRAIN_STRETCH_X = 0;
 
-	unsigned int c_TERRAIN_MIN_HEIGHT = 0;
+	unsigned int TERRAIN_MIN_HEIGHT = 0;
 
 	// Environment
-	float c_FOG_AFFECT_DISTANCE = 0;
-	float c_FOG_DENSITY = 0;
+	float FOG_AFFECT_DISTANCE = 0;
+	float FOG_DENSITY = 0;
 };
 
 extern Config conf;

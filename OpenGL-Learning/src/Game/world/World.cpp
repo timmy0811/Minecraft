@@ -4,10 +4,11 @@ World::World(GLFWwindow* window)
 	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
 	m_TextureMap("res/images/sheets/blocksheet.png", false),
-	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL)))
+	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
+	m_GenerationSemaphore(0)
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
-	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.c_WIN_WIDTH / (float)conf.c_WIN_HEIGHT, 0.1f, 100.f);
+	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 100.f);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -21,7 +22,13 @@ World::World(GLFWwindow* window)
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
 
-	m_Chunks.reserve(conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4);
+	for (int i = 0; i < conf.GENERATION_THREADS; i++) {
+		m_GenerationThreads.push_back(std::thread([this]() {
+			this->GenerationThreadJob();
+			}));
+	}
+	
+	m_Chunks.reserve(conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4);
 	GenerateTerrain();
 	SetupLight();
 }
@@ -32,6 +39,13 @@ World::~World()
 		delete chunk;
 	}
 	m_Chunks.clear();
+
+	// Safely exiting worker threads
+	m_ExecuteGenerationJob = false;
+	m_GenerationSemaphore.release(1000);
+	for (auto& thread : m_GenerationThreads) {
+		if(thread.joinable()) thread.join();
+	}
 }
 
 void World::OnRender()
@@ -55,6 +69,7 @@ void World::OnUpdate(double deltaTime)
 	m_MatrixView = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Front, m_Camera.Up);
 
 	updateLight();
+	HandleChunkLoading();
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
@@ -155,12 +170,13 @@ void World::ProcessMouse()
 
 void World::GenerateTerrain()
 {
-	glm::vec3 chunkRootPosition = {- (int)(conf.c_RENDER_DISTANCE * conf.c_CHUNK_SIZE * conf.c_BLOCK_SIZE), 0.f, - (int)(conf.c_RENDER_DISTANCE * conf.c_CHUNK_SIZE * conf.c_BLOCK_SIZE) };
+	glm::vec3 chunkRootPosition = {- (int)(conf.RENDER_DISTANCE * conf.CHUNK_SIZE * conf.BLOCK_SIZE), 0.f, - (int)(conf.RENDER_DISTANCE * conf.CHUNK_SIZE * conf.BLOCK_SIZE) };
 
 	// Instantiation Phase
 	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
-	for (int i = 0; i < conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4; i++) {
+	for (int i = 0; i < conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4; i++) {
 		m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
+		m_Chunks[i]->setID(i);
 	}
 
 	// Neighboring Phase
@@ -168,8 +184,8 @@ void World::GenerateTerrain()
 		glm::vec2 coord = IndexToCoord(i);
 
 		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
-		Chunk* c2 = coord.x < conf.c_RENDER_DISTANCE * 2 - 1	? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
-		Chunk* c3 = coord.y < conf.c_RENDER_DISTANCE * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
+		Chunk* c2 = coord.x < conf.RENDER_DISTANCE * 2 - 1		? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
+		Chunk* c3 = coord.y < conf.RENDER_DISTANCE * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
 		Chunk* c4 = coord.x > 0									? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
 
 		m_Chunks[i]->setChunkNeighbors(c1, c2, c3, c4);
@@ -177,34 +193,132 @@ void World::GenerateTerrain()
 
 	// Terrain Generation Phase
 	size_t offset = 0;
-	for (int chunkX = 0; chunkX < 2 * conf.c_RENDER_DISTANCE; chunkX++) {
+	for (int chunkX = 0; chunkX < 2 * conf.RENDER_DISTANCE; chunkX++) {
 		chunkOffset.z = 0.f;
-		for (int chunkZ = 0; chunkZ < 2 * conf.c_RENDER_DISTANCE; chunkZ++) {
-			LOG("Generating Chunk " + std::to_string(chunkX * conf.c_RENDER_DISTANCE * 2 + chunkZ));
-			m_Chunks[offset]->Generate(chunkRootPosition + chunkOffset, {chunkX * 1.f, chunkZ * 1.f, 1.f}, m_Noise);
-			chunkOffset.z += conf.c_BLOCK_SIZE * conf.c_CHUNK_SIZE;
+		for (int chunkZ = 0; chunkZ < 2 * conf.RENDER_DISTANCE; chunkZ++) {
+			m_Chunks[offset]->setGenerationData(chunkRootPosition + chunkOffset, { chunkX * 1.f, chunkZ * 1.f, 1.f }, m_Noise);
+
+			if (conf.ENABLE_MULTITHREADING) {
+				m_ChunksQueuedGenerating.push(m_Chunks[offset]);
+				m_GenerationSemaphore.release(1);
+			}
+			else {
+				m_Chunks[offset]->Generate();
+			}
+			
+			chunkOffset.z += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
 			offset++;
 		}
-		chunkOffset.x += conf.c_BLOCK_SIZE * conf.c_CHUNK_SIZE;
-	}
-
-	// Buffering Phase
-	for (Chunk* chunk : m_Chunks) {
-		chunk->UpdateVertexBuffer();
+		chunkOffset.x += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
 	}
 }
 
 inline unsigned int World::CoordToIndex(const glm::vec2& coord) const
 {
-	return (unsigned int)(coord.x * (float)conf.c_RENDER_DISTANCE * 2.f + coord.y);
+	return (unsigned int)(coord.x * (float)conf.RENDER_DISTANCE * 2.f + coord.y);
 }
 
 inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 {
-	return { std::floor(index / (conf.c_RENDER_DISTANCE * 2)), index % (conf.c_RENDER_DISTANCE * 2) };
+	return { std::floor(index / (conf.RENDER_DISTANCE * 2)), index % (conf.RENDER_DISTANCE * 2) };
 }
 
-#include <iostream>
+void World::GenerationThreadJob()
+{
+	while (true) { 
+		m_GenerationSemaphore.acquire();
+		if (!m_ExecuteGenerationJob) return;
+
+		// Unload Queued Chunks
+		if (ContainsElementAtomic(&m_ChunksQueuedUnloading, m_MutexLoading)) {
+			m_MutexLoading.lock();
+			Chunk* chunk = m_ChunksQueuedUnloading.front();
+			//chunk->Unload();
+			m_ChunksQueuedUnloading.pop();
+			m_MutexLoading.unlock();
+		}
+		// Load Queued Chunks
+		else if (ContainsElementAtomic(&m_ChunksQueuedLoading, m_MutexLoading)) {
+			m_MutexLoading.lock();
+			Chunk* chunk = m_ChunksQueuedLoading.front();
+			//chunk->Load();
+			m_ChunksQueuedLoading.pop();
+			m_MutexLoading.unlock();
+		}
+		// Generate and Cull Queued Chunks
+		else if (ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
+			m_IsGenerating++;
+			m_MutexGenerating.lock();
+			Chunk* chunk = m_ChunksQueuedGenerating.front();
+			m_ChunksQueuedGenerating.pop();
+			m_MutexGenerating.unlock();
+
+			LOG(("Generating Chunk " + std::to_string(chunk->getID())));
+			chunk->Generate();
+			LOG(("Done Generating Chunk " + std::to_string(chunk->getID())));
+
+			m_MutexCullFaces.lock();
+			m_ChunksQueuedCulling.push(chunk);
+			m_MutexCullFaces.unlock();
+
+			m_IsGenerating--;
+			m_GenerationSemaphore.release();
+		}
+		// Cull Faces of Queued Chunks
+		else if (ContainsElementAtomic(&m_ChunksQueuedCulling, m_MutexCullFaces) && !ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
+			if (m_IsGenerating == 0) {
+				LOG(("Entering Culling"));
+				m_MutexCullFaces.lock();
+				Chunk* chunk = m_ChunksQueuedCulling.front();
+				m_ChunksQueuedCulling.pop();
+				m_MutexCullFaces.unlock();
+
+				LOG(("Culling Chunk " + std::to_string(chunk->getID())));
+				chunk->CullFacesOnLoadBuffer();
+				LOG(("Done Culling Chunk " + std::to_string(chunk->getID())));
+
+				m_MutexBufferLoading.lock();
+				m_ChunksQueuedBufferLoading.push(chunk);
+				m_MutexBufferLoading.unlock();
+			}
+			else {
+				m_GenerationSemaphore.release();
+			}
+		}
+		else {
+			LOG(("Doing Nothing"));
+		}
+	}
+}
+
+void World::HandleChunkLoading()
+{
+	// Buffering Phase
+	m_MutexBufferLoading.lock();
+	for (int i = 0; i < m_ChunksQueuedBufferLoading.size(); i++) {
+		Chunk* ch = m_ChunksQueuedBufferLoading.front();
+		LOG(("Loading Chunk " + std::to_string(ch->getID())));
+		ch->LoadVertexBufferFromLoadBuffer();
+		m_ChunksQueuedBufferLoading.pop();
+	}
+	m_MutexBufferLoading.unlock();
+
+	//if (chunkUnload) {
+	//	// ...
+	//	m_ChunksQueuedLoading.push(Chunk);
+	//	m_GenerationThreadActions++;
+	//	m_ConditionGeneration.notify_one();
+	//}
+}
+
+bool World::ContainsElementAtomic(std::queue<Chunk*>* list, std::mutex& mutex)
+{
+	bool containsElement = false;
+	mutex.lock();
+	if (list->size() > 0) containsElement = true;
+	mutex.unlock();
+	return containsElement;
+}
 
 void World::ParseBlocks(const std::string& path)
 {
@@ -273,8 +387,8 @@ void World::SetupLight()
 	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);
 
 	// Fog
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.c_FOG_AFFECT_DISTANCE);
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.c_FOG_DENSITY);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.FOG_AFFECT_DISTANCE);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.FOG_DENSITY);
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.7568627f, 0.850980f, 0.858823f);
 }
 

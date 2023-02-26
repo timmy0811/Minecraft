@@ -35,8 +35,12 @@ class Chunk
 {
 private:
 	// Graphics
-	std::vector<Minecraft::Block_static*> m_BlockStatic{ conf.c_CHUNK_SIZE * conf.c_CHUNK_SIZE * conf.c_CHUNK_HEIGHT };
+	std::vector<Minecraft::Block_static*> m_BlockStatic{ conf.CHUNK_SIZE * conf.CHUNK_SIZE * conf.CHUNK_HEIGHT };
 	std::vector<Minecraft::Block_static*> m_BlockTransparenStatic;
+
+	std::vector<Minecraft::Vertex> m_VertexLoadBuffer;
+	size_t m_LoadBufferPtr;
+	bool m_WaitingForLoad;
 
 	// block_static
 	std::unique_ptr<VertexArray> m_VAstatic;
@@ -53,16 +57,20 @@ private:
 	void OrderTransparentStatics(glm::vec3 cameraPosition);
 
 	void FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer);
-	void LoadVertexBuffer(std::unique_ptr<VertexBuffer>& buffer);
 	void LoadVertexBufferFromMap();
 	void AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size);
-
+	
 	// Game
+	unsigned int m_ID;
 	size_t m_DrawnVertices;
 	glm::vec3 m_Position;
 
 	std::map<unsigned int, Minecraft::Block_format>* m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
+
+	// Generation Data
+	glm::vec3 m_NoiseOffset;
+	siv::PerlinNoise* m_Noise;
 
 	// Chunk neighbors
 	Chunk* m_ChunkNeighbors[4];
@@ -74,25 +82,35 @@ private:
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
+	bool m_IsGenerated = false;
 
 public:
 	Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
 	~Chunk();
 
-	void Generate(glm::vec3 position, glm::vec3 noiseOffset, siv::PerlinNoise& noise);
+	void Generate();
 
 	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
 	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
 	void OnUpdate();
 
-	void UpdateVertexBuffer();
+	// Buffers
+	void CullFacesOnLoadBuffer();
+	void LoadVertexBufferFromLoadBuffer();
 
 	// Members
+	void setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffset, siv::PerlinNoise& noise);
 	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
-	Minecraft::Block_static** getBlocklistAllocator();
+	void setID(const unsigned int id) { m_ID = id; };
 
+	inline bool IsGenerated() const { return m_IsGenerated; };
+
+	inline const bool getWaitingStatus() const { return m_WaitingForLoad; };
+	inline const unsigned int getID() const { return m_ID; };
+	Minecraft::Block_static** getBlocklistAllocator();
 	inline const size_t getDrawnVertices() const { return m_DrawnVertices; }
 	inline const size_t getAmountBlockStatic() const { return m_BlockStatic.size(); }
+
 	inline const unsigned int getDrawCalls() {
 		const unsigned int calls = m_DrawCalls;
 		m_DrawCalls = 0;

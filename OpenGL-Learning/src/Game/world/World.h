@@ -3,17 +3,30 @@
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 #include "glm/gtc/matrix_transform.hpp"
+#include "vendor/yaml/yaml_wrapper.hpp"
+#include "config.h"
 
+// System
+#include <functional>
+#include <time.h>
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <atomic>
+
+// Data structures
 #include <vector>
 #include <map>
 #include <set>
-#include <time.h>
-#include <iostream>
+#include <queue>
+
+#include <mutex>
+#include "threading/semaphore.h"
 
 #include "Chunk.h"
 #include "../View/Camera.h"
-#include "vendor/yaml/yaml_wrapper.hpp"
 
+// Util
 #include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
 #include "OpenGL_util/misc/Light.hpp"
@@ -25,6 +38,17 @@ private:
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
 
+	// Threading
+	std::atomic<int> m_IsGenerating;
+	std::mutex m_MutexLoading, m_MutexGenerating, m_MutexUnlaoding, m_MutexCullFaces, m_MutexBufferLoading;
+	size_t m_GenerationThreadActions;
+	cyan::counting_semaphore<1000> m_GenerationSemaphore;
+	bool m_ExecuteGenerationJob = true;
+
+	std::vector<std::thread> m_GenerationThreads;
+	void HandleChunkLoading();
+	inline bool ContainsElementAtomic(std::queue<Chunk*>* list, std::mutex& mutex);
+	
 	// Debug
 	unsigned int m_DrawCalls = 0;
 
@@ -33,7 +57,8 @@ private:
 
 	// Objects
 	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk*> m_Chunks{ conf.c_RENDER_DISTANCE * conf.c_RENDER_DISTANCE * 4 };
+	std::vector<Chunk*> m_Chunks{ conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4 };
+	std::queue<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedLoading, m_ChunksQueuedUnloading, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
@@ -75,6 +100,12 @@ public:
 	void OnInput(GLFWwindow* window, double deltaTime);
 	void OnRender();
 	void OnUpdate(double deltaTime);
+
+	void CullFacesOnLoadBuffer();
+
+
+	// Threading
+	void GenerationThreadJob();
 
 	// Members
 	inline static float s_MouseX = 0;

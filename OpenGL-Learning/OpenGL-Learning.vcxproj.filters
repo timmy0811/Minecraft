@@ -1464,5 +1464,8 @@
     <ClInclude Include="src\imgui_helper\imgui.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="src\threading\semaphore.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

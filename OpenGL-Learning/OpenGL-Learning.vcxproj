@@ -323,6 +323,7 @@
     <ClInclude Include="src\OpenGL_util\misc\Vertex.hpp" />
     <ClInclude Include="src\OpenGL_util\model\Model3D.h" />
     <ClInclude Include="src\OpenGL_util\model\Mesh.h" />
+    <ClInclude Include="src\threading\semaphore.h" />
     <ClInclude Include="src\vendor\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="src\vendor\imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="src\OpenGL_util\core\Renderer.h" />

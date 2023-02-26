@@ -1,4 +1,8 @@
 config:
+  system:
+    EnableMultithreading: true
+    GenerationThreads: 4
+
   window:
     Height: 1080
     Width: 1920
@@ -13,11 +17,11 @@ config:
     terrain:
       ChunkSize: 16
       BlockSize: 1.0
-      ChunkHeight: 20
-      YStretch: 5.0
+      ChunkHeight: 10
+      YStretch: 0.0
       XStretch: 1.0
-      MinHeight: 2
+      MinHeight: 10
 
     environment:
-      FogAffectDistance: 20.0
-      FogDensity: 0.25
+      FogAffectDistance: 80.0
+      FogDensity: 0.2
