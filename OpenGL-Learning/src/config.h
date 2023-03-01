@@ -6,8 +6,6 @@
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
-#define VertexLoadBufferSize 4 * ((16+1)*16 + (16+1)*16 + 16 * 16) * 2 // Faces = ((n + 1) + m + (m + 1) * n + n * m) * CHUNK_HEIGHT
-
 #include <string>
 class Config {
 public:
@@ -22,6 +20,9 @@ public:
 		TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
 		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
 		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
+
+		WORLD_WIDTH = mainNode["config"]["game"]["terrain"]["WorldWidth"].as<unsigned int>();
+		if (WORLD_WIDTH % 2 != 0) WORLD_WIDTH += 1;
 
 		CHUNK_SIZE = mainNode["config"]["game"]["terrain"]["ChunkSize"].as<unsigned int>();
 		BLOCK_SIZE = mainNode["config"]["game"]["terrain"]["BlockSize"].as<float>();
@@ -55,6 +56,7 @@ public:
 
 	// Game
 	// Terrain
+	unsigned int WORLD_WIDTH = 0;
 	unsigned int CHUNK_SIZE = 0;
 	float BLOCK_SIZE = 0;
 	unsigned int CHUNK_HEIGHT = 0;

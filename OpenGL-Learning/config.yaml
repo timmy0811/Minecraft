@@ -10,11 +10,12 @@ config:
   rendering:
     MaxBufferFaces: 5000
     TextureSize: 16
-    RenderDistance: 2
+    RenderDistance: 1
     TextureInverseOffset: 1000
 
   game:
     terrain:
+      WorldWidth: 6
       ChunkSize: 16
       BlockSize: 1.0
       ChunkHeight: 10

@@ -34,6 +34,10 @@
 class World
 {
 private:
+	bool m_IsInit = true;
+	glm::vec3 m_WorldRootPosition;
+	glm::vec2 m_PlayerChunkPosition;
+
 	glm::mat4 m_MatrixProjection;
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
@@ -57,7 +61,7 @@ private:
 
 	// Objects
 	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk*> m_Chunks{ conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4 };
+	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
 	std::queue<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedLoading, m_ChunksQueuedUnloading, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
@@ -90,7 +94,7 @@ private:
 
 	// Generation
 	void GenerateTerrain();
-	inline unsigned int CoordToIndex(const glm::vec2& coord) const;
+	inline int CoordToIndex(const glm::vec2& coord) const;
 	inline const glm::vec2 IndexToCoord(unsigned int index) const;
 
 public:

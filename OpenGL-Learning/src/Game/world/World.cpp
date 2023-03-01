@@ -52,11 +52,13 @@ void World::OnRender()
 {
 	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
 		chunk->OnRender(m_ShaderPackage, m_Camera.Position);
 	}
 
 	// Render transparent objects
 	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
 		chunk->OnRenderTransparents(m_ShaderPackage, m_Camera.Position);
 	}
 }
@@ -95,6 +97,7 @@ const unsigned int World::getAmountBlockStatic() const
 {
 	unsigned int amount = 0;
 	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
 		amount += (unsigned int)chunk->getAmountBlockStatic();
 	}
 
@@ -105,6 +108,7 @@ const size_t World::getDrawnVertices() const
 {
 	size_t verts = 0;
 	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
 		verts += chunk->getDrawnVertices();
 	}
 
@@ -115,6 +119,7 @@ const unsigned int World::getDrawCalls() const
 {
 	unsigned int calls = 0;
 	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
 		calls += chunk->getDrawCalls();
 	}
 
@@ -170,57 +175,55 @@ void World::ProcessMouse()
 
 void World::GenerateTerrain()
 {
-	glm::vec3 chunkRootPosition = {- (int)(conf.RENDER_DISTANCE * conf.CHUNK_SIZE * conf.BLOCK_SIZE), 0.f, - (int)(conf.RENDER_DISTANCE * conf.CHUNK_SIZE * conf.BLOCK_SIZE) };
+	unsigned int chunkWidth = conf.CHUNK_SIZE * conf.BLOCK_SIZE;
 
-	// Instantiation Phase
+	glm::vec2 rootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };															// Spawn Chunk in Matric Space
+	glm::vec2 generationPosition = { conf.WORLD_WIDTH / 2 - conf.RENDER_DISTANCE, conf.WORLD_WIDTH / 2  - conf.RENDER_DISTANCE};		// Upper left edge of Spawn area in Matrix Space
+	m_WorldRootPosition = { -(int)((rootPosition.x + 0.5) * chunkWidth), 0, -(int)((rootPosition.y + 0.5) * chunkWidth) };				// Upper left edge of World in World Space
+
 	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
-	for (int i = 0; i < conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4; i++) {
-		m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
-		m_Chunks[i]->setID(i);
+	for (int x = 0; x < conf.RENDER_DISTANCE * 2 + 1; x++) {
+		chunkOffset.z = 0.f;
+		for (int z = 0; z < conf.RENDER_DISTANCE * 2 + 1; z++) {
+			const unsigned int i = CoordToIndex(generationPosition + glm::vec2{ x, z });
+			m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
+			m_Chunks[i]->setID(i);
+			m_Chunks[i]->setGenerationData({ (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.x, 0, (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.z },
+				{ (generationPosition.x + x) * 1.f, (generationPosition.y + z) * 1.f, 1.f }, m_Noise);
+
+			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push(m_Chunks[i]);
+			else m_Chunks[i]->Generate();
+
+			chunkOffset.z += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
+		}
+		chunkOffset.x += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
 	}
 
-	// Neighboring Phase
+	// Neighboring
 	for (int i = 0; i < m_Chunks.size(); i++) {
+		if (!m_Chunks[i]) continue;			// Wrong Neighboring??
 		glm::vec2 coord = IndexToCoord(i);
 
 		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
-		Chunk* c2 = coord.x < conf.RENDER_DISTANCE * 2 - 1		? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
-		Chunk* c3 = coord.y < conf.RENDER_DISTANCE * 2 -1		? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
+		Chunk* c2 = coord.x < conf.WORLD_WIDTH - 1				? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
+		Chunk* c3 = coord.y < conf.WORLD_WIDTH - 1				? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
 		Chunk* c4 = coord.x > 0									? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
 
 		m_Chunks[i]->setChunkNeighbors(c1, c2, c3, c4);
 	}
 
-	// Terrain Generation Phase
-	size_t offset = 0;
-	for (int chunkX = 0; chunkX < 2 * conf.RENDER_DISTANCE; chunkX++) {
-		chunkOffset.z = 0.f;
-		for (int chunkZ = 0; chunkZ < 2 * conf.RENDER_DISTANCE; chunkZ++) {
-			m_Chunks[offset]->setGenerationData(chunkRootPosition + chunkOffset, { chunkX * 1.f, chunkZ * 1.f, 1.f }, m_Noise);
-
-			if (conf.ENABLE_MULTITHREADING) {
-				m_ChunksQueuedGenerating.push(m_Chunks[offset]);
-				m_GenerationSemaphore.release(1);
-			}
-			else {
-				m_Chunks[offset]->Generate();
-			}
-			
-			chunkOffset.z += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
-			offset++;
-		}
-		chunkOffset.x += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
-	}
+	if(conf.ENABLE_MULTITHREADING) m_GenerationSemaphore.release(m_ChunksQueuedGenerating.size());
 }
 
-inline unsigned int World::CoordToIndex(const glm::vec2& coord) const
+inline int World::CoordToIndex(const glm::vec2& coord) const
 {
-	return (unsigned int)(coord.x * (float)conf.RENDER_DISTANCE * 2.f + coord.y);
+	if (coord.x < 0 || coord.x >= conf.WORLD_WIDTH || coord.y < 0 || coord.y >= conf.WORLD_WIDTH) return -1;
+	return (unsigned int)(coord.x * (float)conf.WORLD_WIDTH + coord.y);
 }
 
 inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 {
-	return { std::floor(index / (conf.RENDER_DISTANCE * 2)), index % (conf.RENDER_DISTANCE * 2) };
+	return { std::floor(index / conf.WORLD_WIDTH), index % (conf.WORLD_WIDTH) };
 }
 
 void World::GenerationThreadJob()
@@ -255,7 +258,6 @@ void World::GenerationThreadJob()
 
 			LOG(("Generating Chunk " + std::to_string(chunk->getID())));
 			chunk->Generate();
-			LOG(("Done Generating Chunk " + std::to_string(chunk->getID())));
 
 			m_MutexCullFaces.lock();
 			m_ChunksQueuedCulling.push(chunk);
@@ -272,10 +274,7 @@ void World::GenerationThreadJob()
 				Chunk* chunk = m_ChunksQueuedCulling.front();
 				m_ChunksQueuedCulling.pop();
 				m_MutexCullFaces.unlock();
-
-				LOG(("Culling Chunk " + std::to_string(chunk->getID())));
 				chunk->CullFacesOnLoadBuffer();
-				LOG(("Done Culling Chunk " + std::to_string(chunk->getID())));
 
 				m_MutexBufferLoading.lock();
 				m_ChunksQueuedBufferLoading.push(chunk);
@@ -286,7 +285,7 @@ void World::GenerationThreadJob()
 			}
 		}
 		else {
-			LOG(("Doing Nothing"));
+			LOG("Warning: Threading skipped a task!");
 		}
 	}
 }
@@ -296,19 +295,120 @@ void World::HandleChunkLoading()
 	// Buffering Phase
 	m_MutexBufferLoading.lock();
 	for (int i = 0; i < m_ChunksQueuedBufferLoading.size(); i++) {
-		Chunk* ch = m_ChunksQueuedBufferLoading.front();
-		LOG(("Loading Chunk " + std::to_string(ch->getID())));
-		ch->LoadVertexBufferFromLoadBuffer();
+		Chunk* chunk = m_ChunksQueuedBufferLoading.front();
+		LOG(("Loading Chunk " + std::to_string(chunk->getID())));
+		chunk->LoadVertexBufferFromLoadBuffer();
 		m_ChunksQueuedBufferLoading.pop();
 	}
 	m_MutexBufferLoading.unlock();
+	
+	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - m_Camera.Position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - m_Camera.Position.z) / conf.CHUNK_SIZE) };
 
-	//if (chunkUnload) {
-	//	// ...
-	//	m_ChunksQueuedLoading.push(Chunk);
-	//	m_GenerationThreadActions++;
-	//	m_ConditionGeneration.notify_one();
-	//}
+	if (m_IsInit) {
+		m_PlayerChunkPosition = currentPLayerChunkPosition;
+		m_IsInit = false;
+	}
+
+	if (currentPLayerChunkPosition.x < m_PlayerChunkPosition.x) {
+		LOG("Expanding in X-");
+		// Expand in X-
+		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 1;
+		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
+
+		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+			unsigned int index = CoordToIndex({ startX, startZ + i });
+			if (index == -1) continue;
+			if (m_Chunks[index]) {
+				// m_ChunksQueuedLoading.push(chunk);
+			}
+			else {
+				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+				m_Chunks[index] = chunk;
+				chunk->setID(0); // ???
+				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
+					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
+				m_ChunksQueuedGenerating.push(chunk);
+				m_GenerationSemaphore.release(1);
+			}
+		}
+
+		// Unload in X+
+	}
+	else if (currentPLayerChunkPosition.x > m_PlayerChunkPosition.x) {
+		LOG("Expanding in X+");
+		// Expand in X+
+		int startX = m_PlayerChunkPosition.x + conf.RENDER_DISTANCE + 1;
+		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
+
+		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+			unsigned int index = CoordToIndex({ startX, startZ + i });
+			if (index == -1) continue;
+			if (m_Chunks[index]) {
+				// m_ChunksQueuedLoading.push(chunk);
+			}
+			else {
+				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+				m_Chunks[index] = chunk;
+				chunk->setID(0); // ???
+				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
+					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
+				m_ChunksQueuedGenerating.push(chunk);
+				m_GenerationSemaphore.release(1);
+			}
+		}
+		// Unload in X-
+	}
+
+	if (currentPLayerChunkPosition.y < m_PlayerChunkPosition.y) {
+		LOG("Expanding in Z-");
+		// Expand in Z-
+		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
+		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 1;
+
+		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+			unsigned int index = CoordToIndex({ startX + i, startZ });
+			if (index == -1) continue;
+			if (m_Chunks[index]) {
+				// m_ChunksQueuedLoading.push(chunk);
+			}
+			else {
+				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+				m_Chunks[index] = chunk;
+				chunk->setID(0); // ???
+				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
+					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
+				m_ChunksQueuedGenerating.push(chunk);
+				m_GenerationSemaphore.release(1);
+			}
+		}
+		// Unload in Z+
+	}
+	else if (currentPLayerChunkPosition.y > m_PlayerChunkPosition.y) {
+		LOG("Expanding in Z+");
+		// Expand in Z+
+		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
+		int startZ = m_PlayerChunkPosition.y + conf.RENDER_DISTANCE + 1;
+
+		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+			unsigned int index = CoordToIndex({ startX + i, startZ });
+			if (index == -1) continue;
+			if (m_Chunks[index]) {
+				// m_ChunksQueuedLoading.push(chunk);
+			}
+			else {
+				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+				m_Chunks[index] = chunk;
+				chunk->setID(0); // ???
+				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
+					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
+				m_ChunksQueuedGenerating.push(chunk);
+				m_GenerationSemaphore.release(1);
+			}
+		}
+		// Unload in Z-
+	}
+
+	m_PlayerChunkPosition = currentPLayerChunkPosition;
 }
 
 bool World::ContainsElementAtomic(std::queue<Chunk*>* list, std::mutex& mutex)
