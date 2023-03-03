@@ -35,6 +35,7 @@ void VertexBuffer::AddVertexData(const void* data, int size) {
 
 void VertexBuffer::Empty()
 {
+	Bind();
 	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, m_BufferSize, nullptr));
 	m_DataPtr = 0;
 }

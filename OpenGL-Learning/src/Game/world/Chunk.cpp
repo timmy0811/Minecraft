@@ -95,11 +95,20 @@ void Chunk::FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer)
 	buffer->Empty();
 }
 
+void Chunk::Unload()
+{
+	m_VBstatic->Empty();
+	m_VBtransparentStatic->Empty();
+
+	m_IsLoaded = false;
+}
+
 void Chunk::CullFacesOnLoadBuffer()
 {
 	// Prevent covered faces from getting drawn on the screen
 	m_DrawnVertices = 0;
 	m_LoadBufferPtr = 0;
+	m_VertexLoadBuffer.clear();
 
 	for (unsigned int i = 0; i < m_BlockStatic.size(); i++) {
 		Minecraft::Block_static* blockPtr = m_BlockStatic[i];
@@ -114,7 +123,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[2]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, 0 }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
-			else doDraw = true;
+			else doDraw = false;
 		}
 		else if (IsNotCovered({ coord.x, coord.y, coord.z + 1 })) doDraw = true;
 		if (doDraw) {
@@ -133,7 +142,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[1]->getBlocklistAllocator() + CoordToIndex({ 0, coord.y, coord.z }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
-			else doDraw = true;
+			else doDraw = false;
 		}
 		else if (IsNotCovered({ coord.x + 1, coord.y, coord.z })) doDraw = true;
 		if (doDraw) {
@@ -152,7 +161,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[3]->getBlocklistAllocator() + CoordToIndex({ conf.CHUNK_SIZE - 1, coord.y, coord.z }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
-			else doDraw = true;
+			else doDraw = false;
 		}
 		else if (IsNotCovered({ coord.x - 1, coord.y, coord.z })) doDraw = true;
 		if (doDraw) {
@@ -171,7 +180,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				Minecraft::Block_static* neighbor = *(m_ChunkNeighbors[0]->getBlocklistAllocator() + CoordToIndex({ coord.x, coord.y, conf.CHUNK_SIZE - 1 }));
 				if (!neighbor || neighbor->subtype != Minecraft::BLOCKTYPE::STATIC_DEFAULT) doDraw = true;
 			}
-			else doDraw = true;
+			else doDraw = false;
 		}
 		else if (IsNotCovered({ coord.x, coord.y, coord.z - 1 })) doDraw = true;
 		if (doDraw) {
@@ -212,6 +221,15 @@ void Chunk::LoadVertexBufferFromLoadBuffer()
 	if (m_VertexLoadBuffer.size() > 0) {
 		m_VBstatic->AddVertexData(&(m_VertexLoadBuffer[0]), m_VertexLoadBuffer.size() * sizeof(Minecraft::Vertex));
 	}
+	m_IsLoaded = true;
+}
+
+void Chunk::Serialize()
+{
+}
+
+void Chunk::Deserialize()
+{
 }
 
 bool Chunk::IsNotCovered(const glm::vec3 pos)
@@ -461,6 +479,11 @@ void Chunk::setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4)
 	m_ChunkNeighbors[1] = c2;
 	m_ChunkNeighbors[2] = c3;
 	m_ChunkNeighbors[3] = c4;
+}
+
+void Chunk::setChunkNeighbor(char index, Chunk* c)
+{
+	m_ChunkNeighbors[index] = c;
 }
 
 Minecraft::Block_static** Chunk::getBlocklistAllocator()

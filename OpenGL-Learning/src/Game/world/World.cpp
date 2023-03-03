@@ -52,7 +52,7 @@ void World::OnRender()
 {
 	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
-		if (!chunk) continue;
+		if (!chunk || !chunk->isLoaded()) continue;
 		chunk->OnRender(m_ShaderPackage, m_Camera.Position);
 	}
 
@@ -62,6 +62,53 @@ void World::OnRender()
 		chunk->OnRenderTransparents(m_ShaderPackage, m_Camera.Position);
 	}
 }
+
+void World::NeighborChunks()
+{
+	for (int x = 0; x < conf.WORLD_WIDTH; x++) {
+		for (int z = 0; z < conf.WORLD_WIDTH; z++) {
+			Chunk* chunk = m_Chunks[CoordToIndex({ x, z })];
+			if (!chunk) continue;
+
+			chunk->setChunkNeighbors(
+				z > 0						? m_Chunks[CoordToIndex({ x - 0, z - 1 })] : nullptr,
+				x < conf.WORLD_WIDTH - 1	? m_Chunks[CoordToIndex({ x + 1, z - 0 })] : nullptr,
+				z < conf.WORLD_WIDTH - 1	? m_Chunks[CoordToIndex({ x - 0, z + 1 })] : nullptr,
+				x > 0						? m_Chunks[CoordToIndex({ x - 1, z - 0 })] : nullptr
+			);
+
+			int i = 0;
+		}
+	}
+}
+
+//void World::ExpandChunkGeneration(bool xP, bool xM, bool zP, bool zM)
+//{
+//	char xPf = xP ? 1 : 0;
+//	char xMf = xM ? 1 : 0;
+//	char zPf = zP ? 1 : 0;
+//	char zMf = zM ? 1 : 0;
+//
+//	int startX = m_PlayerChunkPosition.x - (conf.RENDER_DISTANCE - 1) * xMf + (conf.RENDER_DISTANCE + 1) * xPf - (conf.RENDER_DISTANCE - 0) * zMf - (conf.RENDER_DISTANCE - 0) * zPf;
+//	int startZ = m_PlayerChunkPosition.y - (conf.RENDER_DISTANCE - 0) * xMf - (conf.RENDER_DISTANCE - 0) * xPf - (conf.RENDER_DISTANCE - 1) * zMf + (conf.RENDER_DISTANCE + 1) * zPf;
+//
+//	for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+//		unsigned int index = CoordToIndex({ startX + (i * zPf) + (i * zMf), startZ + (i * xPf) + (i * xMf) });
+//		if (index == -1) continue;
+//		if (m_Chunks[index]) {
+//			// m_ChunksQueuedLoading.push(chunk);
+//		}
+//		else {
+//			Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
+//			m_Chunks[index] = chunk;
+//			chunk->setID(0); // ???
+//			chunk->setGenerationData({ m_WorldRootPosition.x + (startX + (i * zPf) + (i * zMf)) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + (i * xPf) + (i * xMf)) * conf.CHUNK_SIZE },
+//				{ startX + (i * zPf) + (i * zMf), startZ + (i * xPf) + (i * xMf), 1.f}, m_Noise);
+//			m_ChunksQueuedGenerating.push(chunk);
+//			m_GenerationSemaphore.release(1);
+//		}
+//	}
+//}
 
 void World::OnUpdate(double deltaTime)
 {
@@ -128,7 +175,7 @@ const unsigned int World::getDrawCalls() const
 
 void World::OnInput(GLFWwindow* window, double deltaTime)
 {
-	const float cameraSpeed = 10.f * (float)deltaTime; // adjust accordingly
+	const float cameraSpeed = 20.f * (float)deltaTime; // adjust accordingly
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		m_Camera.Position += cameraSpeed * m_Camera.Front;
@@ -233,43 +280,48 @@ void World::GenerationThreadJob()
 		if (!m_ExecuteGenerationJob) return;
 
 		// Unload Queued Chunks
-		if (ContainsElementAtomic(&m_ChunksQueuedUnloading, m_MutexLoading)) {
+		if (ContainsElementAtomic(&m_ChunksQueuedDeserialize, m_MutexLoading)) {
 			m_MutexLoading.lock();
-			Chunk* chunk = m_ChunksQueuedUnloading.front();
-			//chunk->Unload();
-			m_ChunksQueuedUnloading.pop();
+			Chunk* chunk = m_ChunksQueuedDeserialize.front();
+			chunk->Deserialize();
+			m_ChunksQueuedDeserialize.pop();
 			m_MutexLoading.unlock();
+			continue;
 		}
 		// Load Queued Chunks
-		else if (ContainsElementAtomic(&m_ChunksQueuedLoading, m_MutexLoading)) {
+		if (ContainsElementAtomic(&m_ChunksQueuedSerialize, m_MutexLoading)) {
 			m_MutexLoading.lock();
-			Chunk* chunk = m_ChunksQueuedLoading.front();
-			//chunk->Load();
-			m_ChunksQueuedLoading.pop();
+			Chunk* chunk = m_ChunksQueuedSerialize.front();
+			chunk->Serialize();
+			m_ChunksQueuedSerialize.pop();
 			m_MutexLoading.unlock();
+			continue;
 		}
 		// Generate and Cull Queued Chunks
-		else if (ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
+		if (ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
 			m_IsGenerating++;
 			m_MutexGenerating.lock();
-			Chunk* chunk = m_ChunksQueuedGenerating.front();
-			m_ChunksQueuedGenerating.pop();
+			if (!m_ChunksQueuedGenerating.empty()) {
+				Chunk* chunk = m_ChunksQueuedGenerating.front();
+				m_ChunksQueuedGenerating.pop();
+				m_MutexGenerating.unlock();
+
+				LOG(("Generating Chunk " + std::to_string(chunk->getID())));
+				chunk->Generate();
+
+				m_MutexCullFaces.lock();
+				m_ChunksQueuedCulling.push(chunk);
+				m_MutexCullFaces.unlock();
+
+				m_IsGenerating--;
+				m_GenerationSemaphore.release();
+				continue;
+			}
 			m_MutexGenerating.unlock();
-
-			LOG(("Generating Chunk " + std::to_string(chunk->getID())));
-			chunk->Generate();
-
-			m_MutexCullFaces.lock();
-			m_ChunksQueuedCulling.push(chunk);
-			m_MutexCullFaces.unlock();
-
-			m_IsGenerating--;
-			m_GenerationSemaphore.release();
 		}
 		// Cull Faces of Queued Chunks
-		else if (ContainsElementAtomic(&m_ChunksQueuedCulling, m_MutexCullFaces) && !ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
+		if (ContainsElementAtomic(&m_ChunksQueuedCulling, m_MutexCullFaces) && !ContainsElementAtomic(&m_ChunksQueuedGenerating, m_MutexGenerating)) {
 			if (m_IsGenerating == 0) {
-				LOG(("Entering Culling"));
 				m_MutexCullFaces.lock();
 				Chunk* chunk = m_ChunksQueuedCulling.front();
 				m_ChunksQueuedCulling.pop();
@@ -283,20 +335,23 @@ void World::GenerationThreadJob()
 			else {
 				m_GenerationSemaphore.release();
 			}
+			continue;
 		}
-		else {
-			LOG("Warning: Threading skipped a task!");
-		}
+		LOG("Warning: Threading skipped a task!");
 	}
 }
 
 void World::HandleChunkLoading()
 {
+	unsigned int waitingForNeighboring = 0;
+	bool hasExpanded = false;
+	std::unordered_set<Chunk*> ChunksReculled;
+
 	// Buffering Phase
 	m_MutexBufferLoading.lock();
 	for (int i = 0; i < m_ChunksQueuedBufferLoading.size(); i++) {
 		Chunk* chunk = m_ChunksQueuedBufferLoading.front();
-		LOG(("Loading Chunk " + std::to_string(chunk->getID())));
+		// LOG(("Loading Chunk " + std::to_string(chunk->getID())));
 		chunk->LoadVertexBufferFromLoadBuffer();
 		m_ChunksQueuedBufferLoading.pop();
 	}
@@ -309,8 +364,8 @@ void World::HandleChunkLoading()
 		m_IsInit = false;
 	}
 
-	if (currentPLayerChunkPosition.x < m_PlayerChunkPosition.x) {
-		LOG("Expanding in X-");
+	if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.x < m_PlayerChunkPosition.x) {
+		hasExpanded = true;
 		// Expand in X-
 		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 1;
 		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
@@ -319,7 +374,7 @@ void World::HandleChunkLoading()
 			unsigned int index = CoordToIndex({ startX, startZ + i });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
-				// m_ChunksQueuedLoading.push(chunk);
+				m_Chunks[index]->LoadVertexBufferFromLoadBuffer();
 			}
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
@@ -327,15 +382,25 @@ void World::HandleChunkLoading()
 				chunk->setID(0); // ???
 				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
 					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
-				m_ChunksQueuedGenerating.push(chunk);
-				m_GenerationSemaphore.release(1);
-			}
-		}
 
-		// Unload in X+
+				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX + 1, startZ + i })];
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
+				chunkNeighbor = startX > 0 ? m_Chunks[CoordToIndex({ startX - 1, startZ + i })] : nullptr;
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
+				m_ChunksQueuedGenerating.push(chunk);
+				waitingForNeighboring++;
+			}
+
+			// Unload in X+
+			unsigned int unloadIndex = CoordToIndex({ m_PlayerChunkPosition.x + conf.RENDER_DISTANCE, startZ + i });
+			Chunk* chunkUnload = unloadIndex != -1 ? m_Chunks[unloadIndex] : nullptr;
+			if (chunkUnload && chunkUnload->isLoaded()) chunkUnload->Unload();
+		}
 	}
-	else if (currentPLayerChunkPosition.x > m_PlayerChunkPosition.x) {
-		LOG("Expanding in X+");
+	else if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.x > m_PlayerChunkPosition.x) {
+		hasExpanded = true;
 		// Expand in X+
 		int startX = m_PlayerChunkPosition.x + conf.RENDER_DISTANCE + 1;
 		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
@@ -344,7 +409,7 @@ void World::HandleChunkLoading()
 			unsigned int index = CoordToIndex({ startX, startZ + i });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
-				// m_ChunksQueuedLoading.push(chunk);
+				m_Chunks[index]->LoadVertexBufferFromLoadBuffer();
 			}
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
@@ -352,15 +417,26 @@ void World::HandleChunkLoading()
 				chunk->setID(0); // ???
 				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
 					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
+
+				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX - 1, startZ + i })];
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
+				chunkNeighbor = startX < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + 1, startZ + i })] : nullptr;
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
 				m_ChunksQueuedGenerating.push(chunk);
-				m_GenerationSemaphore.release(1);
+				waitingForNeighboring++;
 			}
+
+			// Unload in X-
+			unsigned int unloadIndex = CoordToIndex({ m_PlayerChunkPosition.x - conf.RENDER_DISTANCE, startZ + i });
+			Chunk* chunkUnload = unloadIndex != -1 ? m_Chunks[unloadIndex] : nullptr;
+			if (chunkUnload && chunkUnload->isLoaded()) chunkUnload->Unload();
 		}
-		// Unload in X-
 	}
 
-	if (currentPLayerChunkPosition.y < m_PlayerChunkPosition.y) {
-		LOG("Expanding in Z-");
+	if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.y < m_PlayerChunkPosition.y) {
+		hasExpanded = true;
 		// Expand in Z-
 		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
 		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 1;
@@ -369,7 +445,7 @@ void World::HandleChunkLoading()
 			unsigned int index = CoordToIndex({ startX + i, startZ });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
-				// m_ChunksQueuedLoading.push(chunk);
+				m_Chunks[index]->LoadVertexBufferFromLoadBuffer();
 			}
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
@@ -377,14 +453,25 @@ void World::HandleChunkLoading()
 				chunk->setID(0); // ???
 				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
 					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
+
+				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX + i, startZ + 1 })];
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
+				chunkNeighbor = startX > 0 ? m_Chunks[CoordToIndex({ startX + i, startZ - 1 })] : nullptr;
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
 				m_ChunksQueuedGenerating.push(chunk);
-				m_GenerationSemaphore.release(1);
+				waitingForNeighboring++;
 			}
+
+			// Unload in Z+
+			unsigned int unloadIndex = CoordToIndex({ startX + i, m_PlayerChunkPosition.y + conf.RENDER_DISTANCE });
+			Chunk* chunkUnload = unloadIndex != -1 ? m_Chunks[unloadIndex] : nullptr;
+			if (chunkUnload && chunkUnload->isLoaded()) chunkUnload->Unload();
 		}
-		// Unload in Z+
 	}
-	else if (currentPLayerChunkPosition.y > m_PlayerChunkPosition.y) {
-		LOG("Expanding in Z+");
+	else if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.y > m_PlayerChunkPosition.y) {
+		hasExpanded = true;
 		// Expand in Z+
 		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
 		int startZ = m_PlayerChunkPosition.y + conf.RENDER_DISTANCE + 1;
@@ -393,7 +480,7 @@ void World::HandleChunkLoading()
 			unsigned int index = CoordToIndex({ startX + i, startZ });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
-				// m_ChunksQueuedLoading.push(chunk);
+				m_Chunks[index]->LoadVertexBufferFromLoadBuffer();
 			}
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
@@ -401,13 +488,31 @@ void World::HandleChunkLoading()
 				chunk->setID(0); // ???
 				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
 					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
+
+				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX + i, startZ - 1 })];
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
+				chunkNeighbor = startZ < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + i, startZ + 1 })] : nullptr;
+				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
+
 				m_ChunksQueuedGenerating.push(chunk);
-				m_GenerationSemaphore.release(1);
+				waitingForNeighboring++;
 			}
+
+			// Unload in Z-
+			unsigned int unloadIndex = CoordToIndex({ startX + i, m_PlayerChunkPosition.y - conf.RENDER_DISTANCE });
+			Chunk* chunkUnload = unloadIndex != -1 ? m_Chunks[unloadIndex] : nullptr;
+			if (chunkUnload && chunkUnload->isLoaded()) chunkUnload->Unload();
 		}
-		// Unload in Z-
 	}
 
+	if (hasExpanded) NeighborChunks();
+
+	for (auto it = ChunksReculled.begin(); it != ChunksReculled.end(); it++) {
+		m_ChunksQueuedCulling.push(*it);
+	}
+
+	m_GenerationSemaphore.release(waitingForNeighboring + ChunksReculled.size());
 	m_PlayerChunkPosition = currentPLayerChunkPosition;
 }
 

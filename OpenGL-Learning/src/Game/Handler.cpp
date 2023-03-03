@@ -21,6 +21,7 @@ void Handler::DebugWindow()
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	const glm::vec3& position = m_World.getCameraPosition();
 	ImGui::Text(("Position: " + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z)).c_str());
+	ImGui::Text(("Cunk Position: " + std::to_string((int)std::floor(position.x / conf.CHUNK_SIZE)) + ", " + std::to_string((int)std::floor(position.z / conf.CHUNK_SIZE))).c_str());
 	ImGui::Separator();
 
 	ImGui::Text(("Count [Block_Static]: " + std::to_string(m_World.getAmountBlockStatic())).c_str());

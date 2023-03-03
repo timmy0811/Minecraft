@@ -62,7 +62,7 @@ private:
 	// Objects
 	Minecraft::Camera3D m_Camera;
 	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
-	std::queue<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedLoading, m_ChunksQueuedUnloading, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
+	std::queue<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
 	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
@@ -96,6 +96,8 @@ private:
 	void GenerateTerrain();
 	inline int CoordToIndex(const glm::vec2& coord) const;
 	inline const glm::vec2 IndexToCoord(unsigned int index) const;
+	void NeighborChunks();
+	//void ExpandChunkGeneration(bool xP, bool xM, bool zP, bool zM);
 
 public:
 	World(GLFWwindow* window);
@@ -106,7 +108,6 @@ public:
 	void OnUpdate(double deltaTime);
 
 	void CullFacesOnLoadBuffer();
-
 
 	// Threading
 	void GenerationThreadJob();

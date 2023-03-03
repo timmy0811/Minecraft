@@ -83,6 +83,7 @@ private:
 	// Debug
 	unsigned int m_DrawCalls = 0;
 	bool m_IsGenerated = false;
+	bool m_IsLoaded = false;
 
 public:
 	Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
@@ -95,15 +96,21 @@ public:
 	void OnUpdate();
 
 	// Buffers
+	void Unload();
 	void CullFacesOnLoadBuffer();
 	void LoadVertexBufferFromLoadBuffer();
+
+	void Serialize();
+	void Deserialize();
 
 	// Members
 	void setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffset, siv::PerlinNoise& noise);
 	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
+	void setChunkNeighbor(char index, Chunk* c);
 	void setID(const unsigned int id) { m_ID = id; };
 
 	inline bool IsGenerated() const { return m_IsGenerated; };
+	inline bool isLoaded() const { return m_IsLoaded; };
 
 	inline const bool getWaitingStatus() const { return m_WaitingForLoad; };
 	inline const unsigned int getID() const { return m_ID; };

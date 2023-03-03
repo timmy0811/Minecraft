@@ -20,6 +20,7 @@ public:
 		TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
 		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
 		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
+		EXPAND_TERRAIN = mainNode["config"]["rendering"]["ExpandTerrain"].as<bool>();
 
 		WORLD_WIDTH = mainNode["config"]["game"]["terrain"]["WorldWidth"].as<unsigned int>();
 		if (WORLD_WIDTH % 2 != 0) WORLD_WIDTH += 1;
@@ -53,6 +54,7 @@ public:
 	unsigned int TEXTURE_SIZE = 0;
 	unsigned int RENDER_DISTANCE = 0;
 	unsigned int TEXTURE_INVERSE_OFFSET = 0;
+	bool EXPAND_TERRAIN = false;
 
 	// Game
 	// Terrain
