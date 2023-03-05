@@ -21,11 +21,11 @@ config:
       WorldWidth: 64
       ChunkSize: 16
       BlockSize: 1.0
-      ChunkHeight: 15
-      YStretch: 5.0
-      XStretch: 0.5
+      ChunkHeight: 30
+      YStretch: 12.0
+      XStretch: 0.75
       MinHeight: 10
 
     environment:
-      FogAffectDistance: 400.0
+      FogAffectDistance: 40.0
       FogDensity: 0.4

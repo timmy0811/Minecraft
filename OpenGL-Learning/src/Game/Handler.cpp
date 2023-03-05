@@ -80,7 +80,7 @@ void Handler::DebugWindow()
 }
 
 Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky5/sky", ".jpg")
+	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky8/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
