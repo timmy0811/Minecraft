@@ -22,7 +22,7 @@ World::World(GLFWwindow* window)
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
 
-	for (int i = 0; i < conf.GENERATION_THREADS; i++) {
+	for (unsigned int i = 0; i < conf.GENERATION_THREADS; i++) {
 		m_GenerationThreads.push_back(std::thread([this]() {
 			this->GenerationThreadJob();
 			}));
@@ -65,8 +65,8 @@ void World::OnRender()
 
 void World::NeighborChunks()
 {
-	for (int x = 0; x < conf.WORLD_WIDTH; x++) {
-		for (int z = 0; z < conf.WORLD_WIDTH; z++) {
+	for (unsigned int x = 0; x < conf.WORLD_WIDTH; x++) {
+		for (unsigned int z = 0; z < conf.WORLD_WIDTH; z++) {
 			Chunk* chunk = m_Chunks[CoordToIndex({ x, z })];
 			if (!chunk) continue;
 
@@ -192,16 +192,16 @@ void World::ProcessMouse()
 
 void World::GenerateTerrain()
 {
-	unsigned int chunkWidth = conf.CHUNK_SIZE * conf.BLOCK_SIZE;
+	unsigned int chunkWidth = (unsigned int)(conf.CHUNK_SIZE * conf.BLOCK_SIZE);
 
 	glm::vec2 rootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };															// Spawn Chunk in Matric Space
 	glm::vec2 generationPosition = { conf.WORLD_WIDTH / 2 - conf.RENDER_DISTANCE, conf.WORLD_WIDTH / 2  - conf.RENDER_DISTANCE};		// Upper left edge of Spawn area in Matrix Space
 	m_WorldRootPosition = { -(int)((rootPosition.x + 0.5) * chunkWidth), 0, -(int)((rootPosition.y + 0.5) * chunkWidth) };				// Upper left edge of World in World Space
 
 	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
-	for (int x = 0; x < conf.RENDER_DISTANCE * 2 + 1; x++) {
+	for (unsigned int x = 0; x < conf.RENDER_DISTANCE * 2 + 1; x++) {
 		chunkOffset.z = 0.f;
-		for (int z = 0; z < conf.RENDER_DISTANCE * 2 + 1; z++) {
+		for (unsigned int z = 0; z < conf.RENDER_DISTANCE * 2 + 1; z++) {
 			const unsigned int i = CoordToIndex(generationPosition + glm::vec2{ x, z });
 			m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
 			m_Chunks[i]->setID(i);
@@ -336,10 +336,10 @@ void World::HandleChunkLoading()
 	if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.x < m_PlayerChunkPosition.x) {
 		hasExpanded = true;
 		// Expand in X-
-		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 1;
-		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
+		int startX = (int)(m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 1);
+		int startZ = (int)(m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0);
 
-		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+		for (unsigned int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
 			unsigned int index = CoordToIndex({ startX, startZ + i });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
@@ -373,10 +373,10 @@ void World::HandleChunkLoading()
 	else if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.x > m_PlayerChunkPosition.x) {
 		hasExpanded = true;
 		// Expand in X+
-		int startX = m_PlayerChunkPosition.x + conf.RENDER_DISTANCE + 1;
-		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0;
+		int startX = (int)(m_PlayerChunkPosition.x + conf.RENDER_DISTANCE + 1);
+		int startZ = (int)(m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 0);
 
-		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+		for (unsigned int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
 			unsigned int index = CoordToIndex({ startX, startZ + i });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
@@ -392,7 +392,7 @@ void World::HandleChunkLoading()
 				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX - 1, startZ + i })];
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				chunkNeighbor = startX < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + 1, startZ + i })] : nullptr;
+				chunkNeighbor = (unsigned int)startX < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + 1, startZ + i })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
 				m_MutexGenerating.lock();
@@ -411,10 +411,10 @@ void World::HandleChunkLoading()
 	if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.y < m_PlayerChunkPosition.y) {
 		hasExpanded = true;
 		// Expand in Z-
-		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
-		int startZ = m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 1;
+		int startX = (int)(m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0);
+		int startZ = (int)(m_PlayerChunkPosition.y - conf.RENDER_DISTANCE - 1);
 
-		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+		for (unsigned int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
 			unsigned int index = CoordToIndex({ startX + i, startZ });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
@@ -448,10 +448,10 @@ void World::HandleChunkLoading()
 	else if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.y > m_PlayerChunkPosition.y) {
 		hasExpanded = true;
 		// Expand in Z+
-		int startX = m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0;
-		int startZ = m_PlayerChunkPosition.y + conf.RENDER_DISTANCE + 1;
+		int startX = (int)(m_PlayerChunkPosition.x - conf.RENDER_DISTANCE - 0);
+		int startZ = (int)(m_PlayerChunkPosition.y + conf.RENDER_DISTANCE + 1);
 
-		for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
+		for (unsigned int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
 			unsigned int index = CoordToIndex({ startX + i, startZ });
 			if (index == -1) continue;
 			if (m_Chunks[index]) {
@@ -467,7 +467,7 @@ void World::HandleChunkLoading()
 				Chunk* chunkNeighbor = m_Chunks[CoordToIndex({ startX + i, startZ - 1 })];
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				chunkNeighbor = startZ < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + i, startZ + 1 })] : nullptr;
+				chunkNeighbor = (unsigned int)startZ < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + i, startZ + 1 })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
 				m_MutexGenerating.lock();

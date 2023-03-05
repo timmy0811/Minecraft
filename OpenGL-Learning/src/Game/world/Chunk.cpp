@@ -213,7 +213,7 @@ void Chunk::LoadVertexBufferFromLoadBuffer()
 {
 	m_VBstatic->Empty();
 	if (m_VertexLoadBuffer.size() > 0) {
-		m_VBstatic->AddVertexData(&(m_VertexLoadBuffer[0]), m_VertexLoadBuffer.size() * sizeof(Minecraft::Vertex));
+		m_VBstatic->AddVertexData(&(m_VertexLoadBuffer[0]), (int)(m_VertexLoadBuffer.size() * sizeof(Minecraft::Vertex)));
 	}
 	m_IsLoaded = true;
 }
@@ -375,7 +375,7 @@ inline unsigned int Chunk::CoordToIndex(const glm::vec3& coord)
 	return (unsigned int)(coord.z * conf.CHUNK_SIZE * conf.CHUNK_HEIGHT + coord.x * conf.CHUNK_HEIGHT + coord.y);
 }
 
-inline const glm::vec3& Chunk::IndexToCoord(unsigned int index)
+inline const glm::vec3 Chunk::IndexToCoord(unsigned int index)
 {
 	glm::vec3 coord{};
 	const unsigned int planeSize = conf.CHUNK_SIZE * conf.CHUNK_HEIGHT;
@@ -394,9 +394,9 @@ void Chunk::Generate()
 	glm::vec2 noiseStepOffset = { 0.f, 0.f };
 
 	// Generate Chunk using Perlin Noise offset
-	for (int z = 0; z < conf.CHUNK_SIZE; z++) {
+	for (unsigned int z = 0; z < conf.CHUNK_SIZE; z++) {
 		noiseStepOffset.x = 0.f;
-		for (int x = 0; x < conf.CHUNK_SIZE; x++) {
+		for (unsigned int x = 0; x < conf.CHUNK_SIZE; x++) {
 			double noiseOnTile = m_Noise->octave2D_01((m_NoiseOffset.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X, (m_NoiseOffset.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X, 1);
 			unsigned int pillarHeight = (unsigned int)(noiseOnTile * conf.TERRAIN_STRETCH_Y) + conf.TERRAIN_MIN_HEIGHT;
 
@@ -427,9 +427,9 @@ void Chunk::Generate()
 					break;
 				}
 			}
-			noiseStepOffset.x += noiseStep;
+			noiseStepOffset.x += (float)noiseStep;
 		}
-		noiseStepOffset.y += noiseStep;
+		noiseStepOffset.y += (float)noiseStep;
 	}
 
 	m_IsGenerated = true;
