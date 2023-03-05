@@ -83,6 +83,20 @@ grass:
   texture_Back: grass_side
   texture_front: grass_side
 
+test:
+  type: 0
+  id: 7
+
+  reflection: 0.2
+
+  texture_top: test
+  texture_bottom: test
+
+  texture_left: test
+  texture_right: test
+  texture_Back: test
+  texture_front: test
+
 glass:
   type: 1
   id: 30

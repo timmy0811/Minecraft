@@ -66,6 +66,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 				const std::string& filenameEXT = image.path().filename().string();
 				const std::string& filename = filenameEXT.substr(0, filenameEXT.find_last_of("."));
 
+				// Might be incorrect
 				float x0 = std::ceil(((float)offsetX / pngOutWidth) * accur) / accur;
 				float x1 = std::floor((((float)offsetX + width) / pngOutWidth) * accur) / accur;
 
@@ -116,6 +117,9 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 	std::ofstream fout(yamlPath);
 	fout << node;
 	fout.close();
+
+	SetConsoleTextAttribute(hConsole, 10);
+	LOG("Textures Packed successfully!");
 
 	SetConsoleTextAttribute(hConsole, 15);
 	return false;

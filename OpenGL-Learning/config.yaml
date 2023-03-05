@@ -11,7 +11,7 @@ config:
     MaxBufferFaces: 2000
     TextureSize: 16
     RenderDistance: 3
-    TextureInverseOffset: 1000
+    TextureInverseOffset: 100
 
     # Experimental
     ExpandTerrain: false
@@ -27,5 +27,5 @@ config:
       MinHeight: 10
 
     environment:
-      FogAffectDistance: 80.0
-      FogDensity: 0.35
+      FogAffectDistance: 400.0
+      FogDensity: 0.4
