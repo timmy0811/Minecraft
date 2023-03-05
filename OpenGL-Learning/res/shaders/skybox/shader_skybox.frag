@@ -10,5 +10,4 @@ uniform samplerCube u_Cubemap;
 
 void main(){
     o_Color = texture(u_Cubemap, UV);
-    //o_Color = vec4(0.811, 0.98, 1.0, 0.6);
 }

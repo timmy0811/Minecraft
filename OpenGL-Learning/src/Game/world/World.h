@@ -34,7 +34,7 @@
 class World
 {
 private:
-	bool m_IsInit = true;
+	// Attributes ------------------------------------------
 	glm::vec3 m_WorldRootPosition;
 	glm::vec2 m_PlayerChunkPosition;
 
@@ -42,90 +42,101 @@ private:
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
 
-	// Threading
-	std::atomic<int> m_IsGenerating;
-	std::mutex m_MutexLoading, m_MutexGenerating, m_MutexUnlaoding, m_MutexCullFaces, m_MutexBufferLoading;
-	size_t m_GenerationThreadActions;
-	cyan::counting_semaphore<1000> m_GenerationSemaphore;
-	bool m_ExecuteGenerationJob = true;
+	// Objects
+	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
+	std::deque<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
-	std::vector<std::thread> m_GenerationThreads;
-	void HandleChunkLoading();
-	inline bool ContainsElementAtomic(std::queue<Chunk*>* list, std::mutex& mutex);
-	
+	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
+	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
+	std::set<std::string> m_UsedTextures;
+	Texture m_TextureMap;
+
+	Minecraft::Camera3D m_Camera;
+	OpenGL::DirectionalLight m_DirLight;
+
+	Minecraft::Helper::ShaderPackage m_ShaderPackage;
+
+	GLFWwindow* r_Window;
+
 	// Debug
 	unsigned int m_DrawCalls = 0;
 
 	// Noise
 	siv::PerlinNoise m_Noise;
 
-	// Objects
-	Minecraft::Camera3D m_Camera;
-	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
-	std::queue<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
+	// Threading
+	std::mutex m_MutexLoading, m_MutexGenerating, m_MutexUnlaoding, m_MutexCullFaces, m_MutexBufferLoading;
+	cyan::counting_semaphore<1000> m_GenerationSemaphore;
 
-	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
-	std::map<const std::string, Minecraft::Texture_Format> m_TextureFormats;
-	std::set<std::string> m_UsedTextures;
+	std::atomic<int> m_IsGenerating;
+	size_t m_GenerationThreadActions;
+	bool m_ExecuteGenerationJob = true;
+	bool m_IsGenerationInit = true;
+
+	std::vector<std::thread> m_GenerationThreads;
+
+	// Input
+	float m_LastX = 400, m_LastY = 300;
+	bool m_FirstMouseInit = true;
+
+	// Methods ------------------------------------------
+	// Setup
+	void SetupLight();
+	void GenerateTerrain();
 
 	void ParseBlocks(const std::string& path);
 	void ParseTextures(const std::string& path);
 
-	// Textures
-	Texture m_TextureMap;
+	// Update
+	void UpdateLight();
 
-	// Light
-	OpenGL::DirectionalLight m_DirLight;
-
-	void SetupLight();
-	void updateLight();
-	
-	// Shader 
-	Minecraft::Helper::ShaderPackage m_ShaderPackage;
-
-	// Camera Handling
-	GLFWwindow* r_Window;
-
-	float m_LastX = 400, m_LastY = 300;
-	bool m_FirstInit = true;
+	void NeighborChunks();
+	void HandleChunkLoading();
 
 	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
 	void ProcessMouse();
 
-	// Generation
-	void GenerateTerrain();
+	// Misc
 	inline int CoordToIndex(const glm::vec2& coord) const;
 	inline const glm::vec2 IndexToCoord(unsigned int index) const;
-	void NeighborChunks();
-	//void ExpandChunkGeneration(bool xP, bool xM, bool zP, bool zM);
+
+	inline bool ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex);
+	template <typename T>
+	bool ContainsElement(const std::deque<T>& queue, const T& element) const {
+		return std::find(queue.begin(), queue.end(), element) != queue.end();
+	}
 
 public:
+	// Attributes ------------------------------------------
+	inline static float s_MouseX = 0;
+	inline static float s_MouseY = 0;
+
+	// Methods ------------------------------------------
 	World(GLFWwindow* window);
 	~World();
 
+	// Setup
+	void GenerationThreadJob();
+
+	// Update
 	void OnInput(GLFWwindow* window, double deltaTime);
 	void OnRender();
 	void OnUpdate(double deltaTime);
 
-	void CullFacesOnLoadBuffer();
+	// Misc
 
-	// Threading
-	void GenerationThreadJob();
-
-	// Members
-	inline static float s_MouseX = 0;
-	inline static float s_MouseY = 0;
-
+	// Accessors
 	const glm::mat4& getMatrixProjection() const;
 	const glm::mat4& getMatrixView() const;
 	const glm::vec3& getCameraPosition() const;
 
 	const unsigned int getAmountBlockStatic() const;
+
 	inline const size_t getAmountChunk() const { return m_Chunks.size(); }
 	inline const size_t getAmountBlockFormat() const { return m_BlockFormats.size(); };
 	inline const size_t getAmountTextureFormat() const { return m_TextureFormats.size(); }
 	const size_t getDrawnVertices() const;
-
 	const unsigned int getDrawCalls() const;
+
 	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
 };

@@ -8,7 +8,7 @@ World::World(GLFWwindow* window)
 	m_GenerationSemaphore(0)
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
-	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 100.f);
+	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 350.f);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -76,39 +76,9 @@ void World::NeighborChunks()
 				z < conf.WORLD_WIDTH - 1	? m_Chunks[CoordToIndex({ x - 0, z + 1 })] : nullptr,
 				x > 0						? m_Chunks[CoordToIndex({ x - 1, z - 0 })] : nullptr
 			);
-
-			int i = 0;
 		}
 	}
 }
-
-//void World::ExpandChunkGeneration(bool xP, bool xM, bool zP, bool zM)
-//{
-//	char xPf = xP ? 1 : 0;
-//	char xMf = xM ? 1 : 0;
-//	char zPf = zP ? 1 : 0;
-//	char zMf = zM ? 1 : 0;
-//
-//	int startX = m_PlayerChunkPosition.x - (conf.RENDER_DISTANCE - 1) * xMf + (conf.RENDER_DISTANCE + 1) * xPf - (conf.RENDER_DISTANCE - 0) * zMf - (conf.RENDER_DISTANCE - 0) * zPf;
-//	int startZ = m_PlayerChunkPosition.y - (conf.RENDER_DISTANCE - 0) * xMf - (conf.RENDER_DISTANCE - 0) * xPf - (conf.RENDER_DISTANCE - 1) * zMf + (conf.RENDER_DISTANCE + 1) * zPf;
-//
-//	for (int i = 0; i < conf.RENDER_DISTANCE * 2 + 1; i++) {
-//		unsigned int index = CoordToIndex({ startX + (i * zPf) + (i * zMf), startZ + (i * xPf) + (i * xMf) });
-//		if (index == -1) continue;
-//		if (m_Chunks[index]) {
-//			// m_ChunksQueuedLoading.push(chunk);
-//		}
-//		else {
-//			Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
-//			m_Chunks[index] = chunk;
-//			chunk->setID(0); // ???
-//			chunk->setGenerationData({ m_WorldRootPosition.x + (startX + (i * zPf) + (i * zMf)) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + (i * xPf) + (i * xMf)) * conf.CHUNK_SIZE },
-//				{ startX + (i * zPf) + (i * zMf), startZ + (i * xPf) + (i * xMf), 1.f}, m_Noise);
-//			m_ChunksQueuedGenerating.push(chunk);
-//			m_GenerationSemaphore.release(1);
-//		}
-//	}
-//}
 
 void World::OnUpdate(double deltaTime)
 {
@@ -117,7 +87,7 @@ void World::OnUpdate(double deltaTime)
 	ProcessMouse();
 	m_MatrixView = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Front, m_Camera.Up);
 
-	updateLight();
+	UpdateLight();
 	HandleChunkLoading();
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
@@ -189,10 +159,10 @@ void World::OnInput(GLFWwindow* window, double deltaTime)
 
 void World::ProcessMouse()
 {
-	if (m_FirstInit) {
+	if (m_FirstMouseInit) {
 		m_LastX = s_MouseX;
 		m_LastY = s_MouseY;
-		m_FirstInit = false;
+		m_FirstMouseInit = false;
 	}
 
 	float xoffset = s_MouseX - m_LastX;
@@ -238,7 +208,7 @@ void World::GenerateTerrain()
 			m_Chunks[i]->setGenerationData({ (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.x, 0, (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.z },
 				{ (generationPosition.x + x) * 1.f, (generationPosition.y + z) * 1.f, 1.f }, m_Noise);
 
-			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push(m_Chunks[i]);
+			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push_back(m_Chunks[i]);
 			else m_Chunks[i]->Generate();
 
 			chunkOffset.z += conf.BLOCK_SIZE * conf.CHUNK_SIZE;
@@ -248,7 +218,7 @@ void World::GenerateTerrain()
 
 	// Neighboring
 	for (int i = 0; i < m_Chunks.size(); i++) {
-		if (!m_Chunks[i]) continue;			// Wrong Neighboring??
+		if (!m_Chunks[i]) continue;
 		glm::vec2 coord = IndexToCoord(i);
 
 		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
@@ -284,7 +254,7 @@ void World::GenerationThreadJob()
 			m_MutexLoading.lock();
 			Chunk* chunk = m_ChunksQueuedDeserialize.front();
 			chunk->Deserialize();
-			m_ChunksQueuedDeserialize.pop();
+			m_ChunksQueuedDeserialize.pop_front();
 			m_MutexLoading.unlock();
 			continue;
 		}
@@ -293,7 +263,7 @@ void World::GenerationThreadJob()
 			m_MutexLoading.lock();
 			Chunk* chunk = m_ChunksQueuedSerialize.front();
 			chunk->Serialize();
-			m_ChunksQueuedSerialize.pop();
+			m_ChunksQueuedSerialize.pop_front();
 			m_MutexLoading.unlock();
 			continue;
 		}
@@ -303,14 +273,13 @@ void World::GenerationThreadJob()
 			m_MutexGenerating.lock();
 			if (!m_ChunksQueuedGenerating.empty()) {
 				Chunk* chunk = m_ChunksQueuedGenerating.front();
-				m_ChunksQueuedGenerating.pop();
+				m_ChunksQueuedGenerating.pop_front();
 				m_MutexGenerating.unlock();
 
-				LOG(("Generating Chunk " + std::to_string(chunk->getID())));
 				chunk->Generate();
 
 				m_MutexCullFaces.lock();
-				m_ChunksQueuedCulling.push(chunk);
+				m_ChunksQueuedCulling.push_back(chunk);
 				m_MutexCullFaces.unlock();
 
 				m_IsGenerating--;
@@ -324,12 +293,12 @@ void World::GenerationThreadJob()
 			if (m_IsGenerating == 0) {
 				m_MutexCullFaces.lock();
 				Chunk* chunk = m_ChunksQueuedCulling.front();
-				m_ChunksQueuedCulling.pop();
+				m_ChunksQueuedCulling.pop_front();
 				m_MutexCullFaces.unlock();
 				chunk->CullFacesOnLoadBuffer();
 
 				m_MutexBufferLoading.lock();
-				m_ChunksQueuedBufferLoading.push(chunk);
+				m_ChunksQueuedBufferLoading.push_back(chunk);
 				m_MutexBufferLoading.unlock();
 			}
 			else {
@@ -353,15 +322,15 @@ void World::HandleChunkLoading()
 		Chunk* chunk = m_ChunksQueuedBufferLoading.front();
 		// LOG(("Loading Chunk " + std::to_string(chunk->getID())));
 		chunk->LoadVertexBufferFromLoadBuffer();
-		m_ChunksQueuedBufferLoading.pop();
+		m_ChunksQueuedBufferLoading.pop_front();
 	}
 	m_MutexBufferLoading.unlock();
 	
 	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - m_Camera.Position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - m_Camera.Position.z) / conf.CHUNK_SIZE) };
 
-	if (m_IsInit) {
+	if (m_IsGenerationInit) {
 		m_PlayerChunkPosition = currentPLayerChunkPosition;
-		m_IsInit = false;
+		m_IsGenerationInit = false;
 	}
 
 	if (conf.EXPAND_TERRAIN && currentPLayerChunkPosition.x < m_PlayerChunkPosition.x) {
@@ -379,7 +348,7 @@ void World::HandleChunkLoading()
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 				m_Chunks[index] = chunk;
-				chunk->setID(0); // ???
+				chunk->setID(index);
 				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
 					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
 
@@ -389,8 +358,10 @@ void World::HandleChunkLoading()
 				chunkNeighbor = startX > 0 ? m_Chunks[CoordToIndex({ startX - 1, startZ + i })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				m_ChunksQueuedGenerating.push(chunk);
+				m_MutexGenerating.lock();
+				m_ChunksQueuedGenerating.push_back(chunk);
 				waitingForNeighboring++;
+				m_MutexGenerating.unlock();
 			}
 
 			// Unload in X+
@@ -414,7 +385,7 @@ void World::HandleChunkLoading()
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 				m_Chunks[index] = chunk;
-				chunk->setID(0); // ???
+				chunk->setID(index);
 				chunk->setGenerationData({ m_WorldRootPosition.x + startX * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + (startZ + i) * conf.CHUNK_SIZE },
 					{ (startX) * 1.f, (startZ + i) * 1.f, 1.f }, m_Noise);
 
@@ -424,8 +395,10 @@ void World::HandleChunkLoading()
 				chunkNeighbor = startX < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + 1, startZ + i })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				m_ChunksQueuedGenerating.push(chunk);
+				m_MutexGenerating.lock();
+				m_ChunksQueuedGenerating.push_back(chunk);
 				waitingForNeighboring++;
+				m_MutexGenerating.unlock();
 			}
 
 			// Unload in X-
@@ -450,7 +423,7 @@ void World::HandleChunkLoading()
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 				m_Chunks[index] = chunk;
-				chunk->setID(0); // ???
+				chunk->setID(index);
 				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
 					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
 
@@ -460,8 +433,10 @@ void World::HandleChunkLoading()
 				chunkNeighbor = startX > 0 ? m_Chunks[CoordToIndex({ startX + i, startZ - 1 })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				m_ChunksQueuedGenerating.push(chunk);
+				m_MutexGenerating.lock();
+				m_ChunksQueuedGenerating.push_back(chunk);
 				waitingForNeighboring++;
+				m_MutexGenerating.unlock();
 			}
 
 			// Unload in Z+
@@ -485,7 +460,7 @@ void World::HandleChunkLoading()
 			else {
 				Chunk* chunk = new Chunk(&m_BlockFormats, &m_TextureFormats);
 				m_Chunks[index] = chunk;
-				chunk->setID(0); // ???
+				chunk->setID(index);
 				chunk->setGenerationData({ m_WorldRootPosition.x + (startX + i) * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + startZ * conf.CHUNK_SIZE },
 					{ (startX + i) * 1.f, (startZ + 0) * 1.f, 1.f }, m_Noise);
 
@@ -495,10 +470,11 @@ void World::HandleChunkLoading()
 				chunkNeighbor = startZ < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ startX + i, startZ + 1 })] : nullptr;
 				if (chunkNeighbor) ChunksReculled.insert(chunkNeighbor);
 
-				m_ChunksQueuedGenerating.push(chunk);
+				m_MutexGenerating.lock();
+				m_ChunksQueuedGenerating.push_back(chunk);
 				waitingForNeighboring++;
+				m_MutexGenerating.unlock();
 			}
-
 			// Unload in Z-
 			unsigned int unloadIndex = CoordToIndex({ startX + i, m_PlayerChunkPosition.y - conf.RENDER_DISTANCE });
 			Chunk* chunkUnload = unloadIndex != -1 ? m_Chunks[unloadIndex] : nullptr;
@@ -509,14 +485,14 @@ void World::HandleChunkLoading()
 	if (hasExpanded) NeighborChunks();
 
 	for (auto it = ChunksReculled.begin(); it != ChunksReculled.end(); it++) {
-		m_ChunksQueuedCulling.push(*it);
+		m_ChunksQueuedCulling.push_back(*it);
 	}
 
 	m_GenerationSemaphore.release(waitingForNeighboring + ChunksReculled.size());
 	m_PlayerChunkPosition = currentPLayerChunkPosition;
 }
 
-bool World::ContainsElementAtomic(std::queue<Chunk*>* list, std::mutex& mutex)
+bool World::ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex)
 {
 	bool containsElement = false;
 	mutex.lock();
@@ -594,10 +570,10 @@ void World::SetupLight()
 	// Fog
 	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.FOG_AFFECT_DISTANCE);
 	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.FOG_DENSITY);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.7568627f, 0.850980f, 0.858823f);
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.6f, 0.8f, 1.f);
 }
 
-void World::updateLight()
+void World::UpdateLight()
 {
 
 }

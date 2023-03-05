@@ -8,10 +8,12 @@ config:
     Width: 1920
 
   rendering:
-    MaxBufferFaces: 5000
+    MaxBufferFaces: 2000
     TextureSize: 16
     RenderDistance: 3
     TextureInverseOffset: 1000
+
+    # Experimental
     ExpandTerrain: false
 
   game:
@@ -19,11 +21,11 @@ config:
       WorldWidth: 64
       ChunkSize: 16
       BlockSize: 1.0
-      ChunkHeight: 20
-      YStretch: 10.0
+      ChunkHeight: 15
+      YStretch: 5.0
       XStretch: 0.5
       MinHeight: 10
 
     environment:
-      FogAffectDistance: 30.0
-      FogDensity: 0.47
+      FogAffectDistance: 80.0
+      FogDensity: 0.35

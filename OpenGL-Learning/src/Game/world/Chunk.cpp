@@ -10,7 +10,7 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	m_BlockStatic.reserve(conf.CHUNK_SIZE * conf.CHUNK_SIZE * conf.CHUNK_HEIGHT);
 	m_VertexLoadBuffer.reserve(conf.MAX_BUFFER_FACES * sizeof(Minecraft::Vertex));
 
-	// Heap allocate Indix-Buffer
+	// Heap allocate Index-Buffer
 	unsigned int* indices = new unsigned int[conf.MAX_BUFFER_FACES * 6];
 	unsigned int offset = 0;
 
@@ -27,9 +27,9 @@ Chunk::Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, st
 	}
 
 	m_IBstatic = std::make_unique<IndexBuffer>(indices, conf.MAX_BUFFER_FACES * 6);
-	m_VBstatic = std::make_unique<VertexBuffer>(conf.MAX_BUFFER_FACES, sizeof(Minecraft::Vertex));
+	m_VBstatic = std::make_unique<VertexBuffer>(conf.MAX_BUFFER_FACES * 4, sizeof(Minecraft::Vertex));
 
-	m_VBtransparentStatic = std::make_unique<VertexBuffer>(conf.MAX_BUFFER_FACES, sizeof(Minecraft::Vertex));
+	m_VBtransparentStatic = std::make_unique<VertexBuffer>(conf.MAX_BUFFER_FACES * 4, sizeof(Minecraft::Vertex));
 
 	delete[] indices;
 
@@ -127,7 +127,6 @@ void Chunk::CullFacesOnLoadBuffer()
 		}
 		else if (IsNotCovered({ coord.x, coord.y, coord.z + 1 })) doDraw = true;
 		if (doDraw) {
-			// buffer->AddVertexData(blockPtr->vertices, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 0 + i));
 			}
@@ -146,7 +145,6 @@ void Chunk::CullFacesOnLoadBuffer()
 		}
 		else if (IsNotCovered({ coord.x + 1, coord.y, coord.z })) doDraw = true;
 		if (doDraw) {
-			// buffer->AddVertexData(blockPtr->vertices + 4, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 4 + i));
 			}
@@ -165,7 +163,6 @@ void Chunk::CullFacesOnLoadBuffer()
 		}
 		else if (IsNotCovered({ coord.x - 1, coord.y, coord.z })) doDraw = true;
 		if (doDraw) {
-			//buffer->AddVertexData(blockPtr->vertices + 8, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 8 + i));
 			}
@@ -184,7 +181,6 @@ void Chunk::CullFacesOnLoadBuffer()
 		}
 		else if (IsNotCovered({ coord.x, coord.y, coord.z - 1 })) doDraw = true;
 		if (doDraw) {
-			// buffer->AddVertexData(blockPtr->vertices + 12, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 12 + i));
 			}
@@ -194,7 +190,6 @@ void Chunk::CullFacesOnLoadBuffer()
 
 		//  Top Face
 		if (coord.y == conf.CHUNK_HEIGHT - 1 || IsNotCovered({ coord.x, coord.y + 1, coord.z })) {
-			// buffer->AddVertexData(blockPtr->vertices + 16, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 16 + i));
 			}
@@ -204,7 +199,6 @@ void Chunk::CullFacesOnLoadBuffer()
 
 		// Bottom Face
 		if (coord.y == 0 || IsNotCovered({ coord.x, coord.y - 1, coord.z })) {
-			// buffer->AddVertexData(blockPtr->vertices + 20, sizeof(Minecraft::Vertex) * 4);
 			for (int i = 0; i < 4; i++) {
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 20 + i));
 			}
@@ -418,9 +412,6 @@ void Chunk::Generate()
 				else id = 6;
 
 				if (i >= conf.CHUNK_HEIGHT) break;
-				
-				// Used for shuffling
-				//id = (unsigned int)(std::floor(((float)rand() / RAND_MAX) * (m_BlockFormats->size() - 1)));	// Exclude last Block-ID -> Glass
 
 				Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE, m_Position.y + i * conf.BLOCK_SIZE, m_Position.z + z * conf.BLOCK_SIZE }, id);
 				unsigned int index;
@@ -450,7 +441,7 @@ void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm:
 	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 0.f);
-	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
+	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
 }
 
 void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
@@ -463,7 +454,7 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 1.f);
-	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic);
+	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, m_TransparentStaticsOrdered.size() * 6);
 }
 
 void Chunk::setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffset, siv::PerlinNoise& noise)
