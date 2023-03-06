@@ -570,7 +570,7 @@ void World::SetupLight()
 	// Fog
 	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.FOG_AFFECT_DISTANCE);
 	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.FOG_DENSITY);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", 0.44313f, 0.54509f, 0.62352f);
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", conf.FOG_COLOR.r / 255.f, conf.FOG_COLOR.g / 255.f, conf.FOG_COLOR.b / 255.f);
 }
 
 void World::UpdateLight()

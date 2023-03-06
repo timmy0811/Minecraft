@@ -1,6 +1,7 @@
 #pragma once
 
 #include <yaml-cpp/yaml.h>
+#include "glm/glm.hpp"
 
 #include <iostream>
 #define LOG(message) std::cout << message << std::endl
@@ -34,6 +35,9 @@ public:
 
 		FOG_AFFECT_DISTANCE = mainNode["config"]["game"]["environment"]["FogAffectDistance"].as<float>();
 		FOG_DENSITY = mainNode["config"]["game"]["environment"]["FogDensity"].as<float>();
+		FOG_COLOR.r = mainNode["config"]["game"]["environment"]["FogColor"]["r"].as<float>();
+		FOG_COLOR.g = mainNode["config"]["game"]["environment"]["FogColor"]["g"].as<float>();
+		FOG_COLOR.b = mainNode["config"]["game"]["environment"]["FogColor"]["b"].as<float>();
 		
 		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
 		GENERATION_THREADS = mainNode["config"]["system"]["GenerationThreads"].as<unsigned int>();
@@ -72,6 +76,7 @@ public:
 	// Environment
 	float FOG_AFFECT_DISTANCE = 0;
 	float FOG_DENSITY = 0;
+	glm::vec3 FOG_COLOR = {0.f, 0.f, 0.f};
 };
 
 extern Config conf;

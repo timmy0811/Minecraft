@@ -29,3 +29,8 @@ config:
     environment:
       FogAffectDistance: 40.0
       FogDensity: 0.4
+
+      FogColor:
+        r: 130
+        g: 165
+        b: 188
