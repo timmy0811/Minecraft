@@ -1,5 +1,6 @@
 #pragma once
 
+#include "windowsWrapper.h"
 #include <yaml-cpp/yaml.h>
 #include "glm/glm.hpp"
 
@@ -7,11 +8,20 @@
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
+enum class LOG_COLOR { LOG = 15, WARNING = 14, OK = 10, FAULT = 14, SPECIAL_A = 11, SPECIAL_B = 13};
+
+static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
+	SetConsoleTextAttribute(hConsole, (int)color);
+	std::cout << msg << '\n';
+	SetConsoleTextAttribute(hConsole, 15);
+}
+
 #include <string>
 class Config {
 public:
 	Config(const std::string& path) {
-		LOG("Parsing Config");
+		LOGC("Parsing Config", LOG_COLOR::LOG);
 		YAML::Node mainNode = YAML::LoadFile(path);
 
 		WIN_WIDTH = mainNode["config"]["window"]["Width"].as<unsigned int>();
@@ -22,6 +32,10 @@ public:
 		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
 		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
 		EXPAND_TERRAIN = mainNode["config"]["rendering"]["ExpandTerrain"].as<bool>();
+
+		CHUNK_BORDER_COLOR.r = mainNode["config"]["rendering"]["ChunkBorderColor"]["r"].as<float>();
+		CHUNK_BORDER_COLOR.g = mainNode["config"]["rendering"]["ChunkBorderColor"]["g"].as<float>();
+		CHUNK_BORDER_COLOR.b = mainNode["config"]["rendering"]["ChunkBorderColor"]["b"].as<float>();
 
 		WORLD_WIDTH = mainNode["config"]["game"]["terrain"]["WorldWidth"].as<unsigned int>();
 		if (WORLD_WIDTH % 2 != 0) WORLD_WIDTH += 1;
@@ -59,6 +73,8 @@ public:
 	unsigned int RENDER_DISTANCE = 0;
 	unsigned int TEXTURE_INVERSE_OFFSET = 0;
 	bool EXPAND_TERRAIN = false;
+
+	glm::vec3 CHUNK_BORDER_COLOR = { 0.f, 0.f, 0.f };
 
 	// Game
 	// Terrain

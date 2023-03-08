@@ -19,10 +19,6 @@ inline int TexturePacker::CoordinateToIndex(int x, int y, int width)
 
 const bool TexturePacker::PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float accur)
 {
-	// Color Console output
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(hConsole, 11);
-
 	// Get amount of images
 	unsigned int amountFiles = 0;
 
@@ -50,7 +46,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 		img = (char*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 		
 		if (img) {
-			std::cout << "Loaded " << path << "." << '\n';
+			LOGC(("Loaded " + path + "."), LOG_COLOR::SPECIAL_A);
 
 			if (height > width) {
 				largeImages.push_back(path);
@@ -97,8 +93,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 			}
 		}
 		else {
-			SetConsoleTextAttribute(hConsole, 12);
-			std::cout << "Could not load " << path << "." << '\n';
+			LOGC(("Could not load " + path + "."), LOG_COLOR::FAULT);
 		}
 
 		free(img);
@@ -118,9 +113,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 	fout << node;
 	fout.close();
 
-	SetConsoleTextAttribute(hConsole, 10);
-	LOG("Textures Packed successfully!");
+	LOGC("Textures Packed successfully!", LOG_COLOR::OK);
 
-	SetConsoleTextAttribute(hConsole, 15);
 	return false;
 }

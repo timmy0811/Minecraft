@@ -7,6 +7,7 @@
 #include "world/World.h"
 #include "view/Skybox.h"
 
+#include "windowsWrapper.h"
 #include "Game/application/TexturePacker.h"
 
 class Handler

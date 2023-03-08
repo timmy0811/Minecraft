@@ -435,7 +435,11 @@ void Chunk::Generate()
 	m_IsGenerated = true;
 }
 
-void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
+void Chunk::OnUpdate()
+{
+}
+
+void Chunk::OnRender(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
 {
 	// Draw default static blocks
 	m_DrawCalls++;
@@ -444,7 +448,7 @@ void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm:
 	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
 }
 
-void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
+void Chunk::OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
 {
 	// Draw transparent static blocks
 	OrderTransparentStatics(cameraPosition);

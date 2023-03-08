@@ -9,27 +9,11 @@
 
 #include "config.h"
 
-#include "OpenGL_util/core/VertexBuffer.h"
-#include "OpenGL_util/core/VertexArray.h"
-#include "OpenGL_util/core/IndexBuffer.h"
-#include "OpenGL_util/core/VertexBufferLayout.h"
-#include "OpenGL_util/core/Shader.h"
 #include "OpenGL_util/core/Renderer.h"
 
+#include "../render/shader.h"
 #include "../block/Block.hpp"
 #include "../primitive/Primitive.hpp"
-
-namespace Minecraft {
-	namespace Helper {
-		struct ShaderPackage {
-			Shader* shaderBlockStatic;
-
-			~ShaderPackage() {
-				delete shaderBlockStatic;
-			}
-		};
-	}
-}
 
 class Chunk
 {
@@ -95,8 +79,8 @@ public:
 	~Chunk();
 
 	void OnUpdate();
-	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
-	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
+	void OnRender(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
+	void OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
 
 	// Buffers
 	void Generate();
@@ -114,6 +98,7 @@ public:
 	void setChunkNeighbor(char index, Chunk* c);
 	void setID(const unsigned int id) { m_ID = id; };
 
+	inline const glm::vec3 getPosition() const { return m_Position; };
 	inline const unsigned int getID() const { return m_ID; };
 	inline const bool getWaitingStatus() const { return m_WaitingForLoad; };
 	Minecraft::Block_static** getBlocklistAllocator();

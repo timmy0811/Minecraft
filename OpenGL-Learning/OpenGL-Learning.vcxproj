@@ -310,6 +310,8 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Game\render\line.h" />
+    <ClInclude Include="src\Game\render\shader.h" />
     <ClInclude Include="src\Game\view\Skybox.h" />
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\Game\view\Camera.h" />
@@ -629,6 +631,7 @@
     <ClInclude Include="src\vendor\stb_image\stb_image_write.h" />
     <ClInclude Include="src\vendor\yaml\yaml_wrapper.hpp" />
     <ClInclude Include="src\Game\application\TexturePacker.h" />
+    <ClInclude Include="src\windowsWrapper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

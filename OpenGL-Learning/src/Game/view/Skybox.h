@@ -18,7 +18,7 @@ private:
 	unsigned int m_RendererID;
 	std::string m_FilepathPrefix;
 
-	Shader m_Shader;
+	Shader shader;
 
 	// Cube object
 	std::unique_ptr<VertexArray> m_VA;

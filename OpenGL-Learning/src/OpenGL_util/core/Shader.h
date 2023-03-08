@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "glm/glm.hpp"
 
+#include "config.h"
 #include "../debug/Debug.hpp"
 #include "../misc/Material.hpp"
 #include "../misc/Light.hpp"

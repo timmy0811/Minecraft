@@ -5,7 +5,8 @@ World::World(GLFWwindow* window)
 	r_Window(window),
 	m_TextureMap("res/images/sheets/blocksheet.png", false),
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
-	m_GenerationSemaphore(0)
+	m_GenerationSemaphore(0),
+	m_ChunkBorderRenderer(conf.WORLD_WIDTH* conf.WORLD_WIDTH * 24, "res/shader/chunk_border/shader_chunkborder.vert", "res/shader/chunk_border/shader_chunkborder.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -15,7 +16,6 @@ World::World(GLFWwindow* window)
 
 	// Experimental Texture Setup
 	m_TextureMap.Bind(0);
-
 	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
 	// Parse blocks before textures!!!
@@ -31,10 +31,16 @@ World::World(GLFWwindow* window)
 	m_Chunks.reserve(conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4);
 	GenerateTerrain();
 	SetupLight();
+
+	m_ChunkBorderRenderer.shader->Bind();
+	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
+
+	SetupChunkBorders();
 }
 
 World::~World()
 {
+	LOGC("Removing Chunks", LOG_COLOR::LOG);
 	for (Chunk* chunk : m_Chunks) {
 		delete chunk;
 	}
@@ -44,12 +50,20 @@ World::~World()
 	m_ExecuteGenerationJob = false;
 	m_GenerationSemaphore.release(1000);
 	for (auto& thread : m_GenerationThreads) {
-		if(thread.joinable()) thread.join();
+		if (thread.joinable()) {
+			auto id = thread.get_id();
+			std::stringstream ss;
+			ss << id;
+
+			LOGC(("Joining Generation Thread #" + ss.str()), LOG_COLOR::OK);
+			thread.join();
+		}
 	}
 }
 
 void World::OnRender()
 {
+
 	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
 		if (!chunk || !chunk->isLoaded()) continue;
@@ -61,6 +75,9 @@ void World::OnRender()
 		if (!chunk) continue;
 		chunk->OnRenderTransparents(m_ShaderPackage, m_Camera.Position);
 	}
+
+	if(m_DrawChunkBorder) m_ChunkBorderRenderer.Draw();
+
 }
 
 void World::NeighborChunks()
@@ -93,6 +110,9 @@ void World::OnUpdate(double deltaTime)
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+
+	m_ChunkBorderRenderer.shader->Bind();
+	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
 }
 
 const glm::mat4& World::getMatrixProjection() const
@@ -192,6 +212,7 @@ void World::ProcessMouse()
 
 void World::GenerateTerrain()
 {
+	LOGC("Generating Terrain", LOG_COLOR::SPECIAL_B);
 	unsigned int chunkWidth = (unsigned int)(conf.CHUNK_SIZE * conf.BLOCK_SIZE);
 
 	glm::vec2 rootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };															// Spawn Chunk in Matric Space
@@ -203,6 +224,7 @@ void World::GenerateTerrain()
 		chunkOffset.z = 0.f;
 		for (unsigned int z = 0; z < conf.RENDER_DISTANCE * 2 + 1; z++) {
 			const unsigned int i = CoordToIndex(generationPosition + glm::vec2{ x, z });
+			LOGC(("Chunk " + std::to_string(i) + " queued"), LOG_COLOR::LOG);
 			m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
 			m_Chunks[i]->setID(i);
 			m_Chunks[i]->setGenerationData({ (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.x, 0, (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.z },
@@ -245,6 +267,7 @@ inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 
 void World::GenerationThreadJob()
 {
+	LOGC("Started generation Thread", LOG_COLOR::LOG);
 	while (true) { 
 		m_GenerationSemaphore.acquire();
 		if (!m_ExecuteGenerationJob) return;
@@ -306,7 +329,7 @@ void World::GenerationThreadJob()
 			}
 			continue;
 		}
-		LOG("Warning: Threading skipped a task!");
+		LOGC("Warning: Threading skipped a task!", LOG_COLOR::WARNING);
 	}
 }
 
@@ -503,6 +526,7 @@ bool World::ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex)
 
 void World::ParseBlocks(const std::string& path)
 {
+	LOGC("Parsing Blocklist", LOG_COLOR::SPECIAL_A);
 	YAML::Node mainNode = YAML::LoadFile(path);
 	for (auto block : mainNode) {
 		Minecraft::Block_format blockFormat;
@@ -533,6 +557,7 @@ void World::ParseBlocks(const std::string& path)
 
 void World::ParseTextures(const std::string& path)
 {
+	LOGC("Parsing Texturelist", LOG_COLOR::SPECIAL_A);
 	YAML::Node mainNode = YAML::LoadFile(path);
 	for (auto texture : mainNode) {
 		Minecraft::Texture_Format textureFormat;
@@ -553,6 +578,54 @@ void World::ParseTextures(const std::string& path)
 		textureFormat.uv[3].y = texture.second["uvs"]["3"][1].as<float>();
 
 		m_TextureFormats[textureFormat.name] = textureFormat;
+	}
+}
+
+void World::SetupChunkBorders()
+{
+	for (Chunk* chunk : m_Chunks) {
+		if (!chunk) continue;
+		glm::vec3 position = chunk->getPosition();
+		position.z -= 1.f;
+		float chunkWidth = conf.BLOCK_SIZE * conf.CHUNK_SIZE;
+		float chunkHeight = conf.BLOCK_SIZE * conf.CHUNK_HEIGHT;
+		Minecraft::LineVertex v[24]{};
+
+		v[0].Position = { position.x + 0,			position.y + 0,				position.z + chunkWidth };
+		v[1].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
+		v[2].Position = { position.x + 0,			position.y + 0,				position.z + 0 };
+		v[3].Position = { position.x + 0,			position.y + chunkHeight,	position.z + 0 };
+
+		v[4].Position = { position.x + chunkWidth,	position.y + 0,				position.z + 0 };
+		v[5].Position = { position.x + chunkWidth,	position.y + chunkHeight,	position.z + 0 };
+		v[6].Position = { position.x + chunkWidth,	position.y + 0,				position.z + chunkWidth };
+		v[7].Position = { position.x + chunkWidth,	position.y + chunkHeight,	position.z + chunkWidth };
+
+		v[8].Position = { position.x + 0,			position.y + 0,				position.z + chunkWidth };
+		v[9].Position = { position.x + chunkWidth,	position.y + 0,				position.z + chunkWidth };
+		v[10].Position = { position.x + chunkWidth, position.y + 0,				position.z + chunkWidth };
+		v[11].Position = { position.x + chunkWidth, position.y + 0,				position.z + 0 };
+
+		v[12].Position = { position.x + chunkWidth, position.y + 0,				position.z + 0 };
+		v[13].Position = { position.x + 0,			position.y + 0,				position.z + 0 };
+		v[14].Position = { position.x + 0,			position.y + 0,				position.z + 0 };
+		v[15].Position = { position.x + 0,			position.y + 0,				position.z + chunkWidth };
+
+		v[16].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
+		v[17].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
+		v[18].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
+		v[19].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + 0 };
+
+		v[20].Position = { position.x + chunkWidth, position.y + chunkHeight,	position.z + 0 };
+		v[21].Position = { position.x + 0,			position.y + chunkHeight,	position.z + 0 };
+		v[22].Position = { position.x + 0,			position.y + chunkHeight,	position.z + 0 };
+		v[23].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
+
+		for (int i = 0; i < 24; i++) {
+			v[i].Color = conf.CHUNK_BORDER_COLOR;
+		}
+
+		m_ChunkBorderRenderer.vb->AddVertexData(v, sizeof(Minecraft::LineVertex) * 24);
 	}
 }
 

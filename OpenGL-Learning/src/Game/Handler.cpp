@@ -47,6 +47,7 @@ void Handler::DebugWindow()
 
 	ImGui::Text("X:    Toggle Wireframe");
 	ImGui::Text("P:    Pack Textures");
+	ImGui::Text("B:    Toggle Chunkborders");
 
 	ImGui::End();
 
@@ -74,7 +75,16 @@ void Handler::DebugWindow()
 		std::cout << "Packing Textures..." << '\n';
 		Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", (float)conf.TEXTURE_INVERSE_OFFSET);
 	}
-	else if (glfwGetKey(r_Window, GLFW_KEY_X) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
+	else if (glfwGetKey(r_Window, GLFW_KEY_P) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
+
+	static bool keyPressedB = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_B) == GLFW_PRESS && !keyPressedB)
+	{
+		keyPressedB = true;
+		if (m_World.m_DrawChunkBorder) m_World.m_DrawChunkBorder = false;
+		else m_World.m_DrawChunkBorder = true;
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_B) == GLFW_RELEASE && keyPressedB) keyPressedB = false;
 
 	ImGui::End();
 }

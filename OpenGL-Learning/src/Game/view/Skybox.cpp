@@ -2,9 +2,9 @@
 
 Skybox::Skybox(const std::string& cubemapPathPrefix, const std::string& fileFormat)
 	:m_RendererID(0), m_FilepathPrefix(cubemapPathPrefix),
-    m_Shader("res/shaders/skybox/shader_skybox.vert", "res/shaders/skybox/shader_skybox.frag")
+    shader("res/shaders/skybox/shader_skybox.vert", "res/shaders/skybox/shader_skybox.frag")
 {
-    m_Shader.Bind();
+    shader.Bind();
 
     GLCall(glActiveTexture(GL_TEXTURE0));
 
@@ -85,7 +85,7 @@ Skybox::Skybox(const std::string& cubemapPathPrefix, const std::string& fileForm
 
     m_VA->AddBuffer(*m_VB, *m_VBLayout);
 
-    m_Shader.Unbind();
+    shader.Unbind();
 }
 
 Skybox::~Skybox()
@@ -102,13 +102,13 @@ void Skybox::Unbind()
 
 const unsigned int Skybox::Bind(const unsigned int slot)
 {
-    m_Shader.Bind();
+    shader.Bind();
 
     GLCall(glActiveTexture(GL_TEXTURE0 + slot));
     GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID));
     m_BoundID = static_cast<int>(slot);
 
-    m_Shader.SetUniform1i("u_Cubemap", slot);
+    shader.SetUniform1i("u_Cubemap", slot);
 
     return slot;
 }
@@ -121,7 +121,7 @@ const unsigned int Skybox::Bind(const unsigned int slot, Shader& shader)
     GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID));
     m_BoundID = static_cast<int>(slot);
 
-    m_Shader.SetUniform1i("u_Cubemap", slot);
+    shader.SetUniform1i("u_Cubemap", slot);
 
     return slot;
 }
@@ -131,13 +131,13 @@ void Skybox::OnRender()
     m_DrawCalls++;
 
     GLCall(glDepthFunc(GL_LEQUAL));
-    Renderer::DrawArray(*m_VA, m_Shader, 0, 36);
+    Renderer::DrawArray(*m_VA, shader, 0, 36);
     GLCall(glDepthFunc(GL_LESS));
 }
 
 void Skybox::setMatrix(const glm::mat4& projection, const glm::mat4& view)
 {
-    m_Shader.Bind();
-    m_Shader.SetUniformMat4f("u_ViewTest", glm::mat4(glm::mat3(view)));
-    m_Shader.SetUniformMat4f("u_Projection", projection);
+    shader.Bind();
+    shader.SetUniformMat4f("u_ViewTest", glm::mat4(glm::mat3(view)));
+    shader.SetUniformMat4f("u_Projection", projection);
 }

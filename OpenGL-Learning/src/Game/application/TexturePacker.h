@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <iostream>
 #include <list>
-#include <windows.h>
+#include "windowsWrapper.h"
 
 #include "vendor/stb_image/stb_image.h"
 #include "vendor/stb_image/stb_image_write.h"

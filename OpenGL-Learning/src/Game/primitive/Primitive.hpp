@@ -12,6 +12,11 @@ namespace Minecraft {
 		float reflection;
 	};
 
+	struct LineVertex {
+		glm::vec3 Position;
+		glm::vec3 Color;
+	};
+
 	struct Face {
 		Vertex vertices[4];
 	};

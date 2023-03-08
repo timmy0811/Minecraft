@@ -7,6 +7,7 @@
 #include "config.h"
 
 // System
+#include "windowsWrapper.h"
 #include <functional>
 #include <time.h>
 #include <iostream>
@@ -30,6 +31,7 @@
 #include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
 #include "OpenGL_util/misc/Light.hpp"
+#include "Game/render/line.h"
 
 class World
 {
@@ -54,9 +56,11 @@ private:
 	Minecraft::Camera3D m_Camera;
 	OpenGL::DirectionalLight m_DirLight;
 
-	Minecraft::Helper::ShaderPackage m_ShaderPackage;
+	Minecraft::Render::ShaderPackage m_ShaderPackage;
 
 	GLFWwindow* r_Window;
+
+	Minecraft::Render::LineRenderer m_ChunkBorderRenderer;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
@@ -81,6 +85,7 @@ private:
 
 	// Methods ------------------------------------------
 	// Setup
+	void SetupChunkBorders();
 	void SetupLight();
 	void GenerateTerrain();
 
@@ -111,6 +116,8 @@ public:
 	inline static float s_MouseX = 0;
 	inline static float s_MouseY = 0;
 
+	bool m_DrawChunkBorder;
+
 	// Methods ------------------------------------------
 	World(GLFWwindow* window);
 	~World();
@@ -138,5 +145,5 @@ public:
 	const size_t getDrawnVertices() const;
 	const unsigned int getDrawCalls() const;
 
-	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
+	inline const Minecraft::Render::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
 };
