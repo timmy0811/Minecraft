@@ -41,13 +41,15 @@ void Handler::DebugWindow()
 	ImGui::Text(("Render Distance: " + std::to_string(conf.RENDER_DISTANCE)).c_str());
 
 	// Keybindings
-	ImGui::SetNextWindowSize(ImVec2(380.f, 110.f));
+	ImGui::SetNextWindowSize(ImVec2(380.f, 130.f));
 	ImGui::SetNextWindowPos(ImVec2(10.f, 280.f));
 	ImGui::Begin("Keybindings");
 
 	ImGui::Text("X:    Toggle Wireframe");
 	ImGui::Text("P:    Pack Textures");
 	ImGui::Text("B:    Toggle Chunkborders");
+	ImGui::Text("F:    Toggle Movement");
+	ImGui::Text("V:    Parse Config");
 
 	ImGui::End();
 
@@ -85,6 +87,30 @@ void Handler::DebugWindow()
 		else m_World.m_DrawChunkBorder = true;
 	}
 	else if (glfwGetKey(r_Window, GLFW_KEY_B) == GLFW_RELEASE && keyPressedB) keyPressedB = false;
+
+	static Minecraft::CharacterController::STATE state = Minecraft::CharacterController::STATE::WALKING;
+	static bool keyPressedF = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_F) == GLFW_PRESS && !keyPressedF)
+	{
+		keyPressedF = true;
+		if (state == Minecraft::CharacterController::STATE::WALKING) {
+			m_World.toggleCharacterMode(Minecraft::CharacterController::STATE::FLYING);
+			state = Minecraft::CharacterController::STATE::FLYING;
+		}
+		else if (state == Minecraft::CharacterController::STATE::FLYING) {
+			m_World.toggleCharacterMode(Minecraft::CharacterController::STATE::WALKING);
+			state = Minecraft::CharacterController::STATE::WALKING;
+		}
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_F) == GLFW_RELEASE && keyPressedF) keyPressedF = false;
+
+	static bool keyPressedV = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_V) == GLFW_PRESS && !keyPressedV)
+	{
+		keyPressedV = true;
+		conf.Parse();
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_V) == GLFW_RELEASE && keyPressedV) keyPressedV = false;
 
 	ImGui::End();
 }
@@ -127,7 +153,6 @@ void Handler::OnRender()
 void Handler::OnUpdate()
 {
 	m_World.OnUpdate(v_DeltaTime);
-
 	m_Skybox.setMatrix(m_World.getMatrixProjection(), m_World.getMatrixView());
 
 	float currentFrame = (float)glfwGetTime();

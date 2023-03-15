@@ -439,7 +439,7 @@ void Chunk::OnUpdate()
 {
 }
 
-void Chunk::OnRender(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
+void Chunk::OnRender(const Minecraft::Render::ShaderPackage& shaderPackage)
 {
 	// Draw default static blocks
 	m_DrawCalls++;
@@ -448,7 +448,7 @@ void Chunk::OnRender(const Minecraft::Render::ShaderPackage& shaderPackage, glm:
 	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
 }
 
-void Chunk::OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition)
+void Chunk::OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition)
 {
 	// Draw transparent static blocks
 	OrderTransparentStatics(cameraPosition);
@@ -481,7 +481,29 @@ void Chunk::setChunkNeighbor(char index, Chunk* c)
 	m_ChunkNeighbors[index] = c;
 }
 
+inline const Minecraft::BLOCKTYPE Chunk::getBlocktype(const glm::vec3& coord)
+{
+	unsigned int index = CoordToIndex(coord);
+	Minecraft::Block_static* block = m_BlockStatic[index];
+	if (!block) {
+		/*Minecraft::Block_static* blockT = m_BlockTransparenStatic[index];
+		if (blockT) return blockT->subtype;*/
+		return Minecraft::BLOCKTYPE::NONE;
+	}
+	else {
+		return block->subtype;
+	}
+}
+
 Minecraft::Block_static** Chunk::getBlocklistAllocator()
 {
 	return &m_BlockStatic[0];
+}
+
+Minecraft::Block_static* Chunk::getBlock(const glm::vec3& coord)
+{
+	unsigned int index = CoordToIndex(coord);
+	Minecraft::Block_static* block = m_BlockStatic[index];
+	// if (!block) return m_BlockTransparenStatic[index];
+	return block;
 }

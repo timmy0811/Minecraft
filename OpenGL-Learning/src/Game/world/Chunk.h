@@ -79,8 +79,8 @@ public:
 	~Chunk();
 
 	void OnUpdate();
-	void OnRender(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
-	void OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, glm::vec3& cameraPosition);
+	void OnRender(const Minecraft::Render::ShaderPackage& shaderPackage);
+	void OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition);
 
 	// Buffers
 	void Generate();
@@ -98,10 +98,12 @@ public:
 	void setChunkNeighbor(char index, Chunk* c);
 	void setID(const unsigned int id) { m_ID = id; };
 
+	inline const Minecraft::BLOCKTYPE getBlocktype(const glm::vec3& coord);
 	inline const glm::vec3 getPosition() const { return m_Position; };
 	inline const unsigned int getID() const { return m_ID; };
 	inline const bool getWaitingStatus() const { return m_WaitingForLoad; };
 	Minecraft::Block_static** getBlocklistAllocator();
+	Minecraft::Block_static* getBlock(const glm::vec3& coord);
 	inline const size_t getDrawnVertices() const { return m_DrawnVertices; }
 	inline const size_t getAmountBlockStatic() const { return m_BlockStatic.size(); }
 	inline const unsigned int getDrawCalls() {

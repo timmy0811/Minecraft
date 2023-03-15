@@ -6,10 +6,11 @@ World::World(GLFWwindow* window)
 	m_TextureMap("res/images/sheets/blocksheet.png", false),
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
 	m_GenerationSemaphore(0),
-	m_ChunkBorderRenderer(conf.WORLD_WIDTH* conf.WORLD_WIDTH * 24, "res/shader/chunk_border/shader_chunkborder.vert", "res/shader/chunk_border/shader_chunkborder.frag")
+	m_ChunkBorderRenderer(conf.WORLD_WIDTH* conf.WORLD_WIDTH * 24, "res/shader/chunk_border/shader_chunkborder.vert", "res/shader/chunk_border/shader_chunkborder.frag"),
+	m_CharacterController({0.f, 30.f, 0.f})
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
-	m_MatrixProjection = glm::perspective(glm::radians(45.f), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
+	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -67,17 +68,19 @@ void World::OnRender()
 	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
 		if (!chunk || !chunk->isLoaded()) continue;
-		chunk->OnRender(m_ShaderPackage, m_Camera.Position);
+		chunk->OnRender(m_ShaderPackage);
 	}
 
 	// Render transparent objects
 	for (Chunk* chunk : m_Chunks) {
 		if (!chunk) continue;
-		chunk->OnRenderTransparents(m_ShaderPackage, m_Camera.Position);
+		chunk->OnRenderTransparents(m_ShaderPackage, m_CharacterController.getPosition());
 	}
 
-	if(m_DrawChunkBorder) m_ChunkBorderRenderer.Draw();
-
+	if (m_DrawChunkBorder) {
+		m_ChunkBorderRenderer.Draw();
+		m_DrawCalls++;
+	}
 }
 
 void World::NeighborChunks()
@@ -99,20 +102,30 @@ void World::NeighborChunks()
 
 void World::OnUpdate(double deltaTime)
 {
-	glfwSetCursorPosCallback(r_Window, OnMouseCallback);
-
-	ProcessMouse();
-	m_MatrixView = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Front, m_Camera.Up);
+	const glm::vec3& position = m_CharacterController.getPosition();
+	m_MatrixView = glm::lookAt(position, position + m_CharacterController.getFront(), m_CharacterController.getUp());
 
 	UpdateLight();
 	HandleChunkLoading();
+	m_CharacterController.OnUpdate(deltaTime);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition",position.x, position.y, position.z);
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
+}
+
+void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
+{
+	m_MatrixProjection = glm::perspective(glm::radians(FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, nearD, farD);
+
+	m_ShaderPackage.shaderBlockStatic->Bind();
+	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
+
+	m_ChunkBorderRenderer.shader->Bind();
+	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
 }
 
 const glm::mat4& World::getMatrixProjection() const
@@ -127,7 +140,7 @@ const glm::mat4& World::getMatrixView() const
 
 const glm::vec3& World::getCameraPosition() const
 {
-	return m_Camera.Position;
+	return m_CharacterController.getPosition();
 }
 
 const unsigned int World::getAmountBlockStatic() const
@@ -165,49 +178,19 @@ const unsigned int World::getDrawCalls() const
 
 void World::OnInput(GLFWwindow* window, double deltaTime)
 {
-	const float cameraSpeed = 20.f * (float)deltaTime; // adjust accordingly
+	const glm::vec3& position = m_CharacterController.getPosition();
+	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - position.z) / conf.CHUNK_SIZE) };
 
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		m_Camera.Position += cameraSpeed * m_Camera.Front;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		m_Camera.Position -= cameraSpeed * m_Camera.Front;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		m_Camera.Position -= glm::normalize(glm::cross(m_Camera.Front, m_Camera.Up)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		m_Camera.Position += glm::normalize(glm::cross(m_Camera.Front, m_Camera.Up)) * cameraSpeed;
-}
-
-void World::ProcessMouse()
-{
-	if (m_FirstMouseInit) {
-		m_LastX = s_MouseX;
-		m_LastY = s_MouseY;
-		m_FirstMouseInit = false;
+	Chunk* chunks[9];
+	unsigned int offset = 0;
+	for (int x = 0; x < 3; x++) {
+		for (int z = 0; z < 3; z++) {
+			chunks[offset++] = m_Chunks[CoordToIndex({ currentPLayerChunkPosition.x - 1 + x, currentPLayerChunkPosition.y - 1 + z })];
+		}
 	}
 
-	float xoffset = s_MouseX - m_LastX;
-	float yoffset = m_LastY - s_MouseY; // reversed since y-coordinates range from bottom to top
-	m_LastX = s_MouseX;
-	m_LastY = s_MouseY;
-
-	const float sensitivity = 0.1f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	m_Camera.yaw += xoffset;
-	m_Camera.pitch += yoffset;
-
-	if (m_Camera.pitch > 89.0f)
-		m_Camera.pitch = 89.0f;
-	if (m_Camera.pitch < -89.0f)
-		m_Camera.pitch = -89.0f;
-
-	glm::vec3 direction;
-
-	direction.x = cos(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch));
-	direction.y = sin(glm::radians(m_Camera.pitch));
-	direction.z = sin(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch));
-	m_Camera.Front = glm::normalize(direction);
+	Minecraft::CharacterController::FOVchangeEvent event = m_CharacterController.OnInput(window, deltaTime, chunks);
+	if (event.doChange) UpdateProjectionMatrix(event.FOV);
 }
 
 void World::GenerateTerrain()
@@ -349,7 +332,8 @@ void World::HandleChunkLoading()
 	}
 	m_MutexBufferLoading.unlock();
 	
-	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - m_Camera.Position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - m_Camera.Position.z) / conf.CHUNK_SIZE) };
+	const glm::vec3& position = m_CharacterController.getPosition();
+	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - position.z) / conf.CHUNK_SIZE) };
 
 	if (m_IsGenerationInit) {
 		m_PlayerChunkPosition = currentPLayerChunkPosition;
@@ -650,10 +634,3 @@ void World::UpdateLight()
 {
 
 }
-
-void World::OnMouseCallback(GLFWwindow* window, double xpos, double ypos)
-{
-	World::s_MouseX = float(xpos);
-	World::s_MouseY = float(ypos);
-}
-

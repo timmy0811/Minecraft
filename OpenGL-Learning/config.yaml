@@ -8,6 +8,8 @@ config:
     Width: 1920
 
   rendering:
+    FOV: 65.0
+
     MaxBufferFaces: 2000
     TextureSize: 16
     RenderDistance: 1
@@ -27,7 +29,7 @@ config:
       ChunkSize: 16
       BlockSize: 1.0
       ChunkHeight: 30
-      YStretch: 0.0
+      YStretch: 7.0
       XStretch: 0.75
       MinHeight: 5
 
@@ -39,3 +41,19 @@ config:
         r: 130
         g: 165
         b: 188
+
+    movement:
+      Gravitation: 0.50
+      PlayerDrag: 0.3
+      PlayerDragInAir: 0.035
+      ControllInAir: 0.1
+
+      SpeedSprint: 0.1
+      SpeedWalk: 0.07
+      SpeedCrouch: 0.04
+      MaxFallSpeed: 1.0
+      JumpStrenght: 0.13
+
+      FOVwalking: 65.0
+      FOVcrouching: 60.0
+      FOVsprinting: 70.0

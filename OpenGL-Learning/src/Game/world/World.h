@@ -6,6 +6,10 @@
 #include "vendor/yaml/yaml_wrapper.hpp"
 #include "config.h"
 
+// Game 
+#include "Game/render/line.h"
+#include "Game/view/CharacterController.h"
+
 // System
 #include "windowsWrapper.h"
 #include <functional>
@@ -25,13 +29,11 @@
 #include "threading/semaphore.h"
 
 #include "Chunk.h"
-#include "../View/Camera.h"
 
 // Util
 #include "OpenGL_util/texture/Texture.h"
 #include "OpenGL_util/core/Shader.h"
 #include "OpenGL_util/misc/Light.hpp"
-#include "Game/render/line.h"
 
 class World
 {
@@ -45,6 +47,8 @@ private:
 	glm::mat4 m_MatrixTranslation;
 
 	// Objects
+	CharacterController m_CharacterController;
+
 	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
 	std::deque<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
@@ -53,7 +57,6 @@ private:
 	std::set<std::string> m_UsedTextures;
 	Texture m_TextureMap;
 
-	Minecraft::Camera3D m_Camera;
 	OpenGL::DirectionalLight m_DirLight;
 
 	Minecraft::Render::ShaderPackage m_ShaderPackage;
@@ -79,10 +82,6 @@ private:
 
 	std::vector<std::thread> m_GenerationThreads;
 
-	// Input
-	float m_LastX = 400, m_LastY = 300;
-	bool m_FirstMouseInit = true;
-
 	// Methods ------------------------------------------
 	// Setup
 	void SetupChunkBorders();
@@ -98,9 +97,6 @@ private:
 	void NeighborChunks();
 	void HandleChunkLoading();
 
-	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
-	void ProcessMouse();
-
 	// Misc
 	inline int CoordToIndex(const glm::vec2& coord) const;
 	inline const glm::vec2 IndexToCoord(unsigned int index) const;
@@ -113,9 +109,6 @@ private:
 
 public:
 	// Attributes ------------------------------------------
-	inline static float s_MouseX = 0;
-	inline static float s_MouseY = 0;
-
 	bool m_DrawChunkBorder;
 
 	// Methods ------------------------------------------
@@ -131,6 +124,7 @@ public:
 	void OnUpdate(double deltaTime);
 
 	// Misc
+	void UpdateProjectionMatrix(float FOV, float nearD = 0.1f, float farD = 300.f);
 
 	// Accessors
 	const glm::mat4& getMatrixProjection() const;
@@ -146,4 +140,6 @@ public:
 	const unsigned int getDrawCalls() const;
 
 	inline const Minecraft::Render::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
+
+	inline void toggleCharacterMode(Minecraft::CharacterController::STATE mode) { m_CharacterController.toggleMode(mode); };
 };

@@ -4,6 +4,8 @@
 #include "config.h"
 #include "../primitive/Primitive.hpp"
 
+#include "OpenGL_util/core/Renderer.h"
+
 #include "OpenGL_util/core/VertexBuffer.h"
 #include "OpenGL_util/core/VertexArray.h"
 #include "OpenGL_util/core/IndexBuffer.h"

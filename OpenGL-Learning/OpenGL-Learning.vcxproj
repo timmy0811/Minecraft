@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Game\view\CharacterController.cpp" />
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\Game\view\Skybox.cpp" />
     <ClCompile Include="src\Game\world\Chunk.cpp" />
@@ -310,6 +311,7 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Game\view\CharacterController.h" />
     <ClInclude Include="src\Game\render\line.h" />
     <ClInclude Include="src\Game\render\shader.h" />
     <ClInclude Include="src\Game\view\Skybox.h" />

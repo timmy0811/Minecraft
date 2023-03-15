@@ -19,14 +19,23 @@ inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
 
 #include <string>
 class Config {
+private:
+	const std::string m_Path;
 public:
-	Config(const std::string& path) {
-		LOGC("Parsing Config", LOG_COLOR::LOG);
-		YAML::Node mainNode = YAML::LoadFile(path);
+	Config(const std::string& path) 
+		:m_Path(path)
+	{
+		Parse();
+	}
+
+	void Parse() {
+		LOGC("Parsing Config", LOG_COLOR::SPECIAL_A);
+		YAML::Node mainNode = YAML::LoadFile(m_Path);
 
 		WIN_WIDTH = mainNode["config"]["window"]["Width"].as<unsigned int>();
 		WIN_HEIGHT = mainNode["config"]["window"]["Height"].as<unsigned int>();
 
+		FOV = mainNode["config"]["rendering"]["FOV"].as<float>();
 		MAX_BUFFER_FACES = mainNode["config"]["rendering"]["MaxBufferFaces"].as<unsigned int>();
 		TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
 		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
@@ -52,7 +61,22 @@ public:
 		FOG_COLOR.r = mainNode["config"]["game"]["environment"]["FogColor"]["r"].as<float>();
 		FOG_COLOR.g = mainNode["config"]["game"]["environment"]["FogColor"]["g"].as<float>();
 		FOG_COLOR.b = mainNode["config"]["game"]["environment"]["FogColor"]["b"].as<float>();
+
+		MOVEMENT_GRAVITATION = mainNode["config"]["game"]["movement"]["Gravitation"].as<float>();
+		MOVEMENT_PLAYER_DRAG = mainNode["config"]["game"]["movement"]["PlayerDrag"].as<float>();
+		MOVEMENT_PLAYER_DRAG_AIR = mainNode["config"]["game"]["movement"]["PlayerDragInAir"].as<float>();
+		MOVEMENT_CONTROLL_AIR = mainNode["config"]["game"]["movement"]["ControllInAir"].as<float>();
 		
+		MOVEMENT_SPEED_WALK = mainNode["config"]["game"]["movement"]["SpeedWalk"].as<float>();
+		MOVEMENT_SPEED_SPRINT = mainNode["config"]["game"]["movement"]["SpeedSprint"].as<float>();
+		MOVEMENT_SPEED_CROUCH = mainNode["config"]["game"]["movement"]["SpeedCrouch"].as<float>();
+		MOVEMENT_MAX_FALL_SPEED = mainNode["config"]["game"]["movement"]["MaxFallSpeed"].as<float>();
+		MOVEMENT_JUMP_STRENGHT = mainNode["config"]["game"]["movement"]["JumpStrenght"].as<float>();
+
+		FOV_CROUCH = mainNode["config"]["game"]["movement"]["FOVcrouching"].as<float>();
+		FOV_SPRINT = mainNode["config"]["game"]["movement"]["FOVsprinting"].as<float>();
+		FOV_WALK = mainNode["config"]["game"]["movement"]["FOVwalking"].as<float>();
+
 		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
 		GENERATION_THREADS = mainNode["config"]["system"]["GenerationThreads"].as<unsigned int>();
 
@@ -68,6 +92,7 @@ public:
 	unsigned int WIN_HEIGHT = 0;
 
 	// Rendering
+	float FOV = 0.f;
 	unsigned int MAX_BUFFER_FACES = 0;
 	unsigned int TEXTURE_SIZE = 0;
 	unsigned int RENDER_DISTANCE = 0;
@@ -93,6 +118,22 @@ public:
 	float FOG_AFFECT_DISTANCE = 0;
 	float FOG_DENSITY = 0;
 	glm::vec3 FOG_COLOR = {0.f, 0.f, 0.f};
+
+	// Movement
+	float MOVEMENT_GRAVITATION = 0.f;
+	float MOVEMENT_PLAYER_DRAG = 0.f;
+	float MOVEMENT_PLAYER_DRAG_AIR = 0.f;
+	float MOVEMENT_CONTROLL_AIR = 0.f;
+
+	float MOVEMENT_SPEED_WALK = 0.f;
+	float MOVEMENT_SPEED_SPRINT = 0.f;
+	float MOVEMENT_SPEED_CROUCH = 0.f;
+	float MOVEMENT_MAX_FALL_SPEED = 0.f;
+	float MOVEMENT_JUMP_STRENGHT = 0.f;
+
+	float FOV_CROUCH = 0.f;
+	float FOV_WALK = 0.f;
+	float FOV_SPRINT = 0.f;
 };
 
 extern Config conf;
