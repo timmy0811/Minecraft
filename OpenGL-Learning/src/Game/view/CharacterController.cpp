@@ -48,7 +48,7 @@ void CharacterController::OnMouseCallback(GLFWwindow* window, double xpos, doubl
 }
 
 CharacterController::CharacterController(const glm::vec3& position)
-	:m_State(Minecraft::CharacterController::STATE::FLYING)
+	:m_State(Minecraft::CharacterController::STATE::WALKING)
 {
 	m_Camera.Position = position;
 
@@ -72,11 +72,16 @@ CharacterController::CharacterController(const glm::vec3& position)
 		m_CheckOrder.push_back({ 1.f, i, -1.f });
 	}
 
-	toggleMode(Minecraft::CharacterController::STATE::FLYING);
+	toggleMode(Minecraft::CharacterController::STATE::WALKING);
 }
 
 Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9])
 {
+	if (!m_IsSpawned) {
+		m_Camera.Position = { 0.f, -10.f, 0.f };
+		return {};
+	}
+
 	glfwSetCursorPosCallback(window, OnMouseCallback);
 	ProcessMouse();
 
@@ -142,12 +147,14 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 		if (m_State == Minecraft::CharacterController::STATE::FLYING) m_FrameVelocity += glm::normalize(glm::cross(m_Camera.Front, m_Camera.Up)) * cameraSpeed;
 		else m_FrameVelocity += glm::normalize(glm::cross(glm::vec3(forwardXY.x, 0.f, forwardXY.y), glm::vec3(0.f, 1.f, 0.f))) * cameraSpeed;
 	}
-	
-	if (!moveStraight && ! moveSide) {
+
+	// Movement
+	if (!moveStraight && !moveSide) {
 		float drag;
 		if (m_State == Minecraft::CharacterController::STATE::FLYING) {
 			drag = conf.MOVEMENT_PLAYER_DRAG * 0.35f;
 
+			// Drag on Y
 			if (m_FrameVelocity.y > 0.005) m_FrameVelocity.y -= abs(m_FrameVelocity.y) * drag;
 			else if (m_FrameVelocity.y < -0.005) m_FrameVelocity.y += abs(m_FrameVelocity.y) * drag;
 			else m_FrameVelocity.y = 0.f;
@@ -156,16 +163,17 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 			drag = m_IsGrounded ? conf.MOVEMENT_PLAYER_DRAG : conf.MOVEMENT_PLAYER_DRAG_AIR;
 		}
 
+		// Drag on X
 		if (m_FrameVelocity.x > 0.005) m_FrameVelocity.x -= abs(m_FrameVelocity.x) * drag;
 		else if (m_FrameVelocity.x < -0.005) m_FrameVelocity.x += abs(m_FrameVelocity.x) * drag;
 		else m_FrameVelocity.x = 0.f;
 
+		// Drag on Z
 		if (m_FrameVelocity.z > 0.005) m_FrameVelocity.z -= abs(m_FrameVelocity.z) * drag;
 		else if (m_FrameVelocity.z < -0.005) m_FrameVelocity.z += abs(m_FrameVelocity.z) * drag;
-		else m_FrameVelocity.z = 0.f; 
+		else m_FrameVelocity.z = 0.f;
 	}
 
-	// Movement
 	m_BlockPosition = { std::floor(m_Camera.Position.x - r_WorldRootPosition.x),
 						std::floor(m_Camera.Position.y - m_CharBodyHeight),
 						std::floor(m_Camera.Position.z - r_WorldRootPosition.z) };
@@ -188,10 +196,7 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 
 	// Check for Collision
 	m_IsGrounded = false;
-	bool skipLayer = false;
-	int checkQuadHeight = std::ceil(m_CharBodyHeight + m_CharHeadHeight) + 2;
 	bool skipFloor = false;
-	std::vector<glm::vec3> checkOrder = {};
 
 	for (const glm::vec3& coord : m_CheckOrder) {
 		if (skipFloor && coord.y == -1) continue;
@@ -202,21 +207,21 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 
 		if (coordInChunk.x < 0 && coordInChunk.z >= 0 && coordInChunk.z < conf.CHUNK_SIZE) {
 			chunkIndex = 1;
-			coordInChunk.x = conf.CHUNK_SIZE - 1;
+			coordInChunk.x = conf.CHUNK_SIZE - 1.f;
 		}
 		else if (coordInChunk.x < 0 && coordInChunk.z < 0) {
 			chunkIndex = 0;
-			coordInChunk.x = conf.CHUNK_SIZE - 1;
-			coordInChunk.z = conf.CHUNK_SIZE - 1;
+			coordInChunk.x = conf.CHUNK_SIZE - 1.f;
+			coordInChunk.z = conf.CHUNK_SIZE - 1.f;
 		}
 		else if (coordInChunk.z < 0 && coordInChunk.x >= 0 && coordInChunk.x < conf.CHUNK_SIZE) {
 			chunkIndex = 3;
-			coordInChunk.z = conf.CHUNK_SIZE - 1;
+			coordInChunk.z = conf.CHUNK_SIZE - 1.f;
 		}
 		else if (coordInChunk.x >= conf.CHUNK_SIZE && coordInChunk.z < 0) {
 			chunkIndex = 6;
 			coordInChunk.x = 0.f;
-			coordInChunk.z = conf.CHUNK_SIZE - 1;
+			coordInChunk.z = conf.CHUNK_SIZE - 1.f;
 		}
 		else if (coordInChunk.x >= conf.CHUNK_SIZE && coordInChunk.z >= 0 && coordInChunk.z < conf.CHUNK_SIZE) {
 			chunkIndex = 7;
@@ -233,7 +238,7 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 		}
 		else if (coordInChunk.x < 0.f && coordInChunk.z >= conf.CHUNK_SIZE) {
 			chunkIndex = 2;
-			coordInChunk.x = conf.CHUNK_SIZE - 1;
+			coordInChunk.x = conf.CHUNK_SIZE - 1.f;
 			coordInChunk.z = 0.f;
 		}
 
@@ -261,7 +266,7 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFW
 				}
 
 				// Along Y Axis
-				if (coord.y == checkQuadHeight - 2 && hitBoxVertices[1].y < block->position.y && m_FrameVelocity.y > 0.f) {
+				if (coord.y == std::ceil(m_CharBodyHeight + m_CharHeadHeight) && hitBoxVertices[1].y < block->position.y && m_FrameVelocity.y > 0.f) {
 					m_FrameVelocity.y = 0.f;
 				}
 			}
@@ -292,4 +297,9 @@ void CharacterController::OnUpdate(double deltaTime)
 
 void CharacterController::OnMouseEvent(GLFWwindow* window)
 {
+}
+
+void CharacterController::Spawn(const glm::vec3& position) {
+	m_Camera.Position = { 0.f, position.y + m_CharBodyHeight, 0.f };
+	m_IsSpawned = true;
 }

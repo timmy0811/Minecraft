@@ -21,6 +21,7 @@ private:
 	Minecraft::Camera3D m_Camera;
 	Minecraft::CharacterController::STATE m_State;
 	bool m_IsGrounded;
+	bool m_IsSpawned;
 
 	float m_MovementSpeed;
 
@@ -55,6 +56,7 @@ public:
 	void OnUpdate(double deltaTime);
 
 	void OnMouseEvent(GLFWwindow* window);
+	void Spawn(const glm::vec3& position);
 
 	// Accessors
 	inline const glm::vec3& getPosition() const { return m_Camera.Position; };

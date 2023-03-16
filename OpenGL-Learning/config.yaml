@@ -48,10 +48,10 @@ config:
       PlayerDragInAir: 0.035
       ControllInAir: 0.1
 
-      SpeedSprint: 0.1
+      SpeedSprint: 0.12
       SpeedWalk: 0.07
       SpeedCrouch: 0.04
-      MaxFallSpeed: 1.0
+      MaxFallSpeed: 0.7
       JumpStrenght: 0.13
 
       FOVwalking: 65.0

@@ -212,6 +212,7 @@ void World::GenerateTerrain()
 			m_Chunks[i]->setID(i);
 			m_Chunks[i]->setGenerationData({ (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.x, 0, (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.z },
 				{ (generationPosition.x + x) * 1.f, (generationPosition.y + z) * 1.f, 1.f }, m_Noise);
+			if (x == conf.RENDER_DISTANCE && z == conf.RENDER_DISTANCE) m_Chunks[i]->setSpawnFlag();
 
 			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push_back(m_Chunks[i]);
 			else m_Chunks[i]->Generate();
@@ -283,6 +284,12 @@ void World::GenerationThreadJob()
 				m_MutexGenerating.unlock();
 
 				chunk->Generate();
+
+				if (chunk->isSpawnChunk()) {
+					int y = 0;
+					while (chunk->getBlock({ conf.CHUNK_SIZE / 2.f, y++, conf.CHUNK_SIZE / 2.f })) {}
+					m_CharacterController.Spawn({ 0.f, --y, 0.f });
+				}
 
 				m_MutexCullFaces.lock();
 				m_ChunksQueuedCulling.push_back(chunk);

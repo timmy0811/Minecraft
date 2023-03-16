@@ -28,6 +28,7 @@ private:
 	// Generation Data
 	glm::vec3 m_NoiseOffset;
 	siv::PerlinNoise* m_Noise;
+	bool m_IsSpawnChunk;
 
 	// Culling
 	Chunk* m_ChunkNeighbors[4];
@@ -83,7 +84,7 @@ public:
 	void OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition);
 
 	// Buffers
-	void Generate();
+	unsigned int Generate();
 	void CullFacesOnLoadBuffer();
 
 	void LoadVertexBufferFromLoadBuffer();
@@ -97,11 +98,12 @@ public:
 	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
 	void setChunkNeighbor(char index, Chunk* c);
 	void setID(const unsigned int id) { m_ID = id; };
+	inline void setSpawnFlag() { m_IsSpawnChunk = true; }
 
 	inline const Minecraft::BLOCKTYPE getBlocktype(const glm::vec3& coord);
 	inline const glm::vec3 getPosition() const { return m_Position; };
 	inline const unsigned int getID() const { return m_ID; };
-	inline const bool getWaitingStatus() const { return m_WaitingForLoad; };
+	inline const bool getWaitingStatus() const { return m_WaitingForLoad; }
 	Minecraft::Block_static** getBlocklistAllocator();
 	Minecraft::Block_static* getBlock(const glm::vec3& coord);
 	inline const size_t getDrawnVertices() const { return m_DrawnVertices; }
@@ -112,6 +114,7 @@ public:
 		return calls;
 	}
 
-	inline bool IsGenerated() const { return m_IsGenerated; };
-	inline bool isLoaded() const { return m_IsLoaded; };
+	inline bool IsGenerated() const { return m_IsGenerated; }
+	inline bool isLoaded() const { return m_IsLoaded; }
+	inline bool isSpawnChunk() const { return m_IsSpawnChunk; }
 };

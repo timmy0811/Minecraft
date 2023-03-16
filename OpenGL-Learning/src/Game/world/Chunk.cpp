@@ -388,10 +388,11 @@ inline const glm::vec3 Chunk::IndexToCoord(unsigned int index)
 	return coord;
 }
 
-void Chunk::Generate()
+unsigned int Chunk::Generate()
  {
 	const double noiseStep = 1.f / conf.CHUNK_SIZE;
 	glm::vec2 noiseStepOffset = { 0.f, 0.f };
+	unsigned int spawnHeight = 0;
 
 	// Generate Chunk using Perlin Noise offset
 	for (unsigned int z = 0; z < conf.CHUNK_SIZE; z++) {
@@ -433,6 +434,7 @@ void Chunk::Generate()
 	}
 
 	m_IsGenerated = true;
+	return spawnHeight;
 }
 
 void Chunk::OnUpdate()
