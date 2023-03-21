@@ -1,4 +1,4 @@
-# OpenGL-Learning
+# Mineclone
 Watch a full fletched Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
 
 The Game features:
