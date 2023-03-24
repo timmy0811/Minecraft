@@ -64,6 +64,8 @@ private:
 	GLFWwindow* r_Window;
 
 	Minecraft::Render::LineRenderer m_ChunkBorderRenderer;
+	Minecraft::Render::BlockSelectionRenderer m_BlockSelectionRenderer;
+	Minecraft::Render::SpriteRenderer m_HUDRenderer;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
@@ -96,6 +98,8 @@ private:
 
 	void NeighborChunks();
 	void HandleChunkLoading();
+
+	void OutlineSelectedBlock();
 
 	// Misc
 	inline int CoordToIndex(const glm::vec2& coord) const;

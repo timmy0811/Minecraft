@@ -259,15 +259,15 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 	block.subtype = formatBlock.type;
 
 	glm::vec3 positions[8] = {
-		{position.x + 0, position.y + 0, position.z - 0},	// 0 FDL
-		{position.x + 1, position.y + 0, position.z - 0},	// 1 FDR
-		{position.x + 1, position.y + 0, position.z - 1},	// 2 BDR
-		{position.x + 0, position.y + 0, position.z - 1},	// 3 BDL
+		{position.x + 0, position.y + 0, position.z + 1},	// 0 FDL
+		{position.x + 1, position.y + 0, position.z + 1},	// 1 FDR
+		{position.x + 1, position.y + 0, position.z - 0},	// 2 BDR
+		{position.x + 0, position.y + 0, position.z - 0},	// 3 BDL
 
-		{position.x + 0, position.y + 1, position.z - 0},	// 4 FUL
-		{position.x + 1, position.y + 1, position.z - 0},	// 5 FUR
-		{position.x + 1, position.y + 1, position.z - 1},	// 6 BUR
-		{position.x + 0, position.y + 1, position.z - 1}	// 7 BUL
+		{position.x + 0, position.y + 1, position.z + 1},	// 4 FUL
+		{position.x + 1, position.y + 1, position.z + 1},	// 5 FUR
+		{position.x + 1, position.y + 1, position.z - 0},	// 6 BUR
+		{position.x + 0, position.y + 1, position.z - 0}	// 7 BUL
 	};
 
 	glm::vec3 normals[6] = {

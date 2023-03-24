@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 Mesh::Mesh(std::vector<OpenGL::VertexMesh> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures)
-	:m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
+	:m_Vertices(vertices), m_Indices(indices), textures(textures)
 {
 	// Load members
 	m_IB = std::make_unique<IndexBuffer>(&m_Indices[0], (unsigned int)m_Indices.size());
@@ -48,7 +48,7 @@ void Mesh::LoadTextures(Shader& shader)
 	
 	shader.Bind();
 
-	for (Texture* tex : m_Textures) {
+	for (Texture* tex : textures) {
 		tex->Bind(bindOffset++);
 
 		switch (tex->GetType()) {

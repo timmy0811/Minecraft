@@ -18,7 +18,7 @@ class Mesh
 private:
 	std::vector<OpenGL::VertexMesh> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	std::vector<Texture*> m_Textures;
+	std::vector<Texture*> textures;
 
 	std::unique_ptr<VertexArray> m_VA;
 	std::unique_ptr<VertexBuffer> m_VB;

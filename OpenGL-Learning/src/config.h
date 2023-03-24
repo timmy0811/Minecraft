@@ -4,11 +4,13 @@
 #include <yaml-cpp/yaml.h>
 #include "glm/glm.hpp"
 
+#include <string>
 #include <iostream>
+
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
-enum class LOG_COLOR { LOG = 15, WARNING = 14, OK = 10, FAULT = 14, SPECIAL_A = 11, SPECIAL_B = 13};
+enum class LOG_COLOR { LOG = 15, WARNING = 14, OK = 10, FAULT = 12, SPECIAL_A = 11, SPECIAL_B = 13};
 
 static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
@@ -17,7 +19,6 @@ inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
 	SetConsoleTextAttribute(hConsole, 15);
 }
 
-#include <string>
 class Config {
 private:
 	const std::string m_Path;
@@ -45,6 +46,7 @@ public:
 		CHUNK_BORDER_COLOR.r = mainNode["config"]["rendering"]["ChunkBorderColor"]["r"].as<float>();
 		CHUNK_BORDER_COLOR.g = mainNode["config"]["rendering"]["ChunkBorderColor"]["g"].as<float>();
 		CHUNK_BORDER_COLOR.b = mainNode["config"]["rendering"]["ChunkBorderColor"]["b"].as<float>();
+		CHUNK_BORDER_COLOR.a = mainNode["config"]["rendering"]["ChunkBorderColor"]["a"].as<float>();
 
 		WORLD_WIDTH = mainNode["config"]["game"]["terrain"]["WorldWidth"].as<unsigned int>();
 		if (WORLD_WIDTH % 2 != 0) WORLD_WIDTH += 1;
@@ -75,7 +77,8 @@ public:
 
 		FOV_CROUCH = mainNode["config"]["game"]["movement"]["FOVcrouching"].as<float>();
 		FOV_SPRINT = mainNode["config"]["game"]["movement"]["FOVsprinting"].as<float>();
-		FOV_WALK = mainNode["config"]["game"]["movement"]["FOVwalking"].as<float>();
+		FOV_WALK = mainNode["config"]["game"]["movement"]["FOVwalking"].as<float>(); 
+		BLOCK_INTERACTION_RANGE = mainNode["config"]["game"]["movement"]["BlockInteractionRange"].as<float>();
 
 		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
 		GENERATION_THREADS = mainNode["config"]["system"]["GenerationThreads"].as<unsigned int>();
@@ -99,7 +102,7 @@ public:
 	unsigned int TEXTURE_INVERSE_OFFSET = 0;
 	bool EXPAND_TERRAIN = false;
 
-	glm::vec3 CHUNK_BORDER_COLOR = { 0.f, 0.f, 0.f };
+	glm::vec4 CHUNK_BORDER_COLOR = { 0.f, 0.f, 0.f, 1.f };
 
 	// Game
 	// Terrain
@@ -134,6 +137,8 @@ public:
 	float FOV_CROUCH = 0.f;
 	float FOV_WALK = 0.f;
 	float FOV_SPRINT = 0.f;
+
+	float BLOCK_INTERACTION_RANGE = 0.f;
 };
 
 extern Config conf;

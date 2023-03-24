@@ -12,9 +12,19 @@ namespace Minecraft {
 		float reflection;
 	};
 
+	struct Sprite2DVertex {
+		glm::vec2 Position;
+		glm::vec2 TexCoords;
+		float TexID;
+	};
+
 	struct LineVertex {
 		glm::vec3 Position;
 		glm::vec3 Color;
+	};
+
+	struct PositionVertex {
+		glm::vec3 Position;
 	};
 
 	struct Face {

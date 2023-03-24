@@ -6,12 +6,13 @@ void Renderer::Clear()
     GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader, int mode)
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader, int mode, int count)
 {
+    size_t c = count == -1 ? ib.GetCount() : (size_t)count;
     shader.Bind();
     va.Bind();
     ib.Bind();
-    GLCall(glDrawElements(mode, ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+    GLCall(glDrawElements(mode, c, GL_UNSIGNED_INT, nullptr));
 }
 
 void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader, size_t count)

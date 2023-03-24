@@ -1,5 +1,13 @@
 #include "Shader.h"
 
+Shader::Shader(const std::string& path_vert, const std::string& path_frag)
+    :m_RendererID(0), m_PathVert(path_vert), m_PathFrag(path_frag)
+{
+    LOGC("Compiling Shader: " + path_vert.substr(0, path_vert.length() - 5), LOG_COLOR::LOG);
+    ShaderProgramSource source = ParseShader(path_vert, path_frag);
+    m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
+}
+
 int Shader::GetUniformLocation(const std::string& name) const
 {
     if (m_UniformLacationCache.find(name) != m_UniformLacationCache.end())
@@ -12,13 +20,6 @@ int Shader::GetUniformLocation(const std::string& name) const
     m_UniformLacationCache[name] = location;
 
     return location;
-}
-
-Shader::Shader(const std::string& path_vert, const std::string& path_frag)
-    :m_RendererID(0), m_PathVert(path_vert), m_PathFrag(path_frag)
-{
-    ShaderProgramSource source = ParseShader(path_vert, path_frag);
-    m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
 }
 
 Shader::~Shader()

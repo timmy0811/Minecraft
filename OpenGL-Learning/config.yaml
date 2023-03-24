@@ -16,9 +16,10 @@ config:
     TextureInverseOffset: 100
 
     ChunkBorderColor:
-      r: 255
+      r: 1
       g: 0
       b: 0
+      a: 1
 
     # Experimental
     ExpandTerrain: false
@@ -34,8 +35,8 @@ config:
       MinHeight: 5
 
     environment:
-      FogAffectDistance: 40.0
-      FogDensity: 0.4
+      FogAffectDistance: 15.0
+      FogDensity: 0.5
 
       FogColor:
         r: 130
@@ -48,12 +49,14 @@ config:
       PlayerDragInAir: 0.035
       ControllInAir: 0.1
 
-      SpeedSprint: 0.12
+      SpeedSprint: 0.105
       SpeedWalk: 0.07
       SpeedCrouch: 0.04
-      MaxFallSpeed: 0.7
+      MaxFallSpeed: 0.24
       JumpStrenght: 0.13
 
       FOVwalking: 65.0
       FOVcrouching: 60.0
       FOVsprinting: 70.0
+
+      BlockInteractionRange: 4.0

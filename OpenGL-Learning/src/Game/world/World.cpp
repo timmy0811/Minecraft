@@ -6,8 +6,10 @@ World::World(GLFWwindow* window)
 	m_TextureMap("res/images/sheets/blocksheet.png", false),
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
 	m_GenerationSemaphore(0),
-	m_ChunkBorderRenderer(conf.WORLD_WIDTH* conf.WORLD_WIDTH * 24, "res/shader/chunk_border/shader_chunkborder.vert", "res/shader/chunk_border/shader_chunkborder.frag"),
-	m_CharacterController({0.f, 30.f, 0.f})
+	m_ChunkBorderRenderer(conf.WORLD_WIDTH * conf.WORLD_WIDTH * 24, "res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
+	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
+	m_CharacterController({0.f, 30.f, 0.f}),
+	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -36,7 +38,11 @@ World::World(GLFWwindow* window)
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
+	m_BlockSelectionRenderer.shader->Bind();
+	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
+
 	SetupChunkBorders();
+	m_HUDRenderer.AddSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH / 2.f - 8.f, conf.WIN_HEIGHT / 2.f - 8.f }, { 16, 16 });
 }
 
 World::~World()
@@ -64,6 +70,7 @@ World::~World()
 
 void World::OnRender()
 {
+	m_TextureMap.Bind(0); // Why?
 
 	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
@@ -81,6 +88,9 @@ void World::OnRender()
 		m_ChunkBorderRenderer.Draw();
 		m_DrawCalls++;
 	}
+
+	m_BlockSelectionRenderer.Draw();
+	m_HUDRenderer.Draw();
 }
 
 void World::NeighborChunks()
@@ -108,6 +118,7 @@ void World::OnUpdate(double deltaTime)
 	UpdateLight();
 	HandleChunkLoading();
 	m_CharacterController.OnUpdate(deltaTime);
+	OutlineSelectedBlock();
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
@@ -115,6 +126,9 @@ void World::OnUpdate(double deltaTime)
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
+
+	m_BlockSelectionRenderer.shader->Bind();
+	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
 }
 
 void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
@@ -126,6 +140,9 @@ void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
+
+	m_BlockSelectionRenderer.shader->Bind();
+	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
 }
 
 const glm::mat4& World::getMatrixProjection() const
@@ -506,6 +523,13 @@ void World::HandleChunkLoading()
 	m_PlayerChunkPosition = currentPLayerChunkPosition;
 }
 
+void World::OutlineSelectedBlock()
+{
+	const Minecraft::Block_static* selectedBlock = m_CharacterController.getSelectedBlock();
+	if (selectedBlock) m_BlockSelectionRenderer.LoadOutlineBuffer(selectedBlock->position - glm::vec3(0.f, 0.f, 0.f), conf.BLOCK_SIZE);
+	else m_BlockSelectionRenderer.DoNotDraw();
+}
+
 bool World::ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex)
 {
 	bool containsElement = false;
@@ -577,10 +601,10 @@ void World::SetupChunkBorders()
 	for (Chunk* chunk : m_Chunks) {
 		if (!chunk) continue;
 		glm::vec3 position = chunk->getPosition();
-		position.z -= 1.f;
+		//position.z -= 1.f;
 		float chunkWidth = conf.BLOCK_SIZE * conf.CHUNK_SIZE;
 		float chunkHeight = conf.BLOCK_SIZE * conf.CHUNK_HEIGHT;
-		Minecraft::LineVertex v[24]{};
+		Minecraft::PositionVertex v[24]{};
 
 		v[0].Position = { position.x + 0,			position.y + 0,				position.z + chunkWidth };
 		v[1].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
@@ -612,11 +636,7 @@ void World::SetupChunkBorders()
 		v[22].Position = { position.x + 0,			position.y + chunkHeight,	position.z + 0 };
 		v[23].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
 
-		for (int i = 0; i < 24; i++) {
-			v[i].Color = conf.CHUNK_BORDER_COLOR;
-		}
-
-		m_ChunkBorderRenderer.vb->AddVertexData(v, sizeof(Minecraft::LineVertex) * 24);
+		m_ChunkBorderRenderer.vb->AddVertexData(v, sizeof(Minecraft::PositionVertex) * 24);
 	}
 }
 

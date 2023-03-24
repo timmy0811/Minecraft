@@ -1,5 +1,29 @@
 #include "Handler.h"
 
+Handler::Handler(GLFWwindow* window)
+	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
+{
+	// GLFW Input Mode configuration
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	// GL Flags
+	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	GLCall(glEnable(GL_DEPTH_TEST));
+
+	// Enabling Face Culling
+	GLCall(glEnable(GL_CULL_FACE));
+	GLCall(glCullFace(GL_BACK));
+	GLCall(glFrontFace(GL_CCW));
+
+	GLCall(glEnable(GL_STENCIL_TEST));
+
+	// Anti Aliasing
+	GLCall(glEnable(GL_MULTISAMPLE));
+
+	OnInit();
+}
+
 void Handler::OnInit()
 {
 	// TexturePacker::PackTextures("res/images/block/");
@@ -113,28 +137,6 @@ void Handler::DebugWindow()
 	else if (glfwGetKey(r_Window, GLFW_KEY_V) == GLFW_RELEASE && keyPressedV) keyPressedV = false;
 
 	ImGui::End();
-}
-
-Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
-{
-	// GLFW Input Mode configuration
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-	// GL Flags
-	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	GLCall(glEnable(GL_DEPTH_TEST));
-
-	// Enabling Face Culling
-	GLCall(glEnable(GL_CULL_FACE));
-	GLCall(glCullFace(GL_BACK));
-	GLCall(glFrontFace(GL_CCW));
-
-	// Anti Aliasing
-	GLCall(glEnable(GL_MULTISAMPLE));
-
-	OnInit();
 }
 
 void Handler::OnInput(GLFWwindow* window)

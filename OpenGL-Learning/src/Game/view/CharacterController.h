@@ -27,7 +27,9 @@ private:
 
 	glm::vec3 m_FrameVelocity;
 	glm::vec3 m_BlockPosition; // Relative to Matrix World
+	glm::vec3 m_BlockPositionInChunk;
 	std::vector<glm::vec3> m_CheckOrder;
+	Minecraft::Block_static* m_SelectedBlock;
 
 	float m_CharBodyHeight = 1.62f;
 	float m_CharHeadHeight = 0.18f;
@@ -45,7 +47,13 @@ private:
 	inline static float s_MouseX = 0;
 	inline static float s_MouseY = 0;
 
-	inline bool CheckForBoxIntersection(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
+	Minecraft::CharacterController::FOVchangeEvent ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	void ComputeRaycast(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+
+	static bool RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
+	inline bool BoxIntersectsBlock(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
+
+	glm::vec4 ClipChunkCoordinate(const glm::vec3& coord) const;
 	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
 	void ProcessMouse();
 
@@ -59,9 +67,10 @@ public:
 	void Spawn(const glm::vec3& position);
 
 	// Accessors
-	inline const glm::vec3& getPosition() const { return m_Camera.Position; };
-	inline const glm::vec3& getFront() const { return m_Camera.Front; };
-	inline const glm::vec3& getUp() const { return m_Camera.Up; };
+	inline const glm::vec3& getPosition() const { return m_Camera.Position; }
+	inline const glm::vec3& getFront() const { return m_Camera.Front; }
+	inline const glm::vec3& getUp() const { return m_Camera.Up; }
+	inline const Minecraft::Block_static* getSelectedBlock() { return m_SelectedBlock; }
 
 	inline const bool isOnGround() const { return m_IsGrounded; };
 
