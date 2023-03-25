@@ -75,16 +75,48 @@ CharacterController::CharacterController(const glm::vec3& position)
 	toggleMode(Minecraft::CharacterController::STATE::WALKING);
 }
 
-Minecraft::CharacterController::FOVchangeEvent CharacterController::OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9])
+bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArray[9])
+{
+	// Place or Destroy Block
+	if (m_SelectedBlock) {
+		static bool keyPressedRight = false;
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && !keyPressedRight)
+		{
+			keyPressedRight = true;
+			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlock({ m_SelectedBlockPosition.x, m_SelectedBlockPosition.y + 1, m_SelectedBlockPosition.z }, 1);
+			return true;
+		}
+		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && keyPressedRight) {
+			keyPressedRight = false;
+		}
+
+		static bool keyPressedLeft = false;
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !keyPressedLeft)
+		{
+			keyPressedLeft = true;
+			
+		}
+		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && keyPressedLeft) {
+			keyPressedLeft = false;
+		}
+	}
+
+	return false;
+}
+
+Minecraft::CharacterController::InputChangeEvent CharacterController::OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9])
 {
 	if (!m_IsSpawned) {
 		m_Camera.Position = { 0.f, -10.f, 0.f };
 		return {};
 	}
 
-	Minecraft::CharacterController::FOVchangeEvent event = ComputeInput(window, deltaTime, chunkArray);
+	Minecraft::CharacterController::InputChangeEvent event = ComputeInput(window, deltaTime, chunkArray);
 
 	ComputeRaycast(window, deltaTime, chunkArray);
+
+	event.threadJobs += InteractWithBlock(window, chunkArray) ? 1 : 0;
+	event.chunkToBeQueued = event.threadJobs > 0 ? chunkArray[(const unsigned int)m_SelectedBlockPosition.w] : nullptr;
 	
 	return event;
 }
@@ -139,7 +171,7 @@ void CharacterController::OnUpdate(double deltaTime)
 	if (m_FrameVelocity.y < -conf.MOVEMENT_MAX_FALL_SPEED) m_FrameVelocity.y = -conf.MOVEMENT_MAX_FALL_SPEED;
 }
 
-Minecraft::CharacterController::FOVchangeEvent CharacterController::ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9])
+Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9])
 {
 	glfwSetCursorPosCallback(window, OnMouseCallback);
 	ProcessMouse();
@@ -147,7 +179,7 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::ComputeInput
 	const float cameraSpeed = 13.f * m_MovementSpeed * (float)deltaTime * (m_IsGrounded || m_State == Minecraft::CharacterController::STATE::FLYING ? 1.f : conf.MOVEMENT_CONTROLL_AIR); // adjust accordingly
 	const glm::vec2 forwardXY = glm::normalize(glm::vec2(m_Camera.Front.x, m_Camera.Front.z));
 
-	Minecraft::CharacterController::FOVchangeEvent changeEvent;
+	Minecraft::CharacterController::InputChangeEvent changeEvent;
 
 	// Input
 	static bool keyPressedLShift = false;
@@ -155,13 +187,13 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::ComputeInput
 	{
 		keyPressedLShift = true;
 		toggleMode(Minecraft::CharacterController::STATE::CROUCHING);
-		changeEvent.doChange = true;
+		changeEvent.doChangeFOV = true;
 		changeEvent.FOV = conf.FOV_CROUCH;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && keyPressedLShift) {
 		keyPressedLShift = false;
 		toggleMode(Minecraft::CharacterController::STATE::WALKING);
-		changeEvent.doChange = true;
+		changeEvent.doChangeFOV = true;
 		changeEvent.FOV = conf.FOV_WALK;
 	}
 
@@ -170,13 +202,13 @@ Minecraft::CharacterController::FOVchangeEvent CharacterController::ComputeInput
 	{
 		keyPressedLCTRL = true;
 		toggleMode(Minecraft::CharacterController::STATE::SPRINTING);
-		changeEvent.doChange = true;
+		changeEvent.doChangeFOV = true;
 		changeEvent.FOV = conf.FOV_SPRINT;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE && keyPressedLCTRL) {
 		keyPressedLCTRL = false;
 		toggleMode(Minecraft::CharacterController::STATE::WALKING);
-		changeEvent.doChange = true;
+		changeEvent.doChangeFOV = true;
 		changeEvent.FOV = conf.FOV_WALK;
 	}
 
@@ -329,6 +361,7 @@ void CharacterController::ComputeRaycast(GLFWwindow* window, double deltaTime, C
 					if (distance < distToNearest) {
 						m_SelectedBlock = block;
 						distToNearest = distance;
+						m_SelectedBlockPosition = clipCoord;
 					}
 				}
 			}

@@ -30,13 +30,13 @@ config:
       ChunkSize: 16
       BlockSize: 1.0
       ChunkHeight: 30
-      YStretch: 7.0
-      XStretch: 0.75
+      YStretch: 1.0
+      XStretch: 1.0
       MinHeight: 5
 
     environment:
-      FogAffectDistance: 15.0
-      FogDensity: 0.5
+      FogAffectDistance: 150.0 # 15
+      FogDensity: 0.5 # 0.5
 
       FogColor:
         r: 130

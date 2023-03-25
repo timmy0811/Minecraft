@@ -209,6 +209,15 @@ void Chunk::CullFacesOnLoadBuffer()
 	m_WaitingForLoad = true;
 }
 
+const bool Chunk::SetBlock(const glm::vec3& position, unsigned int id)
+{
+	Minecraft::Block_static block = CreateBlockStatic(TranslateToWorldPosition(position), id);
+	unsigned int index = CoordToIndex(position);
+	m_BlockStatic[index] = new Minecraft::Block_static(block);
+
+	return false;
+}
+
 void Chunk::LoadVertexBufferFromLoadBuffer()
 {
 	m_VBstatic->Empty();
@@ -386,6 +395,11 @@ inline const glm::vec3 Chunk::IndexToCoord(unsigned int index)
 	coord.y = (float)(index % conf.CHUNK_HEIGHT);
 
 	return coord;
+}
+
+const glm::vec3 Chunk::TranslateToWorldPosition(const glm::vec3& chunkPosition) const
+{
+	return m_Position + chunkPosition * conf.BLOCK_SIZE;
 }
 
 unsigned int Chunk::Generate()

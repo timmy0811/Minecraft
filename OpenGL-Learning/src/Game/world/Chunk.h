@@ -74,6 +74,7 @@ private:
 	// Misc
 	inline unsigned int CoordToIndex(const glm::vec3& coord);
 	inline const glm::vec3 IndexToCoord(unsigned int index);
+	const glm::vec3 TranslateToWorldPosition(const glm::vec3& chunkPosition) const;
 
 public:
 	explicit Chunk(std::map<unsigned int, Minecraft::Block_format>* blockFormatMap, std::map<const std::string, Minecraft::Texture_Format>* TextureFormatMap);
@@ -86,6 +87,7 @@ public:
 	// Buffers
 	unsigned int Generate();
 	void CullFacesOnLoadBuffer();
+	const bool SetBlock(const glm::vec3& position, unsigned int id);
 
 	void LoadVertexBufferFromLoadBuffer();
 	void Unload();

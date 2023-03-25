@@ -9,9 +9,11 @@
 namespace Minecraft::CharacterController {
 	enum class STATE { SPRINTING, WALKING, CROUCHING, FLYING };
 
-	struct FOVchangeEvent {
-		bool doChange = false;
+	struct InputChangeEvent {
+		bool doChangeFOV = false;
 		float FOV = 0.f;
+		unsigned int threadJobs = 0;
+		Chunk* chunkToBeQueued;
 	};
 }
 
@@ -30,6 +32,7 @@ private:
 	glm::vec3 m_BlockPositionInChunk;
 	std::vector<glm::vec3> m_CheckOrder;
 	Minecraft::Block_static* m_SelectedBlock;
+	glm::vec4 m_SelectedBlockPosition;
 
 	float m_CharBodyHeight = 1.62f;
 	float m_CharHeadHeight = 0.18f;
@@ -47,8 +50,9 @@ private:
 	inline static float s_MouseX = 0;
 	inline static float s_MouseY = 0;
 
-	Minecraft::CharacterController::FOVchangeEvent ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	Minecraft::CharacterController::InputChangeEvent ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
 	void ComputeRaycast(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	bool InteractWithBlock(GLFWwindow* window, Chunk* chunkArray[9]);
 
 	static bool RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
 	inline bool BoxIntersectsBlock(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
@@ -60,7 +64,7 @@ private:
 public:
 	explicit CharacterController(const glm::vec3& position = {0.f, 0.f, 0.f});
 
-	Minecraft::CharacterController::FOVchangeEvent OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	Minecraft::CharacterController::InputChangeEvent OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
 	void OnUpdate(double deltaTime);
 
 	void OnMouseEvent(GLFWwindow* window);

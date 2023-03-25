@@ -206,8 +206,12 @@ void World::OnInput(GLFWwindow* window, double deltaTime)
 		}
 	}
 
-	Minecraft::CharacterController::FOVchangeEvent event = m_CharacterController.OnInput(window, deltaTime, chunks);
-	if (event.doChange) UpdateProjectionMatrix(event.FOV);
+	Minecraft::CharacterController::InputChangeEvent event = m_CharacterController.OnInput(window, deltaTime, chunks);
+	if (event.doChangeFOV) UpdateProjectionMatrix(event.FOV);
+
+	if (event.chunkToBeQueued) m_ChunksQueuedCulling.push_back(event.chunkToBeQueued);
+	m_GenerationSemaphore.release(event.threadJobs);
+
 }
 
 void World::GenerateTerrain()
