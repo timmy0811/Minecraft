@@ -32,7 +32,7 @@ config:
       ChunkHeight: 30
       YStretch: 1.0
       XStretch: 1.0
-      MinHeight: 5
+      MinHeight: 7
 
     environment:
       FogAffectDistance: 150.0 # 15

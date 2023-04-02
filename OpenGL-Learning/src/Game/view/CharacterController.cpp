@@ -53,11 +53,12 @@ CharacterController::CharacterController(const glm::vec3& position)
 	m_Camera.Position = position;
 
 	// Setup Check Order
-	float height = std::ceil(m_CharBodyHeight + m_CharHeadHeight) + 2;
+	float height = std::ceil(m_CharBodyHeight + m_CharHeadHeight) + 1;
 	m_CheckOrder.reserve((size_t)(2 * 9 + (height - 2) * 8));
 
 	for (float i = -1; i < height; i++) {
-		if(i == -1 || i == height - 1.f) m_CheckOrder.push_back({ 0.f, i, 0.f });
+		if((int)i == -1 || (int)i == (int)height - 1)
+			m_CheckOrder.push_back({ 0.f, i, 0.f });
 
 		// Inner
 		m_CheckOrder.push_back({ 0.f, i, -1.f });
@@ -83,7 +84,32 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && !keyPressedRight)
 		{
 			keyPressedRight = true;
-			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlock({ m_SelectedBlockPosition.x, m_SelectedBlockPosition.y + 1, m_SelectedBlockPosition.z }, 1);
+			glm::vec3 pos = m_SelectedBlockPosition;
+
+			switch (m_SelectedBlockSide) {
+			case Minecraft::CharacterController::SIDE::NONE:
+				break;
+			case Minecraft::CharacterController::SIDE::FRONT:
+				pos.z++;
+				break;
+			case Minecraft::CharacterController::SIDE::LEFT:
+				pos.x--;
+				break;
+			case Minecraft::CharacterController::SIDE::RIGHT:
+				pos.x++;
+				break;
+			case Minecraft::CharacterController::SIDE::BACK:
+				pos.z--;
+				break;
+			case Minecraft::CharacterController::SIDE::BOTTOM:
+				pos.y--;
+				break;
+			case Minecraft::CharacterController::SIDE::TOP:
+				pos.y++;
+				break;
+			}
+
+			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlock(pos, 1);
 			return true;
 		}
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && keyPressedRight) {
@@ -94,7 +120,8 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !keyPressedLeft)
 		{
 			keyPressedLeft = true;
-			
+			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->RemoveBlock({ m_SelectedBlockPosition.x, m_SelectedBlockPosition.y, m_SelectedBlockPosition.z });
+			return true;
 		}
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && keyPressedLeft) {
 			keyPressedLeft = false;
@@ -352,16 +379,14 @@ void CharacterController::ComputeRaycast(GLFWwindow* window, double deltaTime, C
 
 				Minecraft::Block_static* block = chunkArray[(int)clipCoord.w] ? chunkArray[(int)clipCoord.w]->getBlock({ clipCoord.x, clipCoord.y, clipCoord.z }) : nullptr;
 				if (!block) continue;
-				if (RayIntersectsCube(m_Camera.Position, m_Camera.Front, block->position, conf.BLOCK_SIZE)) {
-					float d0 = std::min(std::min(glm::length(block->position + glm::vec3(conf.BLOCK_SIZE) - m_Camera.Position), glm::length(block->position + glm::vec3(0.f, conf.BLOCK_SIZE, conf.BLOCK_SIZE) - m_Camera.Position)),
-										std::min(glm::length(block->position + glm::vec3(0.f, 0.f, conf.BLOCK_SIZE) - m_Camera.Position), glm::length(block->position + glm::vec3(conf.BLOCK_SIZE, 0.f, conf.BLOCK_SIZE) - m_Camera.Position)));
-					float d1 = std::min(std::min(glm::length(block->position + glm::vec3(conf.BLOCK_SIZE, conf.BLOCK_SIZE, 0.f) - m_Camera.Position), glm::length(block->position + glm::vec3(0.f, 0.f, 0.f) - m_Camera.Position)),
-										std::min(glm::length(block->position + glm::vec3(0.f, conf.BLOCK_SIZE, 0.f) - m_Camera.Position), glm::length(block->position + glm::vec3(conf.BLOCK_SIZE, 0.f, 0.f) - m_Camera.Position)));
-					float distance = std::min(d0, d1);
+				Minecraft::CharacterController::SIDE side = RayIntersectsCube(m_Camera.Position, m_Camera.Front, block->position, conf.BLOCK_SIZE);
+				if (side != Minecraft::CharacterController::SIDE::NONE) {
+					float distance = glm::distance(m_Camera.Position, block->position + glm::vec3(conf.BLOCK_SIZE / 2.f));
 					if (distance < distToNearest) {
 						m_SelectedBlock = block;
 						distToNearest = distance;
 						m_SelectedBlockPosition = clipCoord;
+						m_SelectedBlockSide = side;
 					}
 				}
 			}
@@ -376,24 +401,46 @@ void CharacterController::OnMouseEvent(GLFWwindow* window)
 
 }
 
-bool CharacterController::RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size)
+Minecraft::CharacterController::SIDE CharacterController::RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size)
 {
-	const float eps = 1e-6f;
+	glm::vec3 min = box;
+	glm::vec3 max = box + size;
 
-	glm::vec3 directionRay = glm::normalize(direction);
-	glm::vec3 invDirection = 1.0f / directionRay;
+	float t1 = (min.x - origin.x) / direction.x;
+	float t2 = (max.x - origin.x) / direction.x;
+	float t3 = (min.y - origin.y) / direction.y;
+	float t4 = (max.y - origin.y) / direction.y;
+	float t5 = (min.z - origin.z) / direction.z;
+	float t6 = (max.z - origin.z) / direction.z;
 
-	glm::vec3 tMin = (glm::min(box, box + glm::vec3(size)) - origin) * invDirection;
-	glm::vec3 tMax = (glm::max(box, box + glm::vec3(size)) - origin) * invDirection;
+	float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)), glm::min(t5, t6));
+	float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)), glm::max(t5, t6));
 
-	float tEnter = glm::max(glm::max(glm::min(tMin.x, tMax.x), glm::min(tMin.y, tMax.y)), glm::min(tMin.z, tMax.z));
-	float tExit = glm::min(glm::min(glm::max(tMin.x, tMax.x), glm::max(tMin.y, tMax.y)), glm::max(tMin.z, tMax.z));
-
-	if (tEnter > tExit + eps || tExit < eps) {
-		return false;
+	if (tmax < 0.f || tmin > tmax) {
+		return Minecraft::CharacterController::SIDE::NONE;
 	}
 
-	return true;
+	if (tmin < 0.f) {
+		return Minecraft::CharacterController::SIDE::INSIDE;
+	}
+
+	glm::vec3 point = origin + tmin * direction;
+	glm::vec3 distanceToOrig = point - glm::vec3(box + size / 2.f);
+
+	Minecraft::CharacterController::SIDE intersectedSide = Minecraft::CharacterController::SIDE::TOP;
+
+	float epsilon = 0.00001f;
+	
+	if (distanceToOrig.x > -(size / 2.0 + epsilon) && distanceToOrig.x < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::LEFT;
+	if (distanceToOrig.x < (size / 2.0 + epsilon) && distanceToOrig.x > (size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::RIGHT;
+
+	if (distanceToOrig.y > -(size / 2.0 + epsilon) && distanceToOrig.y < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BOTTOM;
+	if (distanceToOrig.y < (size / 2.0 + epsilon) && distanceToOrig.y >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::TOP;
+
+	if (distanceToOrig.z > -(size / 2.0 + epsilon) && distanceToOrig.z < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BACK;
+	if (distanceToOrig.z < (size / 2.0 + epsilon) && distanceToOrig.z >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::FRONT;
+
+	return intersectedSide;
 }
 
 void CharacterController::Spawn(const glm::vec3& position) {

@@ -88,6 +88,7 @@ public:
 	unsigned int Generate();
 	void CullFacesOnLoadBuffer();
 	const bool SetBlock(const glm::vec3& position, unsigned int id);
+	const int RemoveBlock(const glm::vec3& position);
 
 	void LoadVertexBufferFromLoadBuffer();
 	void Unload();

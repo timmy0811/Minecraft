@@ -218,6 +218,25 @@ const bool Chunk::SetBlock(const glm::vec3& position, unsigned int id)
 	return false;
 }
 
+const int Chunk::RemoveBlock(const glm::vec3& position)
+{
+	const unsigned int index = CoordToIndex(position);
+	Minecraft::Block_static* block = m_BlockStatic[index];
+
+	if (!block) {
+		block = m_BlockTransparenStatic[index];
+		m_BlockTransparenStatic[index] = nullptr;
+	}
+	else {
+		m_BlockStatic[index] = nullptr;
+	}
+
+	const int id = block ? block->id : -1;
+
+	delete block;
+	return id;
+}
+
 void Chunk::LoadVertexBufferFromLoadBuffer()
 {
 	m_VBstatic->Empty();

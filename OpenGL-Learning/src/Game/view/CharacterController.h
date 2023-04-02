@@ -8,6 +8,7 @@
 
 namespace Minecraft::CharacterController {
 	enum class STATE { SPRINTING, WALKING, CROUCHING, FLYING };
+	enum class SIDE { FRONT, BACK, TOP, BOTTOM, LEFT, RIGHT, NONE, INSIDE };
 
 	struct InputChangeEvent {
 		bool doChangeFOV = false;
@@ -33,6 +34,7 @@ private:
 	std::vector<glm::vec3> m_CheckOrder;
 	Minecraft::Block_static* m_SelectedBlock;
 	glm::vec4 m_SelectedBlockPosition;
+	Minecraft::CharacterController::SIDE m_SelectedBlockSide;
 
 	float m_CharBodyHeight = 1.62f;
 	float m_CharHeadHeight = 0.18f;
@@ -54,7 +56,7 @@ private:
 	void ComputeRaycast(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
 	bool InteractWithBlock(GLFWwindow* window, Chunk* chunkArray[9]);
 
-	static bool RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
+	static Minecraft::CharacterController::SIDE RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
 	inline bool BoxIntersectsBlock(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
 
 	glm::vec4 ClipChunkCoordinate(const glm::vec3& coord) const;
