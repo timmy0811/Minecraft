@@ -32,4 +32,6 @@ public:
 
 	void Bind() const;
 	void Unbind() const;
+
+	inline size_t getSize() const { return m_DataPtr; };
 };

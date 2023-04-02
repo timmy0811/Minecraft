@@ -87,7 +87,8 @@ public:
 	// Buffers
 	unsigned int Generate();
 	void CullFacesOnLoadBuffer();
-	const bool SetBlock(const glm::vec3& position, unsigned int id);
+	const bool SetBlock(const glm::vec3& position, unsigned int id, bool overwrite = false);
+	const bool SetBlockUpdated(const glm::vec3& position, unsigned int id, bool overwrite = false);
 	const int RemoveBlock(const glm::vec3& position);
 
 	void LoadVertexBufferFromLoadBuffer();

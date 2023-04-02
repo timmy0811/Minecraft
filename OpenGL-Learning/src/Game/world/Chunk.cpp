@@ -131,7 +131,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 0 + i));
 			}
 			m_LoadBufferPtr += 4;
-			m_DrawnVertices++;
+			m_DrawnVertices += 4;
 		}
 
 		// Right Face
@@ -149,7 +149,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 4 + i));
 			}
 			m_LoadBufferPtr += 4;
-			m_DrawnVertices++;
+			m_DrawnVertices += 4;
 		}
 
 		// Left Face
@@ -167,7 +167,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 8 + i));
 			}
 			m_LoadBufferPtr += 4;
-			m_DrawnVertices++;
+			m_DrawnVertices += 4;
 		}
 
 		// Back Face
@@ -185,7 +185,7 @@ void Chunk::CullFacesOnLoadBuffer()
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 12 + i));
 			}
 			m_LoadBufferPtr += 4;
-			m_DrawnVertices++;
+			m_DrawnVertices += 4;
 		}
 
 		//  Top Face
@@ -203,19 +203,52 @@ void Chunk::CullFacesOnLoadBuffer()
 				m_VertexLoadBuffer.push_back(*(blockPtr->vertices + 20 + i));
 			}
 			m_LoadBufferPtr += 4;
-			m_DrawnVertices++;
+			m_DrawnVertices += 4;
 		}
 	}
 	m_WaitingForLoad = true;
 }
 
-const bool Chunk::SetBlock(const glm::vec3& position, unsigned int id)
+const bool Chunk::SetBlock(const glm::vec3& position, unsigned int id, bool overwrite)
 {
 	Minecraft::Block_static block = CreateBlockStatic(TranslateToWorldPosition(position), id);
 	unsigned int index = CoordToIndex(position);
+
+	if (m_BlockStatic[index]) {
+		if (!overwrite) {
+			return false;
+		}
+		RemoveBlock(position);
+	}
+
 	m_BlockStatic[index] = new Minecraft::Block_static(block);
 
-	return false;
+	return true;
+}
+
+const bool Chunk::SetBlockUpdated(const glm::vec3& position, unsigned int id, bool overwrite)
+{
+	Minecraft::Block_static block = CreateBlockStatic(TranslateToWorldPosition(position), id);
+	unsigned int index = CoordToIndex(position);
+
+	if (m_BlockStatic[index]) {
+		if (!overwrite) {
+			return false;
+		}
+		RemoveBlock(position);
+	}
+
+	m_BlockStatic[index] = new Minecraft::Block_static(block);
+
+	for (int i = 0; i < 24; i++) {
+		m_VertexLoadBuffer.push_back(*(m_BlockStatic[index]->vertices + i));
+	}
+	m_LoadBufferPtr += 24;
+	m_DrawnVertices += 24;
+
+	LoadVertexBufferFromLoadBuffer();
+
+	return true;
 }
 
 const int Chunk::RemoveBlock(const glm::vec3& position)

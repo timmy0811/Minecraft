@@ -109,8 +109,8 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 				break;
 			}
 
-			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlock(pos, 1);
-			return true;
+			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(pos, 1);
+			return false;
 		}
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && keyPressedRight) {
 			keyPressedRight = false;
@@ -322,6 +322,8 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 		Minecraft::Block_static* block = chunkArray[(int)clipCoord.a] ? chunkArray[(int)clipCoord.a]->getBlock({clipCoord.x, clipCoord.y, clipCoord.z}) : nullptr;
 
 		if (!block) continue;
+		LOGC(std::to_string(block->position.y));
+
 		if (block->subtype == Minecraft::BLOCKTYPE::STATIC_DEFAULT && BoxIntersectsBlock(block, hitBoxVertices[0] + m_FrameVelocity, hitBoxVertices[1] + m_FrameVelocity)) {
 			// Floor
 			if (coord.y == -1) {
@@ -341,7 +343,6 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 					hitBoxVertices[1].z < block->position.z && m_FrameVelocity.z > 0.f) {
 					m_FrameVelocity.z = 0.f;
 				}
-
 				// Along Y Axis
 				if (coord.y == std::ceil(m_CharBodyHeight + m_CharHeadHeight) && hitBoxVertices[1].y < block->position.y && m_FrameVelocity.y > 0.f) {
 					m_FrameVelocity.y = 0.f;
