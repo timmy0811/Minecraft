@@ -433,13 +433,13 @@ Minecraft::CharacterController::SIDE CharacterController::RayIntersectsCube(cons
 	float epsilon = 0.00001f;
 	
 	if (distanceToOrig.x > -(size / 2.0 + epsilon) && distanceToOrig.x < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::LEFT;
-	if (distanceToOrig.x < (size / 2.0 + epsilon) && distanceToOrig.x > (size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::RIGHT;
+	else if (distanceToOrig.x < (size / 2.0 + epsilon) && distanceToOrig.x > (size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::RIGHT;
 
-	if (distanceToOrig.y > -(size / 2.0 + epsilon) && distanceToOrig.y < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BOTTOM;
-	if (distanceToOrig.y < (size / 2.0 + epsilon) && distanceToOrig.y >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::TOP;
+	else if (distanceToOrig.y > -(size / 2.0 + epsilon) && distanceToOrig.y < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BOTTOM;
+	else if (distanceToOrig.y < (size / 2.0 + epsilon) && distanceToOrig.y >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::TOP;
 
-	if (distanceToOrig.z > -(size / 2.0 + epsilon) && distanceToOrig.z < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BACK;
-	if (distanceToOrig.z < (size / 2.0 + epsilon) && distanceToOrig.z >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::FRONT;
+	else if (distanceToOrig.z > -(size / 2.0 + epsilon) && distanceToOrig.z < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BACK;
+	else if (distanceToOrig.z < (size / 2.0 + epsilon) && distanceToOrig.z >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::FRONT;
 
 	return intersectedSide;
 }
