@@ -1470,10 +1470,10 @@
     <ClInclude Include="src\threading\semaphore.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="src\Game\render\line.h">
+    <ClInclude Include="src\Game\render\CustomRenderer.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="src\Game\render\shader.h">
+    <ClInclude Include="src\Game\render\Helper.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\windowsWrapper.h">

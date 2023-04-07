@@ -108,8 +108,8 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 				pos.y++;
 				break;
 			}
-
-			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(pos, 1);
+					// TODO: Resolve bug when placing on chunk edge
+			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(ClipChunkCoordinate(pos), 1);
 			return false;
 		}
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && keyPressedRight) {
@@ -297,7 +297,6 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 						std::floor(m_Camera.Position.z - r_WorldRootPosition.z) };
 
 	m_BlockPositionInChunk = { (int)std::floor(m_BlockPosition.x) % conf.CHUNK_SIZE, (int)std::floor(m_BlockPosition.y), ((int)std::floor(m_BlockPosition.z) % conf.CHUNK_SIZE) };
-
 	glm::vec3 hitBoxVertices[2] = {
 		{m_Camera.Position.x - m_CharWidth / 2.f, m_Camera.Position.y - m_CharBodyHeight, m_Camera.Position.z - m_CharWidth / 2.f},
 		{m_Camera.Position.x + m_CharWidth / 2.f, m_Camera.Position.y + m_CharHeadHeight, m_Camera.Position.z + m_CharWidth / 2.f}
@@ -322,7 +321,6 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 		Minecraft::Block_static* block = chunkArray[(int)clipCoord.a] ? chunkArray[(int)clipCoord.a]->getBlock({clipCoord.x, clipCoord.y, clipCoord.z}) : nullptr;
 
 		if (!block) continue;
-		LOGC(std::to_string(block->position.y));
 
 		if (block->subtype == Minecraft::BLOCKTYPE::STATIC_DEFAULT && BoxIntersectsBlock(block, hitBoxVertices[0] + m_FrameVelocity, hitBoxVertices[1] + m_FrameVelocity)) {
 			// Floor

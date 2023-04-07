@@ -11,7 +11,7 @@
 
 #include "OpenGL_util/core/Renderer.h"
 
-#include "../render/shader.h"
+#include "../render/CustomRenderer.h"
 #include "../block/Block.hpp"
 #include "../primitive/Primitive.hpp"
 
@@ -81,8 +81,8 @@ public:
 	~Chunk();
 
 	void OnUpdate();
-	void OnRender(const Minecraft::Render::ShaderPackage& shaderPackage);
-	void OnRenderTransparents(const Minecraft::Render::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition);
+	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage);
+	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition);
 
 	// Buffers
 	unsigned int Generate();

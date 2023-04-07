@@ -1,0 +1,2 @@
+hashmap mit Symbol als key und LetterFormat als Value
+Parsing wie blöcke und texturen

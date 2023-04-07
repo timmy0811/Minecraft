@@ -312,8 +312,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Game\view\CharacterController.h" />
-    <ClInclude Include="src\Game\render\line.h" />
-    <ClInclude Include="src\Game\render\shader.h" />
+    <ClInclude Include="src\Game\render\CustomRenderer.h" />
+    <ClInclude Include="src\Game\render\Helper.h" />
     <ClInclude Include="src\Game\view\Skybox.h" />
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\Game\view\Camera.h" />

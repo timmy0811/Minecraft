@@ -7,7 +7,7 @@
 #include "config.h"
 
 // Game 
-#include "Game/render/line.h"
+#include "Game/render/CustomRenderer.h"
 #include "Game/view/CharacterController.h"
 
 // System
@@ -59,13 +59,13 @@ private:
 
 	OpenGL::DirectionalLight m_DirLight;
 
-	Minecraft::Render::ShaderPackage m_ShaderPackage;
+	Minecraft::Helper::ShaderPackage m_ShaderPackage;
 
 	GLFWwindow* r_Window;
 
-	Minecraft::Render::LineRenderer m_ChunkBorderRenderer;
-	Minecraft::Render::BlockSelectionRenderer m_BlockSelectionRenderer;
-	Minecraft::Render::SpriteRenderer m_HUDRenderer;
+	Minecraft::Helper::LineRenderer m_ChunkBorderRenderer;
+	Minecraft::Helper::BlockSelectionRenderer m_BlockSelectionRenderer;
+	Minecraft::Helper::SpriteRenderer m_HUDRenderer;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
@@ -143,7 +143,7 @@ public:
 	const size_t getDrawnVertices() const;
 	const unsigned int getDrawCalls() const;
 
-	inline const Minecraft::Render::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
+	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
 
 	inline void toggleCharacterMode(Minecraft::CharacterController::STATE mode) { m_CharacterController.toggleMode(mode); };
 };

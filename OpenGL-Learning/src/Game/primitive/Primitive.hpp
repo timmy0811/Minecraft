@@ -30,4 +30,11 @@ namespace Minecraft {
 	struct Face {
 		Vertex vertices[4];
 	};
+
+	struct SymbolVertex {
+		glm::vec2 Position;
+		glm::vec2 uv;
+		float background;
+		float alpha;
+	};
 }

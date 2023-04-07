@@ -29,7 +29,7 @@ void ImGuiNewFrame() {
 }
 
 void ImGuiRender(ImGuiIO& io) {
-    ImGui::Render();
+    ImGui::Helper();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

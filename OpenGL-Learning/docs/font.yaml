@@ -1,0 +1,485 @@
+
+# Index (0, 0) = Lower Left Corner
+
+unknown:
+  position:
+    - 13
+    - 0
+  width: 16
+
+characters:
+  ' ':
+    position:
+      - 0
+      - 15
+    width: 16
+  '!':
+    position:
+      - 1
+      - 15
+    width: 10
+  '"':
+    position:
+      - 2
+      - 15
+    width: 10
+  '#':
+    position:
+      - 3
+      - 15
+    width: 16
+  '$':
+    position:
+      - 4
+      - 15
+    width: 16
+  '%':
+    position:
+      - 5
+      - 15
+    width: 16
+  '&':
+    position:
+      - 6
+      - 15
+    width: 16
+  "'":
+    position:
+      - 7
+      - 15
+    width: 10
+  '(':
+    position:
+      - 8
+      - 15
+    width: 16
+  ')':
+    position:
+      - 9
+      - 15
+    width: 16
+  '*':
+    position:
+      - 10
+      - 15
+    width: 16
+  '+':
+    position:
+      - 11
+      - 15
+    width: 16
+  ',':
+    position:
+      - 12
+      - 15
+    width: 16
+  '-':
+    position:
+      - 13
+      - 15
+    width: 16
+  '.':
+    position:
+      - 14
+      - 15
+    width: 16
+  '/':
+    position:
+      - 15
+      - 15
+    width: 16
+  '0':
+    position:
+      - 0
+      - 14
+    width: 16
+  '1':
+    position:
+      - 1
+      - 14
+    width: 16
+  '2':
+    position:
+      - 2
+      - 14
+    width: 16
+  '3':
+    position:
+      - 3
+      - 14
+    width: 16
+  '4':
+    position:
+      - 4
+      - 14
+    width: 16
+  '5':
+    position:
+      - 5
+      - 14
+    width: 16
+  '6':
+    position:
+      - 6
+      - 14
+    width: 16
+  '7':
+    position:
+      - 7
+      - 14
+    width: 16
+  '8':
+    position:
+      - 8
+      - 14
+    width: 16
+  '9':
+    position:
+      - 9
+      - 14
+    width: 16
+  ':':
+    position:
+      - 10
+      - 14
+    width: 16
+  ';':
+    position:
+      - 11
+      - 14
+    width: 16
+  '<':
+    position:
+      - 12
+      - 14
+    width: 16
+  '=':
+    position:
+      - 13
+      - 14
+    width: 16
+  '>':
+    position:
+      - 14
+      - 14
+    width: 16
+  '?':
+    position:
+      - 15
+      - 14
+    width: 16
+  '@':
+    position:
+      - 0
+      - 13
+    width: 16
+  'A':
+    position:
+      - 1
+      - 13
+    width: 16
+  'B':
+    position:
+      - 2
+      - 13
+    width: 16
+  'C':
+    position:
+      - 3
+      - 13
+    width: 16
+  'D':
+    position:
+      - 4
+      - 13
+    width: 16
+  'E':
+    position:
+      - 5
+      - 13
+    width: 16
+  'F':
+    position:
+      - 6
+      - 13
+    width: 16
+  'G':
+    position:
+      - 7
+      - 13
+    width: 16
+  'H':
+    position:
+      - 8
+      - 13
+    width: 16
+  'I':
+    position:
+      - 9
+      - 13
+    width: 16
+  'J':
+    position:
+      - 10
+      - 13
+    width: 16
+  'K':
+    position:
+      - 11
+      - 13
+    width: 16
+  'L':
+    position:
+      - 12
+      - 13
+    width: 16
+  'M':
+    position:
+      - 13
+      - 13
+    width: 16
+  'N':
+    position:
+      - 14
+      - 13
+    width: 16
+  'O':
+    position:
+      - 15
+      - 13
+    width: 16
+  'P':
+    position:
+      - 0
+      - 12
+    width: 16
+  'Q':
+    position:
+      - 1
+      - 12
+    width: 16
+  'R':
+    position:
+      - 2
+      - 12
+    width: 16
+  'S':
+    position:
+      - 3
+      - 12
+    width: 16
+  'T':
+    position:
+      - 4
+      - 12
+    width: 16
+  'U':
+    position:
+      - 5
+      - 12
+    width: 16
+  'V':
+    position:
+      - 6
+      - 12
+    width: 16
+  'W':
+    position:
+      - 7
+      - 12
+    width: 16
+  'X':
+    position:
+      - 8
+      - 12
+    width: 16
+  'Y':
+    position:
+      - 9
+      - 12
+    width: 16
+  'Z':
+    position:
+      - 10
+      - 12
+    width: 16
+  '[':
+    position:
+      - 11
+      - 12
+    width: 16
+  '\':
+    position:
+      - 12
+      - 12
+    width: 16
+  ']':
+    position:
+      - 13
+      - 12
+    width: 16
+  '^':
+    position:
+      - 14
+      - 12
+    width: 16
+  '_':
+    position:
+      - 15
+      - 12
+    width: 16
+  '`':
+    position:
+      - 0
+      - 11
+    width: 16
+  'a':
+    position:
+      - 1
+      - 11
+    width: 16
+  'b':
+    position:
+      - 2
+      - 11
+    width: 16
+  'c':
+    position:
+      - 3
+      - 11
+    width: 16
+  'd':
+    position:
+      - 4
+      - 11
+    width: 16
+  'e':
+    position:
+      - 5
+      - 11
+    width: 16
+  'f':
+    position:
+      - 6
+      - 11
+    width: 16
+  'g':
+    position:
+      - 7
+      - 11
+    width: 16
+  'h':
+    position:
+      - 8
+      - 11
+    width: 16
+  'i':
+    position:
+      - 9
+      - 11
+    width: 16
+  'j':
+    position:
+      - 10
+      - 11
+    width: 16
+  'k':
+    position:
+      - 11
+      - 11
+    width: 16
+  'l':
+    position:
+      - 12
+      - 11
+    width: 16
+  'm':
+    position:
+      - 13
+      - 11
+    width: 16
+  'n':
+    position:
+      - 14
+      - 11
+    width: 16
+  'o':
+    position:
+      - 15
+      - 11
+    width: 16
+  'p':
+    position:
+      - 0
+      - 10
+    width: 16
+  'q':
+    position:
+      - 1
+      - 10
+    width: 16
+  'r':
+    position:
+      - 2
+      - 10
+    width: 16
+  's':
+    position:
+      - 3
+      - 10
+    width: 16
+  't':
+    position:
+      - 4
+      - 10
+    width: 16
+  'u':
+    position:
+      - 5
+      - 10
+    width: 16
+  'v':
+    position:
+      - 6
+      - 10
+    width: 16
+  'w':
+    position:
+      - 7
+      - 10
+    width: 16
+  'x':
+    position:
+      - 8
+      - 10
+    width: 16
+  'y':
+    position:
+      - 9
+      - 10
+    width: 16
+  'z':
+    position:
+      - 10
+      - 10
+    width: 16
+  '{':
+    position:
+      - 11
+      - 10
+    width: 16
+  '|':
+    position:
+      - 12
+      - 10
+    width: 16
+  '}':
+    position:
+      - 13
+      - 10
+    width: 16
+  '~':
+    position:
+      - 14
+      - 10
+    width: 16

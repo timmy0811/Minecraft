@@ -18,7 +18,7 @@ World::World(GLFWwindow* window)
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	// Experimental Texture Setup
-	m_TextureMap.Bind(0);
+	m_TextureMap.Bind(SAMPLER_SLOT_BLOCKS);
 	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
 	// Parse blocks before textures!!!

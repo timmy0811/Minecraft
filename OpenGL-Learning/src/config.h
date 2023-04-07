@@ -7,6 +7,11 @@
 #include <string>
 #include <iostream>
 
+// Sampler Slots 
+#define SAMPLER_SLOT_BLOCKS 0
+#define SAMPLER_SLOT_SPRITES 1
+#define SAMPLER_SLOT_FONTS 9
+
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 

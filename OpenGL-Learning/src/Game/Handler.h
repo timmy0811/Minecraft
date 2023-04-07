@@ -7,6 +7,7 @@
 #include "world/World.h"
 #include "view/Skybox.h"
 
+#include "Game/render/CustomRenderer.h"
 #include "windowsWrapper.h"
 #include "Game/application/TexturePacker.h"
 
@@ -15,6 +16,7 @@ class Handler
 private:
 	World m_World;
 	Skybox m_Skybox;
+	Minecraft::Helper::FontRenderer m_FontRenderer;
 
 	// Application
 	TexturePacker Packer;
