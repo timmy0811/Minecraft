@@ -142,12 +142,12 @@ characters:
     position:
       - 10
       - 14
-    width: 12
+    width: 8
   ';':
     position:
       - 11
       - 14
-    width: 12
+    width: 8
   '<':
     position:
       - 12
@@ -392,7 +392,7 @@ characters:
     position:
       - 12
       - 11
-    width: 12
+    width: 8
   'm':
     position:
       - 13
@@ -432,7 +432,7 @@ characters:
     position:
       - 4
       - 10
-    width: 12
+    width: 8
   'u':
     position:
       - 5
