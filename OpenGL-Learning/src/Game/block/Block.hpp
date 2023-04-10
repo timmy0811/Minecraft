@@ -11,7 +11,6 @@ namespace Minecraft {
 	enum class BLOCKTYPE { STATIC_DEFAULT = 0, STATIC_TRANSPARENT = 1, DYNAMIC = 2, MESH = 3, AIR = 4, NONE = 5};
 
 	struct Block_static {
-		//glm::mat4 matrixModel{ 1.f };
 		Minecraft::Vertex vertices[24];
 
 		std::string name;

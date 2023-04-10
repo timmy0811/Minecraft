@@ -66,6 +66,7 @@ private:
 	Minecraft::Helper::LineRenderer m_ChunkBorderRenderer;
 	Minecraft::Helper::BlockSelectionRenderer m_BlockSelectionRenderer;
 	Minecraft::Helper::SpriteRenderer m_HUDRenderer;
+	Minecraft::Helper::SpriteRenderer m_GUIRenderer;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;

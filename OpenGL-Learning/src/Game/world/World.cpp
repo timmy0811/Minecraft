@@ -9,7 +9,8 @@ World::World(GLFWwindow* window)
 	m_ChunkBorderRenderer(conf.WORLD_WIDTH * conf.WORLD_WIDTH * 24, "res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_CharacterController({0.f, 30.f, 0.f}),
-	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
+	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
+	m_GUIRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -43,6 +44,7 @@ World::World(GLFWwindow* window)
 
 	SetupChunkBorders();
 	m_HUDRenderer.AddSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH / 2.f - 8.f, conf.WIN_HEIGHT / 2.f - 8.f }, { 16, 16 });
+	m_GUIRenderer.AddSprite("res/images/hud/containers.png", { conf.WIN_WIDTH / 2.f - 80.f, conf.WIN_HEIGHT / 2.f - 80.f }, { 16, 16 });
 }
 
 World::~World()
@@ -91,6 +93,7 @@ void World::OnRender()
 
 	m_BlockSelectionRenderer.Draw();
 	m_HUDRenderer.Draw();
+	m_GUIRenderer.Draw();
 }
 
 void World::NeighborChunks()

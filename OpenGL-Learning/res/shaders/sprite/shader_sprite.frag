@@ -10,7 +10,7 @@ flat in int v_TexIndex;
 uniform sampler2D u_Textures[8];
 
 void main(){
-    vec4 color = texture(u_Textures[v_TexIndex], v_UV);
+    vec4 color = texture(u_Textures[0], v_UV);
     if(color.a <= 0.01) discard;
     o_Color = color;
 }

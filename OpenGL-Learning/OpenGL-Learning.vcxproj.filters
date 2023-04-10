@@ -99,6 +99,9 @@
     <ClCompile Include="src\Game\view\CharacterController.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\gui\Inventory.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -1480,6 +1483,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\view\CharacterController.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\gui\Inventory.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

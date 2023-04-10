@@ -24,6 +24,39 @@ namespace Minecraft::Helper {
 		}
 	};
 
+	struct Sprite {
+		Sprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, const bool flipUV = false) {
+			this->Path = path;
+			this->Position = position;
+			this->Size = size;
+			this->FlipUvs = flipUV;
+
+			Uvs.u0 = { 0.f, 1.f };
+			Uvs.u1 = { 1.f, 1.f };
+			Uvs.u2 = { 1.f, 0.f };
+			Uvs.u3 = { 0.f, 0.f };
+		}
+
+		Sprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, Helper::Vec2_4 uvs, const bool flipUV = false) {
+			this->Path = path;
+			this->Position = position;
+			this->Size = size;
+			this->FlipUvs = flipUV;
+
+			Uvs = uvs;
+		}
+
+		Sprite() {};
+
+		unsigned int Id;
+		std::string Path;
+		glm::vec2 Position;
+		glm::vec2 Size;
+		Helper::Vec2_4 Uvs;
+
+		bool FlipUvs;
+	};
+
 	// Functions
 	static int mapRGBToInt(const glm::vec3& color)
 	{

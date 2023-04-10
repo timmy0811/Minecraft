@@ -9,7 +9,8 @@
 
 // Sampler Slots 
 #define SAMPLER_SLOT_BLOCKS 0
-#define SAMPLER_SLOT_SPRITES 1
+#define SAMPLER_SLOT_SKYBOX 1
+#define SAMPLER_SLOT_SPRITES 2
 #define SAMPLER_SLOT_FONTS 9
 
 #define LOG(message) std::cout << message << std::endl
@@ -22,6 +23,10 @@ inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
 	SetConsoleTextAttribute(hConsole, (int)color);
 	std::cout << msg << '\n';
 	SetConsoleTextAttribute(hConsole, 15);
+}
+
+namespace Minecraft::Global {
+	inline int TEXTURE_BINDING = 0;
 }
 
 class Config {

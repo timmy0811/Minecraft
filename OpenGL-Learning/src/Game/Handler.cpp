@@ -1,7 +1,7 @@
 #include "Handler.h"
 
 Handler::Handler(GLFWwindow* window)
-	:r_Window(window), m_FontRenderer("res/images/text/unicode_page_ff.png", "docs/font.yaml", 128), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
+	:m_Inventory(), r_Window(window), m_FontRenderer("res/images/text/ascii_chat_0.png", "docs/font.yaml", 128, true), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -27,9 +27,9 @@ Handler::Handler(GLFWwindow* window)
 void Handler::OnInit()
 {
 	// Bind Cubemap to static blocks
-	m_Skybox.Bind(1, *(m_World.getShaderPackage().shaderBlockStatic));
+	m_Skybox.Bind(SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderBlockStatic));
 
-	m_FontRenderer.PrintMultilineText("Dies ist eine Probetext mit vielen S0nD%r$Z7ch]n\n    -> Einrueckung\n0123467.2345", { 100.f, 700.f }, 2.f, {1.f, 0.3f, 0.3f, 0.8f});
+	m_FontRenderer.PrintMultilineText("Dies ist eine Probetext mit vielen S0nD%r$Z7ch]n\n    -> Einrueckung\n0123467.2345", { 100.f, 700.f }, 4.f, {1.f, 0.3f, 0.3f, 0.8f});
 }
 
 void Handler::DebugWindow()
@@ -150,6 +150,7 @@ void Handler::OnRender()
 
 	// Draw Skybox at end
 	m_Skybox.OnRender();
+	m_Inventory.OnRender();
 
 	m_FontRenderer.Draw();
 }

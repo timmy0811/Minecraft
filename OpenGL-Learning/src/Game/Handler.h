@@ -6,6 +6,7 @@
 
 #include "world/World.h"
 #include "view/Skybox.h"
+#include "gui/Inventory.h"
 
 #include "Game/render/CustomRenderer.h"
 #include "windowsWrapper.h"
@@ -16,6 +17,8 @@ class Handler
 private:
 	World m_World;
 	Skybox m_Skybox;
+	Inventory m_Inventory;
+
 	Minecraft::Helper::FontRenderer m_FontRenderer;
 
 	// Application

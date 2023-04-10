@@ -174,6 +174,8 @@ namespace Minecraft::Helper {
 		size_t triangles = 0;
 
 		std::vector<Texture*> textures;
+		std::map<unsigned int, Sprite> sprites;
+		unsigned int idPtr;
 
 		SpriteRenderer(int maxSprites, const std::string& shaderVert, const std::string& shaderFrag)
 			: shader(new Shader(shaderVert, shaderFrag)) {
@@ -211,8 +213,6 @@ namespace Minecraft::Helper {
 
 			shader->Bind();
 			shader->SetUniformMat4f("u_MVP", projection * view * glm::translate(glm::mat4(1.f), translation));
-
-			// RefreshTextures();
 		}
 
 		void RefreshTextures() {
@@ -222,10 +222,11 @@ namespace Minecraft::Helper {
 					sampler[i] = j;
 				}
 				else {
-					sampler[i] = textures[i]->Bind(SAMPLER_SLOT_SPRITES + i);		// TODO: Double check Index
+					LOGC(std::to_string(SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING));
+					sampler[i] = textures[i]->Bind(SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING++);		// TODO: Double check Index
 				}
 			}
-
+			sampler[0] = 3;
 			shader->Bind();
 			shader->SetUniform1iv("u_Textures", 8, sampler);
 		}
@@ -234,7 +235,7 @@ namespace Minecraft::Helper {
 			vb->Empty();
 		}
 
-		void AddSprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, const bool flipUV = false) {
+		unsigned int AddSprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, const bool flipUV = false) {
 			float index = -1.f;
 			for (int i = 0; i < textures.size(); i++) {
 				if (textures[i]->GetPath().compare(path) == 0) {
@@ -259,6 +260,51 @@ namespace Minecraft::Helper {
 			triangles += 2;
 
 			RefreshTextures();
+
+			sprites[idPtr] = Sprite(path, position, size, flipUV);
+			return idPtr++;
+		}
+
+		unsigned int AddSprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, Helper::Vec2_4 uvs, const bool flipUV = false) {
+			float index = -1.f;
+			for (int i = 0; i < textures.size(); i++) {
+				if (textures[i]->GetPath().compare(path) == 0) {
+					index = (float)i;
+				}
+			}
+
+			if (index == -1.f) {
+				textures.push_back(new Texture(path, flipUV));
+				index = textures.size() - 1.f;
+			}
+
+			Minecraft::Sprite2DVertex verts[4] = {
+				{position + glm::vec2(0.f, 0.f), uvs.u0, index},
+				{position + glm::vec2(size.x, 0.f), uvs.u1, index},
+				{position + glm::vec2(size.x, size.y), uvs.u2, index},
+				{position + glm::vec2(0.f, size.y), uvs.u3, index}
+			};
+
+			vb->Bind();
+			vb->AddVertexData(verts, sizeof(Minecraft::Sprite2DVertex) * 4);
+			triangles += 2;
+
+			RefreshTextures();
+			sprites[idPtr] = Sprite(path, position, size, flipUV);
+			return idPtr++;
+		}
+
+		unsigned int AddSprite(const Sprite& sprite) {
+			return AddSprite(sprite.Path, sprite.Position, sprite.Size, sprite.Uvs, sprite.FlipUvs);
+		}
+
+		void RemoveSprite(unsigned int id) {
+			sprites.erase(id);
+			vb->Empty();
+
+			for (auto const& [key, value] : sprites) {
+				AddSprite(value);
+			}
 		}
 
 		~SpriteRenderer() {
@@ -270,9 +316,6 @@ namespace Minecraft::Helper {
 		}
 
 		inline void Draw() {
-			shader->Bind();
-			va->Bind();
-			ib->Bind();
 			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, ib->GetCount());
 			shader->Unbind();
 		}
@@ -289,6 +332,7 @@ namespace Minecraft::Helper {
 		int characterWidth;
 
 		size_t count;
+		bool unicode;
 
 		std::unique_ptr<VertexBuffer> vb;
 		std::unique_ptr<IndexBuffer> ib;
@@ -308,10 +352,18 @@ namespace Minecraft::Helper {
 			imgPosition.x = posX * characterWidth + characterWidth / 2;
 			imgPosition.y = posY * charHeight;
 
-			information.uv.u0.x = (imgPosition.x - width / 2.f) / sheetWidth;
-			information.uv.u3.x = (imgPosition.x - width / 2.f) / sheetWidth;
-			information.uv.u1.x = (imgPosition.x + width / 2.f) / sheetWidth;
-			information.uv.u2.x = (imgPosition.x + width / 2.f) / sheetWidth;
+			if (unicode) {
+				information.uv.u0.x = (imgPosition.x - characterWidth / 2.f) / sheetWidth;
+				information.uv.u3.x = (imgPosition.x - characterWidth / 2.f) / sheetWidth;
+				information.uv.u1.x = (imgPosition.x - characterWidth / 2.f + width) / sheetWidth;
+				information.uv.u2.x = (imgPosition.x - characterWidth / 2.f + width) / sheetWidth;
+			}
+			else {
+				information.uv.u0.x = (imgPosition.x - width / 2.f) / sheetWidth;
+				information.uv.u3.x = (imgPosition.x - width / 2.f) / sheetWidth;
+				information.uv.u1.x = (imgPosition.x + width / 2.f) / sheetWidth;
+				information.uv.u2.x = (imgPosition.x + width / 2.f) / sheetWidth;
+			}
 
 			information.uv.u0.y = (float)imgPosition.y / (float)sheetHeight;
 			information.uv.u1.y = (float)imgPosition.y / (float)sheetHeight;
@@ -324,12 +376,13 @@ namespace Minecraft::Helper {
 		}
 
 	public:
-		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity)
+		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity, const bool unicode = false)
 		:fontSheet(imgPath, true), shader(new Shader("res/shaders/font/shader_font_stylized.vert", "res/shaders/font/shader_font_stylized.frag"))
 		{
 			projection = glm::ortho(0.0f, (float)conf.WIN_WIDTH, 0.0f, (float)conf.WIN_HEIGHT, -1.0f, 1.0f);
 			translation = glm::vec3(0.f, 0.f, 0.f);
 			view = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f));
+			this->unicode = unicode;
 
 			unsigned int* indices = new unsigned int[capacity * 6];
 
@@ -366,14 +419,14 @@ namespace Minecraft::Helper {
 			fontSheet.Bind(SAMPLER_SLOT_FONTS);
 			shader->SetUniform1i("u_FontSheetSampler", fontSheet.GetBoundPort());
 
-			if(symbols.size() == 0) ParseSymbols(fontPath);
+			if(symbols.size() == 0) ParseSymbols(fontPath, this->unicode);
 		}
 
 		~FontRenderer() {
 			delete shader;
 		}
 
-		void ParseSymbols(const std::string& fontPath) {
+		void ParseSymbols(const std::string& fontPath, const bool unicode = false) {
 			LOGC("Parsing Fonts", LOG_COLOR::SPECIAL_A);
 
 			sheetHeight = fontSheet.GetHeight();
@@ -395,10 +448,12 @@ namespace Minecraft::Helper {
 			for (auto symbol : mainNode["characters"]) {
 				const char character = symbol.first.as<char>();
 
+				int newWidth = symbol.second["width"].as<int>() / (255.f / sheetWidth);
+
 				const SymbolInformation& information = GatherSymbolInformation(
 					symbol.second["position"][0].as<int>(),
-					symbol.second["position"][1].as<int>(),
-					symbol.second["width"].as<unsigned int>()
+					symbol.second["position"][1].as<int>() - (unicode ? 2 : 0),
+					newWidth
 				);
 
 				symbols[character] = information;

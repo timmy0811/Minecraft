@@ -5,14 +5,14 @@ unknown:
   position:
     - 13
     - 0
-  width: 16
+  width: 12
 
 characters:
   ' ':
     position:
       - 0
       - 15
-    width: 16
+    width: 12
   '!':
     position:
       - 1
@@ -27,22 +27,22 @@ characters:
     position:
       - 3
       - 15
-    width: 16
+    width: 12
   '$':
     position:
       - 4
       - 15
-    width: 16
+    width: 12
   '%':
     position:
       - 5
       - 15
-    width: 16
+    width: 12
   '&':
     position:
       - 6
       - 15
-    width: 16
+    width: 12
   "'":
     position:
       - 7
@@ -52,434 +52,434 @@ characters:
     position:
       - 8
       - 15
-    width: 16
+    width: 12
   ')':
     position:
       - 9
       - 15
-    width: 16
+    width: 12
   '*':
     position:
       - 10
       - 15
-    width: 16
+    width: 12
   '+':
     position:
       - 11
       - 15
-    width: 16
+    width: 12
   ',':
     position:
       - 12
       - 15
-    width: 16
+    width: 12
   '-':
     position:
       - 13
       - 15
-    width: 16
+    width: 12
   '.':
     position:
       - 14
       - 15
-    width: 16
+    width: 12
   '/':
     position:
       - 15
       - 15
-    width: 16
+    width: 12
   '0':
     position:
       - 0
       - 14
-    width: 16
+    width: 12
   '1':
     position:
       - 1
       - 14
-    width: 16
+    width: 12
   '2':
     position:
       - 2
       - 14
-    width: 16
+    width: 12
   '3':
     position:
       - 3
       - 14
-    width: 16
+    width: 12
   '4':
     position:
       - 4
       - 14
-    width: 16
+    width: 12
   '5':
     position:
       - 5
       - 14
-    width: 16
+    width: 12
   '6':
     position:
       - 6
       - 14
-    width: 16
+    width: 12
   '7':
     position:
       - 7
       - 14
-    width: 16
+    width: 12
   '8':
     position:
       - 8
       - 14
-    width: 16
+    width: 12
   '9':
     position:
       - 9
       - 14
-    width: 16
+    width: 12
   ':':
     position:
       - 10
       - 14
-    width: 16
+    width: 12
   ';':
     position:
       - 11
       - 14
-    width: 16
+    width: 12
   '<':
     position:
       - 12
       - 14
-    width: 16
+    width: 12
   '=':
     position:
       - 13
       - 14
-    width: 16
+    width: 12
   '>':
     position:
       - 14
       - 14
-    width: 16
+    width: 12
   '?':
     position:
       - 15
       - 14
-    width: 16
+    width: 12
   '@':
     position:
       - 0
       - 13
-    width: 16
+    width: 12
   'A':
     position:
       - 1
       - 13
-    width: 16
+    width: 12
   'B':
     position:
       - 2
       - 13
-    width: 16
+    width: 12
   'C':
     position:
       - 3
       - 13
-    width: 16
+    width: 12
   'D':
     position:
       - 4
       - 13
-    width: 16
+    width: 12
   'E':
     position:
       - 5
       - 13
-    width: 16
+    width: 12
   'F':
     position:
       - 6
       - 13
-    width: 16
+    width: 12
   'G':
     position:
       - 7
       - 13
-    width: 16
+    width: 12
   'H':
     position:
       - 8
       - 13
-    width: 16
+    width: 12
   'I':
     position:
       - 9
       - 13
-    width: 16
+    width: 12
   'J':
     position:
       - 10
       - 13
-    width: 16
+    width: 12
   'K':
     position:
       - 11
       - 13
-    width: 16
+    width: 12
   'L':
     position:
       - 12
       - 13
-    width: 16
+    width: 12
   'M':
     position:
       - 13
       - 13
-    width: 16
+    width: 12
   'N':
     position:
       - 14
       - 13
-    width: 16
+    width: 12
   'O':
     position:
       - 15
       - 13
-    width: 16
+    width: 12
   'P':
     position:
       - 0
       - 12
-    width: 16
+    width: 12
   'Q':
     position:
       - 1
       - 12
-    width: 16
+    width: 12
   'R':
     position:
       - 2
       - 12
-    width: 16
+    width: 12
   'S':
     position:
       - 3
       - 12
-    width: 16
+    width: 12
   'T':
     position:
       - 4
       - 12
-    width: 16
+    width: 12
   'U':
     position:
       - 5
       - 12
-    width: 16
+    width: 12
   'V':
     position:
       - 6
       - 12
-    width: 16
+    width: 12
   'W':
     position:
       - 7
       - 12
-    width: 16
+    width: 12
   'X':
     position:
       - 8
       - 12
-    width: 16
+    width: 12
   'Y':
     position:
       - 9
       - 12
-    width: 16
+    width: 12
   'Z':
     position:
       - 10
       - 12
-    width: 16
+    width: 12
   '[':
     position:
       - 11
       - 12
-    width: 16
+    width: 12
   '\':
     position:
       - 12
       - 12
-    width: 16
+    width: 12
   ']':
     position:
       - 13
       - 12
-    width: 16
+    width: 12
   '^':
     position:
       - 14
       - 12
-    width: 16
+    width: 12
   '_':
     position:
       - 15
       - 12
-    width: 16
+    width: 12
   '`':
     position:
       - 0
       - 11
-    width: 16
+    width: 12
   'a':
     position:
       - 1
       - 11
-    width: 16
+    width: 12
   'b':
     position:
       - 2
       - 11
-    width: 16
+    width: 12
   'c':
     position:
       - 3
       - 11
-    width: 16
+    width: 12
   'd':
     position:
       - 4
       - 11
-    width: 16
+    width: 12
   'e':
     position:
       - 5
       - 11
-    width: 16
+    width: 12
   'f':
     position:
       - 6
       - 11
-    width: 16
+    width: 12
   'g':
     position:
       - 7
       - 11
-    width: 16
+    width: 12
   'h':
     position:
       - 8
       - 11
-    width: 16
+    width: 12
   'i':
     position:
       - 9
       - 11
-    width: 16
+    width: 4
   'j':
     position:
       - 10
       - 11
-    width: 16
+    width: 12
   'k':
     position:
       - 11
       - 11
-    width: 16
+    width: 12
   'l':
     position:
       - 12
       - 11
-    width: 16
+    width: 12
   'm':
     position:
       - 13
       - 11
-    width: 16
+    width: 12
   'n':
     position:
       - 14
       - 11
-    width: 16
+    width: 12
   'o':
     position:
       - 15
       - 11
-    width: 16
+    width: 12
   'p':
     position:
       - 0
       - 10
-    width: 16
+    width: 12
   'q':
     position:
       - 1
       - 10
-    width: 16
+    width: 12
   'r':
     position:
       - 2
       - 10
-    width: 16
+    width: 12
   's':
     position:
       - 3
       - 10
-    width: 16
+    width: 12
   't':
     position:
       - 4
       - 10
-    width: 16
+    width: 12
   'u':
     position:
       - 5
       - 10
-    width: 16
+    width: 12
   'v':
     position:
       - 6
       - 10
-    width: 16
+    width: 12
   'w':
     position:
       - 7
       - 10
-    width: 16
+    width: 12
   'x':
     position:
       - 8
       - 10
-    width: 16
+    width: 12
   'y':
     position:
       - 9
       - 10
-    width: 16
+    width: 12
   'z':
     position:
       - 10
       - 10
-    width: 16
+    width: 12
   '{':
     position:
       - 11
       - 10
-    width: 16
+    width: 12
   '|':
     position:
       - 12
       - 10
-    width: 16
+    width: 12
   '}':
     position:
       - 13
       - 10
-    width: 16
+    width: 12
   '~':
     position:
       - 14
       - 10
-    width: 16
+    width: 12
