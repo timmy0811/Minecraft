@@ -22,6 +22,7 @@ private:
 	Minecraft::Helper::FontRenderer m_FontRenderer;
 
 	// Application
+	bool m_ShowDemoStats;
 	TexturePacker Packer;
 
 	// Time 

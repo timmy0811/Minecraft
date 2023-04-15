@@ -43,6 +43,12 @@ int main(void)
         return -1;
     }
 
+    // Icon
+    GLFWimage images[1];
+    images[0].pixels = stbi_load("res/images/icon.png", &images[0].width, &images[0].height, 0, 4); //rgba channels 
+    glfwSetWindowIcon(window, 1, images);
+    stbi_image_free(images[0].pixels);
+
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);

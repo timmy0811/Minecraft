@@ -27,7 +27,7 @@ Handler::Handler(GLFWwindow* window)
 void Handler::OnInit()
 {
 	// Bind Cubemap to static blocks
-	m_Skybox.Bind(SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderBlockStatic));
+	m_Skybox.Bind(Minecraft::Global::SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderBlockStatic));
 
 	m_FontRenderer.PrintMultilineText("Version: 1.0 (Dev)", { 20.f, 20.f }, 4.f, {0.8f, 0.8f, 0.8f, 0.3f});
 }
@@ -65,8 +65,8 @@ void Handler::DebugWindow()
 	ImGui::Text(("Render Distance: " + std::to_string(conf.RENDER_DISTANCE)).c_str());
 
 	// Keybindings
-	ImGui::SetNextWindowSize(ImVec2(380.f, 130.f));
-	ImGui::SetNextWindowPos(ImVec2(10.f, 280.f));
+	ImGui::SetNextWindowSize(ImVec2(380.f, 150.f));
+	ImGui::SetNextWindowPos(ImVec2(10.f, 295.f));
 	ImGui::Begin("Keybindings");
 
 	ImGui::Text("X:    Toggle Wireframe");
@@ -74,6 +74,7 @@ void Handler::DebugWindow()
 	ImGui::Text("B:    Toggle Chunkborders");
 	ImGui::Text("F:    Toggle Movement");
 	ImGui::Text("V:    Parse Config");
+	ImGui::Text("H:    Hide Debug Window");
 
 	ImGui::End();
 
@@ -142,6 +143,14 @@ void Handler::DebugWindow()
 void Handler::OnInput(GLFWwindow* window)
 {
 	m_World.OnInput(window, v_DeltaTime);
+
+	static bool keyPressedH = false;
+	if (glfwGetKey(r_Window, GLFW_KEY_H) == GLFW_PRESS && !keyPressedH)
+	{
+		keyPressedH = true;
+		m_ShowDemoStats = !m_ShowDemoStats;
+	}
+	else if (glfwGetKey(r_Window, GLFW_KEY_H) == GLFW_RELEASE && keyPressedH) keyPressedH = false;
 }
 
 void Handler::OnRender()
@@ -165,6 +174,6 @@ void Handler::OnUpdate()
 	v_LastFrame = currentFrame;
 
 #ifdef _DEBUG
-	DebugWindow();
+	if(m_ShowDemoStats) DebugWindow();
 #endif // !_DEBUG
 }

@@ -7,12 +7,6 @@
 #include <string>
 #include <iostream>
 
-// Sampler Slots 
-#define SAMPLER_SLOT_BLOCKS 0
-#define SAMPLER_SLOT_SKYBOX 1
-#define SAMPLER_SLOT_SPRITES 2
-#define SAMPLER_SLOT_FONTS 9
-
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
@@ -27,6 +21,11 @@ inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
 
 namespace Minecraft::Global {
 	inline int TEXTURE_BINDING = 0;
+
+	inline int SAMPLER_SLOT_BLOCKS = 1;
+	inline int SAMPLER_SLOT_SKYBOX = 2;
+	inline int SAMPLER_SLOT_SPRITES = 3;
+	inline int SAMPLER_SLOT_FONTS = 9;
 }
 
 class Config {
@@ -93,6 +92,8 @@ public:
 		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
 		GENERATION_THREADS = mainNode["config"]["system"]["GenerationThreads"].as<unsigned int>();
 
+		GUI_SCALE = mainNode["config"]["game"]["gui"]["scale"].as<float>();
+
 		CHUNK_VOLUME = CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE;
 	}
 
@@ -149,6 +150,9 @@ public:
 	float FOV_SPRINT = 0.f;
 
 	float BLOCK_INTERACTION_RANGE = 0.f;
+
+	// GUI
+	float GUI_SCALE = 1.f;
 };
 
 extern Config conf;

@@ -12,7 +12,7 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    RenderDistance: 2
+    RenderDistance: 1
     TextureInverseOffset: 100
 
     ChunkBorderColor:
@@ -29,7 +29,7 @@ config:
       WorldWidth: 64
       ChunkSize: 16
       BlockSize: 1.0
-      ChunkHeight: 10
+      ChunkHeight: 8
       YStretch: 1.0
       XStretch: 0.7
       MinHeight: 3
@@ -60,3 +60,6 @@ config:
       FOVsprinting: 70.0
 
       BlockInteractionRange: 4.0
+
+    gui:
+      scale: 1.0

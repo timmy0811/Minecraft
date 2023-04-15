@@ -3,6 +3,8 @@
 Texture::Texture(const std::string& path, const bool flipUV)
 	:m_RendererID(0), m_Filepath(path), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0)
 {
+	GLCall(glActiveTexture(GL_TEXTURE0));
+
 	if(flipUV) stbi_set_flip_vertically_on_load(1);
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 	if (!m_LocalBuffer) LOGC(("Could not load" + path), LOG_COLOR::FAULT);

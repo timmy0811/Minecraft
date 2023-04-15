@@ -222,11 +222,11 @@ namespace Minecraft::Helper {
 					sampler[i] = j;
 				}
 				else {
-					LOGC(std::to_string(SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING));
-					sampler[i] = textures[i]->Bind(SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING++);		// TODO: Double check Index
+					LOGC(std::to_string(Minecraft::Global::SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING));
+					sampler[i] = textures[i]->Bind(Minecraft::Global::SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING++);		// TODO: Double check Index
 				}
 			}
-			sampler[0] = 3;
+
 			shader->Bind();
 			shader->SetUniform1iv("u_Textures", 8, sampler);
 		}
@@ -416,7 +416,7 @@ namespace Minecraft::Helper {
 			shader->Bind();
 			shader->SetUniformMat4f("u_MVP", projection * view * glm::translate(glm::mat4(1.f), translation));
 
-			fontSheet.Bind(SAMPLER_SLOT_FONTS);
+			fontSheet.Bind(Minecraft::Global::SAMPLER_SLOT_FONTS);
 			shader->SetUniform1i("u_FontSheetSampler", fontSheet.GetBoundPort());
 
 			if(symbols.size() == 0) ParseSymbols(fontPath, this->unicode);

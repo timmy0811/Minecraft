@@ -16,7 +16,7 @@ class Inventory
 {
 private:
 	std::vector<Minecraft::Item*> m_ItemsStorage{ 4 * 9 };
-	//Minecraft::Helper::SpriteRenderer m_GUIRenderer;
+	Minecraft::Helper::SpriteRenderer m_GUIRenderer;
 
 	// Sprites
 	Minecraft::Helper::Sprite m_Sprite_Hotbar;
