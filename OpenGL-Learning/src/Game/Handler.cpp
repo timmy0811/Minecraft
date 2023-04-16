@@ -1,7 +1,7 @@
 #include "Handler.h"
 
 Handler::Handler(GLFWwindow* window)
-	:m_Inventory(), r_Window(window), m_FontRenderer("res/images/text/ascii_chat_1.png", "docs/font.yaml", 128, true), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
+	:m_Inventory(), r_Window(window), m_FontRenderer("res/images/text/ascii_chat_1.png", "docs/font.yaml", 128, true, 1), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -167,6 +167,7 @@ void Handler::OnRender()
 void Handler::OnUpdate()
 {
 	m_World.OnUpdate(v_DeltaTime);
+	m_Inventory.OnUpdate();
 	m_Skybox.setMatrix(m_World.getMatrixProjection(), m_World.getMatrixView());
 
 	float currentFrame = (float)glfwGetTime();

@@ -7,7 +7,7 @@ Texture::Texture(const std::string& path, const bool flipUV)
 
 	if(flipUV) stbi_set_flip_vertically_on_load(1);
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 4);
-	if (!m_LocalBuffer) LOGC(("Could not load" + path), LOG_COLOR::FAULT);
+	if (!m_LocalBuffer) LOGC(("Could not load " + path), LOG_COLOR::FAULT);
 
 	GLCall(glGenTextures(1, &m_RendererID));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));

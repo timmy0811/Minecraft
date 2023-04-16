@@ -222,8 +222,7 @@ namespace Minecraft::Helper {
 					sampler[i] = j;
 				}
 				else {
-					LOGC(std::to_string(Minecraft::Global::SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING));
-					sampler[i] = textures[i]->Bind(Minecraft::Global::SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING++);		// TODO: Double check Index
+					sampler[i] = textures[i]->Bind(Minecraft::Global::SAMPLER_SLOT_SPRITES + Minecraft::Global::TEXTURE_BINDING++);
 				}
 			}
 
@@ -324,7 +323,12 @@ namespace Minecraft::Helper {
 	class FontRenderer {
 	private:
 		Texture fontSheet;
-		static inline std::map<int, Minecraft::Helper::SymbolInformation> symbols;
+		static inline std::map<int, Minecraft::Helper::SymbolInformation> symbolsUnicode;
+		static inline std::map<int, Minecraft::Helper::SymbolInformation> symbolsGui;
+		std::map<int, Minecraft::Helper::SymbolInformation>* symbols;
+
+		static inline bool m_SymbolsParsedGui;
+		static inline bool m_SymbolsParsedAscii;
 
 		unsigned int charHeight;
 		int sheetHeight;
@@ -376,7 +380,7 @@ namespace Minecraft::Helper {
 		}
 
 	public:
-		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity, const bool unicode = false)
+		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity, const bool unicode = false, unsigned int sheetId = 0)
 		:fontSheet(imgPath, true), shader(new Shader("res/shaders/font/shader_font_stylized.vert", "res/shaders/font/shader_font_stylized.frag"))
 		{
 			projection = glm::ortho(0.0f, (float)conf.WIN_WIDTH, 0.0f, (float)conf.WIN_HEIGHT, -1.0f, 1.0f);
@@ -416,10 +420,26 @@ namespace Minecraft::Helper {
 			shader->Bind();
 			shader->SetUniformMat4f("u_MVP", projection * view * glm::translate(glm::mat4(1.f), translation));
 
-			fontSheet.Bind(Minecraft::Global::SAMPLER_SLOT_FONTS);
-			shader->SetUniform1i("u_FontSheetSampler", fontSheet.GetBoundPort());
+			fontSheet.Bind(Minecraft::Global::SAMPLER_SLOT_FONTS + sheetId);
+			int id = fontSheet.GetBoundPort();
+			shader->SetUniform1i("u_FontSheetSampler", id);
 
-			if(symbols.size() == 0) ParseSymbols(fontPath, this->unicode);
+			// Sheet
+			sheetHeight = fontSheet.GetHeight();
+			sheetWidth = fontSheet.GetWidth();
+
+			constexpr int charsPerRow = 16;
+			charHeight = sheetHeight / charsPerRow;
+			characterWidth = sheetWidth / charsPerRow;
+
+			if (unicode) {
+				if(symbolsUnicode.size() == 0) ParseSymbols(fontPath, this->unicode);
+				symbols = &symbolsUnicode;
+			}
+			else {
+				if (symbolsGui.size() == 0) ParseSymbols(fontPath, this->unicode);
+				symbols = &symbolsGui;
+			}
 		}
 
 		~FontRenderer() {
@@ -428,13 +448,6 @@ namespace Minecraft::Helper {
 
 		void ParseSymbols(const std::string& fontPath, const bool unicode = false) {
 			LOGC("Parsing Fonts", LOG_COLOR::SPECIAL_A);
-
-			sheetHeight = fontSheet.GetHeight();
-			sheetWidth = fontSheet.GetWidth();
-
-			constexpr int charsPerRow = 16;
-			charHeight = sheetHeight / charsPerRow;
-			characterWidth = sheetWidth / charsPerRow;
 			
 			YAML::Node mainNode = YAML::LoadFile(fontPath);
 
@@ -443,7 +456,6 @@ namespace Minecraft::Helper {
 				mainNode["unknown"]["position"][1].as<int>(),
 				mainNode["unknown"]["width"].as<unsigned int>()
 			);
-			symbols[255] = informationUnknown;
 
 			for (auto symbol : mainNode["characters"]) {
 				const char character = symbol.first.as<char>();
@@ -456,7 +468,14 @@ namespace Minecraft::Helper {
 					newWidth
 				);
 
-				symbols[character] = information;
+				if (unicode) {
+					symbolsUnicode[255] = informationUnknown;
+					symbolsUnicode[character] = information;
+				}
+				else {
+					symbolsGui[255] = informationUnknown;
+					symbolsGui[character] = information;
+				}
 			}
 		}
 
@@ -464,35 +483,52 @@ namespace Minecraft::Helper {
 			vb->Empty();
 		}
 
-		void PrintMultilineText(const char* text, const glm::vec2& position, float size = 1.f, const glm::vec4& background = {}) {
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="text"></param>
+		/// <param name="position"></param>
+		/// <param name="size"></param>
+		/// <param name="background"></param>
+		/// <returns>Returns the maximum width of the printed text</returns>
+		float PrintMultilineText(const char* text, const glm::vec2& position, float size = 1.f, const glm::vec4& background = {}) {
 			const char* symPtr = text;
 			glm::vec2 symbolPosition = position;
+			float widthTotal = 0.f, widthLine = 0.f;
 
 			while (*symPtr != '\0') {
 				const char symbol = *symPtr;
-				if (symbol == '\n') {
-					symbolPosition.x = position.x;
-					symbolPosition.y -= (float)charHeight * size;
+				if (symbol == '\n' || *(symPtr + 1) == '\0') {
+					widthTotal = std::max(widthTotal, widthLine);
+					widthLine = 0.f;
 
-					symPtr++;
-					continue;
+					if (symbol == '\n') {
+						symbolPosition.x = position.x;
+						symbolPosition.y -= (float)charHeight * size;
+
+						symPtr++;
+						continue;
+					}
 				}
+
 				Helper::SymbolInformation information;
-				if (symbols.find(symbol) != symbols.end()) {
-					information = symbols[symbol];
+				if (symbols->find(symbol) != symbols->end()) {
+					information = (*symbols)[symbol];
 				}
 				else {
-					information = symbols[255];
+					information = (*symbols)[255];
 				}
 
-				AddLetter(information, symbolPosition, size, background);
+				widthLine += AddLetter(information, symbolPosition, size, background);
 				symbolPosition.x += information.width * size;
 
 				symPtr++;
 			}
+
+			return widthTotal;
 		}
 
-		void AddLetter(const Helper::SymbolInformation& information, const glm::vec2& position, float size = 1.f, const glm::vec4& background = {}) {
+		float AddLetter(const Helper::SymbolInformation& information, const glm::vec2& position, float size = 1.f, const glm::vec4& background = {}) {
 			SymbolVertex v[4];
 
 			for (int i = 0; i < 4; i++) {
@@ -514,12 +550,14 @@ namespace Minecraft::Helper {
 			v[3].uv = information.uv.u3;
 
 			vb->AddVertexData(v, sizeof(SymbolVertex) * 4);
-			size++;
+			count++;
+
+			return w;
 		}
 
 		inline void Draw() {
 			shader->Bind();
-			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, ib->GetCount());
+			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, count * 6);
 			shader->Unbind();
 		}
 
