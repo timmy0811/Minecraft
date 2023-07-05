@@ -14,6 +14,17 @@
 
 class Handler
 {
+public:
+	Handler(GLFWwindow* window);
+
+	void OnInput(GLFWwindow* window);
+	void OnRender();
+	void OnUpdate();
+
+private:
+	void OnInit();
+	void DebugWindow();
+
 private:
 	World m_World;
 	Skybox m_Skybox;
@@ -25,20 +36,9 @@ private:
 	bool m_ShowDemoStats;
 	TexturePacker Packer;
 
-	// Time 
+	// Time
 	float v_DeltaTime;
 	float v_LastFrame;
 
 	GLFWwindow* r_Window;
-
-	void OnInit();
-	void DebugWindow();
-
-public:
-	Handler(GLFWwindow* window);
-
-	void OnInput(GLFWwindow* window);
-	void OnRender();
-	void OnUpdate();
 };
-

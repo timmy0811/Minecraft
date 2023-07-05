@@ -385,27 +385,27 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 		block.vertices[1].Position = positions[1];
 		block.vertices[2].Position = positions[5];
 		block.vertices[3].Position = positions[4];
-			 
+
 		block.vertices[4].Position = positions[1];
 		block.vertices[5].Position = positions[2];
 		block.vertices[6].Position = positions[6];
 		block.vertices[7].Position = positions[5];
-			 
+
 		block.vertices[8].Position = positions[3];
 		block.vertices[9].Position = positions[0];
 		block.vertices[10].Position = positions[4];
 		block.vertices[11].Position = positions[7];
-			 
+
 		block.vertices[12].Position = positions[2];
 		block.vertices[13].Position = positions[3];
 		block.vertices[14].Position = positions[7];
 		block.vertices[15].Position = positions[6];
-			 
+
 		block.vertices[16].Position = positions[4];
 		block.vertices[17].Position = positions[5];
 		block.vertices[18].Position = positions[6];
 		block.vertices[19].Position = positions[7];
-			 
+
 		block.vertices[20].Position = positions[3];
 		block.vertices[21].Position = positions[2];
 		block.vertices[22].Position = positions[1];
@@ -419,7 +419,7 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 		block.vertices[i + 1].Normal = normals[face];
 		block.vertices[i + 2].Normal = normals[face];
 		block.vertices[i + 3].Normal = normals[face];
-			 
+
 		block.vertices[i + 0].reflection = formatBlock.reflection;
 		block.vertices[i + 1].reflection = formatBlock.reflection;
 		block.vertices[i + 2].reflection = formatBlock.reflection;
@@ -455,7 +455,7 @@ const glm::vec3 Chunk::TranslateToWorldPosition(const glm::vec3& chunkPosition) 
 }
 
 unsigned int Chunk::Generate()
- {
+{
 	const double noiseStep = 1.f / conf.CHUNK_SIZE;
 	glm::vec2 noiseStepOffset = { 0.f, 0.f };
 	unsigned int spawnHeight = 0;
@@ -465,7 +465,7 @@ unsigned int Chunk::Generate()
 		noiseStepOffset.x = 0.f;
 		for (unsigned int x = 0; x < conf.CHUNK_SIZE; x++) {
 			double noiseOnTile = m_Noise->octave2D_01((m_NoiseOffset.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X, (m_NoiseOffset.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X, 1);
-			unsigned int pillarHeight = (unsigned int)(noiseOnTile * conf.TERRAIN_STRETCH_Y) + conf.TERRAIN_MIN_HEIGHT;
+			unsigned int pillarHeight = ((unsigned int)(noiseOnTile * conf.TERRAIN_STRETCH_Y) + conf.TERRAIN_MIN_HEIGHT); // TODO: 2 Octave transformation
 
 			// Temporary generation parameters
 			unsigned int maxHeightStone = pillarHeight / 2;
@@ -487,7 +487,7 @@ unsigned int Chunk::Generate()
 				case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
 					index = CoordToIndex({ x, i, z });
 					m_BlockStatic[index] = new Minecraft::Block_static(block);	// TODO: Slow! 'new' instantiates the cube not in allocated space but random
-					
+
 					break;
 				case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
 					m_BlockStatic.push_back(new Minecraft::Block_static(block));

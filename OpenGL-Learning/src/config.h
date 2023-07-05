@@ -37,6 +37,7 @@ public:
 		:m_Path(path)
 	{
 		Parse();
+		Validate();
 	}
 
 	void Parse() {
@@ -96,6 +97,10 @@ public:
 		GUI_SCALE = mainNode["config"]["game"]["gui"]["scale"].as<float>();
 
 		CHUNK_VOLUME = CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE;
+	}
+
+	void Validate() {
+		if (CHUNK_HEIGHT < TERRAIN_MIN_HEIGHT + TERRAIN_STRETCH_Y - 1) LOGC("Error: Terrain Exceeding Chunk Boundaries!", LOG_COLOR::FAULT);
 	}
 
 	// System

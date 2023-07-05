@@ -23,12 +23,11 @@ namespace Minecraft::Image {
 
 class TexturePacker
 {
-private:
-	static std::vector<std::string> m_PackedTextures;	
-	static int roundUp(int numToRound, int multiple);
-	inline static int CoordinateToIndex(int x, int y, int width);
-
 public:
 	static const bool PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float accur = 1.f);
-};
 
+private:
+	static std::vector<std::string> m_PackedTextures;
+	static int roundUp(int numToRound, int multiple);
+	inline static int CoordinateToIndex(int x, int y, int width);
+};

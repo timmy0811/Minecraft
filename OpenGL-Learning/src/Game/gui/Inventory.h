@@ -14,6 +14,16 @@ namespace Minecraft {
 
 class Inventory
 {
+public:
+	explicit Inventory();
+	~Inventory();
+
+	void OnRender();
+	void OnUpdate();
+
+private:
+	void OnRenderHotbar();
+
 private:
 	std::vector<Minecraft::Item*> m_ItemsStorage{ 4 * 9 };
 	Minecraft::Helper::SpriteRenderer m_GUIRenderer;
@@ -21,13 +31,4 @@ private:
 
 	// Sprites
 	Minecraft::Helper::Sprite m_Sprite_Hotbar;
-
-	void OnRenderHotbar();
-
-public:
-	explicit Inventory();
-	~Inventory();
-
-	void OnRender();
-	void OnUpdate();
 };

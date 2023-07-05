@@ -6,7 +6,7 @@
 #include "vendor/yaml/yaml_wrapper.hpp"
 #include "config.h"
 
-// Game 
+// Game
 #include "Game/render/CustomRenderer.h"
 #include "Game/view/CharacterController.h"
 
@@ -37,8 +37,69 @@
 
 class World
 {
+public:
+	World(GLFWwindow* window);
+	~World();
+
+	// Setup
+	void GenerationThreadJob();
+
+	// Update
+	void OnInput(GLFWwindow* window, double deltaTime);
+	void OnRender();
+	void OnUpdate(double deltaTime);
+
+	// Misc
+	void UpdateProjectionMatrix(float FOV, float nearD = 0.1f, float farD = 300.f);
+
+	// Accessors
+	const glm::mat4& getMatrixProjection() const;
+	const glm::mat4& getMatrixView() const;
+	const glm::vec3& getCameraPosition() const;
+
+	const unsigned int getAmountBlockStatic() const;
+
+	inline const size_t getAmountChunk() const { return m_Chunks.size(); }
+	inline const size_t getAmountBlockFormat() const { return m_BlockFormats.size(); };
+	inline const size_t getAmountTextureFormat() const { return m_TextureFormats.size(); }
+	const size_t getDrawnVertices() const;
+	const unsigned int getDrawCalls() const;
+
+	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
+
+	inline void toggleCharacterMode(Minecraft::CharacterController::STATE mode) { m_CharacterController.toggleMode(mode); };
+
+public:
+	bool m_DrawChunkBorder;
+
 private:
-	// Attributes ------------------------------------------
+	// Setup
+	void SetupChunkBorders();
+	void SetupLight();
+	void GenerateTerrain();
+
+	void ParseBlocks(const std::string& path);
+	void ParseTextures(const std::string& path);
+
+	// Update
+	void UpdateLight();
+
+	void NeighborChunks();
+	void HandleChunkLoading();
+
+	void OutlineSelectedBlock();
+
+	// Misc
+	inline int CoordToIndex(const glm::vec2& coord) const;
+	inline const glm::vec2 IndexToCoord(unsigned int index) const;
+
+	inline bool ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex);
+	template <typename T>
+	bool ContainsElement(const std::deque<T>& queue, const T& element) const {
+		return std::find(queue.begin(), queue.end(), element) != queue.end();
+	}
+
+private:
 	glm::vec3 m_WorldRootPosition;
 	glm::vec2 m_PlayerChunkPosition;
 
@@ -49,7 +110,7 @@ private:
 	// Objects
 	CharacterController m_CharacterController;
 
-	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
+	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH* conf.WORLD_WIDTH };
 	std::deque<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;
@@ -83,67 +144,4 @@ private:
 	bool m_IsGenerationInit = true;
 
 	std::vector<std::thread> m_GenerationThreads;
-
-	// Methods ------------------------------------------
-	// Setup
-	void SetupChunkBorders();
-	void SetupLight();
-	void GenerateTerrain();
-
-	void ParseBlocks(const std::string& path);
-	void ParseTextures(const std::string& path);
-
-	// Update
-	void UpdateLight();
-
-	void NeighborChunks();
-	void HandleChunkLoading();
-
-	void OutlineSelectedBlock();
-
-	// Misc
-	inline int CoordToIndex(const glm::vec2& coord) const;
-	inline const glm::vec2 IndexToCoord(unsigned int index) const;
-
-	inline bool ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex);
-	template <typename T>
-	bool ContainsElement(const std::deque<T>& queue, const T& element) const {
-		return std::find(queue.begin(), queue.end(), element) != queue.end();
-	}
-
-public:
-	// Attributes ------------------------------------------
-	bool m_DrawChunkBorder;
-
-	// Methods ------------------------------------------
-	World(GLFWwindow* window);
-	~World();
-
-	// Setup
-	void GenerationThreadJob();
-
-	// Update
-	void OnInput(GLFWwindow* window, double deltaTime);
-	void OnRender();
-	void OnUpdate(double deltaTime);
-
-	// Misc
-	void UpdateProjectionMatrix(float FOV, float nearD = 0.1f, float farD = 300.f);
-
-	// Accessors
-	const glm::mat4& getMatrixProjection() const;
-	const glm::mat4& getMatrixView() const;
-	const glm::vec3& getCameraPosition() const;
-
-	const unsigned int getAmountBlockStatic() const;
-
-	inline const size_t getAmountChunk() const { return m_Chunks.size(); }
-	inline const size_t getAmountBlockFormat() const { return m_BlockFormats.size(); };
-	inline const size_t getAmountTextureFormat() const { return m_TextureFormats.size(); }
-	const size_t getDrawnVertices() const;
-	const unsigned int getDrawCalls() const;
-
-	inline const Minecraft::Helper::ShaderPackage& getShaderPackage() { return m_ShaderPackage; };
-
-	inline void toggleCharacterMode(Minecraft::CharacterController::STATE mode) { m_CharacterController.toggleMode(mode); };
 };

@@ -13,6 +13,24 @@
 
 class Skybox
 {
+public:
+	Skybox(const std::string& cubemapPathPrefix, const std::string& fileFormat = ".png");
+	~Skybox();
+
+	void Unbind();
+	const unsigned int Bind(const unsigned int slot);
+	const unsigned int Bind(const unsigned int slot, Shader& shader);
+	void OnRender();
+
+	void setMatrix(const glm::mat4& projection, const glm::mat4& view);
+
+	// Members
+	inline const unsigned int getDrawCalls() {
+		const unsigned int calls = m_DrawCalls;
+		m_DrawCalls = 0;
+		return calls;
+	}
+
 private:
 	mutable int m_BoundID;
 	unsigned int m_RendererID;
@@ -27,24 +45,4 @@ private:
 
 	// Debug
 	unsigned int m_DrawCalls = 0;
-
-public:
-	Skybox(const std::string& cubemapPathPrefix, const std::string& fileFormat = ".png");
-	~Skybox();
-
-	void Unbind();
-	const unsigned int Bind(const unsigned int slot);
-	const unsigned int Bind(const unsigned int slot, Shader& shader);
-	void OnRender();
-
-	void setMatrix(const glm::mat4& projection, const glm::mat4& view);
-
-	// Members
-	inline const unsigned int getDrawCalls()  {
-		const unsigned int calls = m_DrawCalls;
-		m_DrawCalls = 0;
-		return calls;
-	}
-
 };
-

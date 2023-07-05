@@ -20,51 +20,8 @@ namespace Minecraft::CharacterController {
 
 class CharacterController
 {
-private:
-	Minecraft::Camera3D m_Camera;
-	Minecraft::CharacterController::STATE m_State;
-	bool m_IsGrounded;
-	bool m_IsSpawned;
-
-	float m_MovementSpeed;
-
-	glm::vec3 m_FrameVelocity;
-	glm::vec3 m_BlockPosition; // Relative to Matrix World
-	glm::vec3 m_BlockPositionInChunk;
-	std::vector<glm::vec3> m_CheckOrder;
-	Minecraft::Block_static* m_SelectedBlock;
-	glm::vec4 m_SelectedBlockPosition;
-	Minecraft::CharacterController::SIDE m_SelectedBlockSide;
-
-	float m_CharBodyHeight = 1.62f;
-	float m_CharHeadHeight = 0.18f;
-	float m_CharWidth = 0.6f;
-
-	// Reference Values
-	unsigned int r_ChunkWidth = (unsigned int)(conf.CHUNK_SIZE * conf.BLOCK_SIZE);
-	glm::vec2 r_RootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };
-	glm::vec3 r_WorldRootPosition = { -(int)((r_RootPosition.x + 0.5) * r_ChunkWidth), 0, -(int)((r_RootPosition.y + 0.5) * r_ChunkWidth) };
-
-	// Input
-	float m_LastX = 400, m_LastY = 300;
-	bool m_FirstMouseInit = true;
-
-	inline static float s_MouseX = 0;
-	inline static float s_MouseY = 0;
-
-	Minecraft::CharacterController::InputChangeEvent ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
-	void ComputeRaycast(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
-	bool InteractWithBlock(GLFWwindow* window, Chunk* chunkArray[9]);
-
-	static Minecraft::CharacterController::SIDE RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
-	inline bool BoxIntersectsBlock(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
-
-	glm::vec4 ClipChunkCoordinate(const glm::vec3& coord) const;
-	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
-	void ProcessMouse();
-
 public:
-	explicit CharacterController(const glm::vec3& position = {0.f, 0.f, 0.f});
+	explicit CharacterController(const glm::vec3& position = { 0.f, 0.f, 0.f });
 
 	Minecraft::CharacterController::InputChangeEvent OnInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
 	void OnUpdate(double deltaTime);
@@ -96,7 +53,50 @@ public:
 		case Minecraft::CharacterController::STATE::FLYING:
 			m_MovementSpeed = 0.1f;
 			break;
-		}	
+		}
 	}
-};
 
+private:
+	Minecraft::CharacterController::InputChangeEvent ComputeInput(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	void ComputeRaycast(GLFWwindow* window, double deltaTime, Chunk* chunkArray[9]);
+	bool InteractWithBlock(GLFWwindow* window, Chunk* chunkArray[9]);
+
+	static Minecraft::CharacterController::SIDE RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size);
+	inline bool BoxIntersectsBlock(Minecraft::Block_static* block, const glm::vec3& boxEdgeMin, const glm::vec3& boxEdgeMax);
+
+	glm::vec4 ClipChunkCoordinate(const glm::vec3& coord) const;
+	static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
+	void ProcessMouse();
+
+private:
+	Minecraft::Camera3D m_Camera;
+	Minecraft::CharacterController::STATE m_State;
+	bool m_IsGrounded;
+	bool m_IsSpawned;
+
+	float m_MovementSpeed;
+
+	glm::vec3 m_FrameVelocity;
+	glm::vec3 m_BlockPosition; // Relative to Matrix World
+	glm::vec3 m_BlockPositionInChunk;
+	std::vector<glm::vec3> m_CheckOrder;
+	Minecraft::Block_static* m_SelectedBlock;
+	glm::vec4 m_SelectedBlockPosition;
+	Minecraft::CharacterController::SIDE m_SelectedBlockSide;
+
+	float m_CharBodyHeight = 1.62f;
+	float m_CharHeadHeight = 0.18f;
+	float m_CharWidth = 0.6f;
+
+	// Reference Values
+	unsigned int r_ChunkWidth = (unsigned int)(conf.CHUNK_SIZE * conf.BLOCK_SIZE);
+	glm::vec2 r_RootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };
+	glm::vec3 r_WorldRootPosition = { -(int)((r_RootPosition.x + 0.5) * r_ChunkWidth), 0, -(int)((r_RootPosition.y + 0.5) * r_ChunkWidth) };
+
+	// Input
+	float m_LastX = 400, m_LastY = 300;
+	bool m_FirstMouseInit = true;
+
+	inline static float s_MouseX = 0;
+	inline static float s_MouseY = 0;
+};
