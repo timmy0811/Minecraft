@@ -11,4 +11,7 @@ The Game features:
 * Advanced Debugging Statistics and Tools
 * Texture Packer for generation Sprite Sheets
 
-![](https://github.com/timmy0811/Minecraft/blob/main/img0.png?raw=true)
+![](https://github.com/timmy0811/Minecraft/blob/main/img1.png?raw=true)
+
+## Debugging Window
+![](https://github.com/timmy0811/Minecraft/blob/main/img2.png?raw=true)
