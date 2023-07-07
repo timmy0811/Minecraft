@@ -636,6 +636,7 @@
     <ClInclude Include="src\vendor\stb_image\stb_image_write.h" />
     <ClInclude Include="src\vendor\yaml\yaml_wrapper.hpp" />
     <ClInclude Include="src\Game\application\TexturePacker.h" />
+    <ClInclude Include="src\window.h" />
     <ClInclude Include="src\windowsWrapper.h" />
   </ItemGroup>
   <ItemGroup>

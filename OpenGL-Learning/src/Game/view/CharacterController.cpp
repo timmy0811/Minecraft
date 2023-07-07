@@ -57,7 +57,7 @@ CharacterController::CharacterController(const glm::vec3& position)
 	m_CheckOrder.reserve((size_t)(2 * 9 + (height - 2) * 8));
 
 	for (float i = -1; i < height; i++) {
-		if((int)i == -1 || (int)i == (int)height - 1)
+		if ((int)i == -1 || (int)i == (int)height - 1)
 			m_CheckOrder.push_back({ 0.f, i, 0.f });
 
 		// Inner
@@ -108,7 +108,7 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 				pos.y++;
 				break;
 			}
-					// TODO: Resolve bug when placing on chunk edge
+			// TODO: Resolve bug when placing on chunk edge
 			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(ClipChunkCoordinate(pos), 1);
 			return false;
 		}
@@ -144,7 +144,7 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::OnInput(GL
 
 	event.threadJobs += InteractWithBlock(window, chunkArray) ? 1 : 0;
 	event.chunkToBeQueued = event.threadJobs > 0 ? chunkArray[(const unsigned int)m_SelectedBlockPosition.w] : nullptr;
-	
+
 	return event;
 }
 
@@ -152,6 +152,8 @@ glm::vec4 CharacterController::ClipChunkCoordinate(const glm::vec3& coord) const
 {
 	int chunkIndex = 4;
 	glm::vec3 coordOut = coord;
+
+	if (coord.y >= conf.CHUNK_HEIGHT) return glm::vec4(-1.f);
 
 	if (coord.x < 0 && coord.z >= 0 && coord.z < conf.CHUNK_SIZE) {
 		chunkIndex = 1;
@@ -194,7 +196,7 @@ glm::vec4 CharacterController::ClipChunkCoordinate(const glm::vec3& coord) const
 
 void CharacterController::OnUpdate(double deltaTime)
 {
-	if(m_State != Minecraft::CharacterController::STATE::FLYING && !m_IsGrounded) m_FrameVelocity += glm::vec3(0.f, - conf.MOVEMENT_GRAVITATION, 0.f) * (float)deltaTime;
+	if (m_State != Minecraft::CharacterController::STATE::FLYING && !m_IsGrounded) m_FrameVelocity += glm::vec3(0.f, -conf.MOVEMENT_GRAVITATION, 0.f) * (float)deltaTime;
 	if (m_FrameVelocity.y < -conf.MOVEMENT_MAX_FALL_SPEED) m_FrameVelocity.y = -conf.MOVEMENT_MAX_FALL_SPEED;
 }
 
@@ -292,16 +294,6 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 		else m_FrameVelocity.z = 0.f;
 	}
 
-	m_BlockPosition = { std::floor(m_Camera.Position.x - r_WorldRootPosition.x),
-						std::floor(m_Camera.Position.y - m_CharBodyHeight),
-						std::floor(m_Camera.Position.z - r_WorldRootPosition.z) };
-
-	m_BlockPositionInChunk = { (int)std::floor(m_BlockPosition.x) % conf.CHUNK_SIZE, (int)std::floor(m_BlockPosition.y), ((int)std::floor(m_BlockPosition.z) % conf.CHUNK_SIZE) };
-	glm::vec3 hitBoxVertices[2] = {
-		{m_Camera.Position.x - m_CharWidth / 2.f, m_Camera.Position.y - m_CharBodyHeight, m_Camera.Position.z - m_CharWidth / 2.f},
-		{m_Camera.Position.x + m_CharWidth / 2.f, m_Camera.Position.y + m_CharHeadHeight, m_Camera.Position.z + m_CharWidth / 2.f}
-	};
-
 	// Limit Movement Speed
 	const float stepDistance = glm::length(glm::vec2(m_FrameVelocity.x, m_FrameVelocity.z));
 	const float cuttageFactor = m_MovementSpeed / stepDistance;
@@ -311,6 +303,17 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 		if (m_State == Minecraft::CharacterController::STATE::FLYING) m_FrameVelocity.y *= cuttageFactor;
 	}
 
+	m_BlockPosition = { std::floor(m_Camera.Position.x - r_WorldRootPosition.x),
+						std::floor(m_Camera.Position.y - m_CharBodyHeight),
+						std::floor(m_Camera.Position.z - r_WorldRootPosition.z) };
+
+	m_BlockPositionInChunk = { (int)std::floor(m_BlockPosition.x) % conf.CHUNK_SIZE, (int)std::floor(m_BlockPosition.y), ((int)std::floor(m_BlockPosition.z) % conf.CHUNK_SIZE) };
+
+	glm::vec3 hitBoxVertices[2] = {
+		{m_Camera.Position.x - m_CharWidth / 2.f, m_Camera.Position.y - m_CharBodyHeight, m_Camera.Position.z - m_CharWidth / 2.f},
+		{m_Camera.Position.x + m_CharWidth / 2.f, m_Camera.Position.y + m_CharHeadHeight, m_Camera.Position.z + m_CharWidth / 2.f}
+	};
+
 	// Check for Collision
 	m_IsGrounded = false;
 	bool skipFloor = false;
@@ -318,14 +321,15 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 	for (const glm::vec3& coord : m_CheckOrder) {
 		if (skipFloor && coord.y == -1) continue;
 		glm::vec4 clipCoord = ClipChunkCoordinate(m_BlockPositionInChunk + coord);
-		Minecraft::Block_static* block = chunkArray[(int)clipCoord.a] ? chunkArray[(int)clipCoord.a]->getBlock({clipCoord.x, clipCoord.y, clipCoord.z}) : nullptr;
+		if (clipCoord.y == -1.f) continue;
+		Minecraft::Block_static* block = chunkArray[(int)clipCoord.a] ? chunkArray[(int)clipCoord.a]->getBlock({ clipCoord.x, clipCoord.y, clipCoord.z }) : nullptr;
 
 		if (!block) continue;
 
 		if (block->subtype == Minecraft::BLOCKTYPE::STATIC_DEFAULT && BoxIntersectsBlock(block, hitBoxVertices[0] + m_FrameVelocity, hitBoxVertices[1] + m_FrameVelocity)) {
 			// Floor
 			if (coord.y == -1) {
-				m_FrameVelocity.y = -((m_Camera.Position.y - m_CharBodyHeight) - floor(m_Camera.Position.y - m_CharBodyHeight));
+				m_FrameVelocity.y = -((m_Camera.Position.y - m_CharBodyHeight) - floor(m_Camera.Position.y - m_CharBodyHeight)) * 0.99f; // Factor to avoid fall-through at y == 15
 				m_IsGrounded = true;
 				skipFloor = true;
 			}
@@ -354,7 +358,7 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 	{
 		m_FrameVelocity.y = conf.MOVEMENT_JUMP_STRENGHT;
 	}
-	
+
 	m_Camera.Position += m_FrameVelocity;
 
 	return changeEvent;
@@ -397,7 +401,6 @@ void CharacterController::ComputeRaycast(GLFWwindow* window, double deltaTime, C
 
 void CharacterController::OnMouseEvent(GLFWwindow* window)
 {
-
 }
 
 Minecraft::CharacterController::SIDE CharacterController::RayIntersectsCube(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box, const float size)
@@ -429,9 +432,9 @@ Minecraft::CharacterController::SIDE CharacterController::RayIntersectsCube(cons
 	Minecraft::CharacterController::SIDE intersectedSide = Minecraft::CharacterController::SIDE::TOP;
 
 	float epsilon = 0.00001f;
-	
+
 	if (distanceToOrig.x > -(size / 2.0 + epsilon) && distanceToOrig.x < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::LEFT;
-	else if (distanceToOrig.x < (size / 2.0 + epsilon) && distanceToOrig.x > (size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::RIGHT;
+	else if (distanceToOrig.x < (size / 2.0 + epsilon) && distanceToOrig.x >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::RIGHT;
 
 	else if (distanceToOrig.y > -(size / 2.0 + epsilon) && distanceToOrig.y < -(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::BOTTOM;
 	else if (distanceToOrig.y < (size / 2.0 + epsilon) && distanceToOrig.y >(size / 2.0 - epsilon)) intersectedSide = Minecraft::CharacterController::SIDE::TOP;

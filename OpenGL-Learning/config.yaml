@@ -1,7 +1,7 @@
 config:
   system:
     EnableMultithreading: true
-    GenerationThreads: 4
+    GenerationThreads: 6
 
   window:
     Height: 1080

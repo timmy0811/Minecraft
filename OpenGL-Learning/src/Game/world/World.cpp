@@ -6,9 +6,9 @@ World::World(GLFWwindow* window)
 	m_TextureMap("res/images/sheets/blocksheet.png", false),
 	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
 	m_GenerationSemaphore(0),
-	m_ChunkBorderRenderer(conf.WORLD_WIDTH * conf.WORLD_WIDTH * 24, "res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
+	m_ChunkBorderRenderer(conf.WORLD_WIDTH* conf.WORLD_WIDTH * 24, "res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
-	m_CharacterController({0.f, 30.f, 0.f}),
+	m_CharacterController({ 0.f, 30.f, 0.f }),
 	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
@@ -30,7 +30,7 @@ World::World(GLFWwindow* window)
 			this->GenerationThreadJob();
 			}));
 	}
-	
+
 	m_Chunks.reserve(conf.RENDER_DISTANCE * conf.RENDER_DISTANCE * 4);
 	GenerateTerrain();
 	SetupLight();
@@ -101,10 +101,10 @@ void World::NeighborChunks()
 			if (!chunk) continue;
 
 			chunk->setChunkNeighbors(
-				z > 0						? m_Chunks[CoordToIndex({ x - 0, z - 1 })] : nullptr,
-				x < conf.WORLD_WIDTH - 1	? m_Chunks[CoordToIndex({ x + 1, z - 0 })] : nullptr,
-				z < conf.WORLD_WIDTH - 1	? m_Chunks[CoordToIndex({ x - 0, z + 1 })] : nullptr,
-				x > 0						? m_Chunks[CoordToIndex({ x - 1, z - 0 })] : nullptr
+				z > 0 ? m_Chunks[CoordToIndex({ x - 0, z - 1 })] : nullptr,
+				x < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ x + 1, z - 0 })] : nullptr,
+				z < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ x - 0, z + 1 })] : nullptr,
+				x > 0 ? m_Chunks[CoordToIndex({ x - 1, z - 0 })] : nullptr
 			);
 		}
 	}
@@ -112,6 +112,8 @@ void World::NeighborChunks()
 
 void World::OnUpdate(double deltaTime)
 {
+	OnWindowResize();
+
 	const glm::vec3& position = m_CharacterController.getPosition();
 	m_MatrixView = glm::lookAt(position, position + m_CharacterController.getFront(), m_CharacterController.getUp());
 
@@ -122,7 +124,7 @@ void World::OnUpdate(double deltaTime)
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition",position.x, position.y, position.z);
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", position.x, position.y, position.z);
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
@@ -131,9 +133,16 @@ void World::OnUpdate(double deltaTime)
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
 }
 
+void World::OnWindowResize()
+{
+	if (Minecraft::Global::updateResize) {
+		UpdateProjectionMatrix(conf.FOV, 0.1f, 300.f);
+	}
+}
+
 void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
 {
-	m_MatrixProjection = glm::perspective(glm::radians(FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, nearD, farD);
+	m_MatrixProjection = glm::perspective(glm::radians(FOV), (float)Minecraft::Global::windowSize.x / (float)Minecraft::Global::windowSize.y, nearD, farD);
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -211,7 +220,6 @@ void World::OnInput(GLFWwindow* window, double deltaTime)
 
 	if (event.chunkToBeQueued) m_ChunksQueuedCulling.push_back(event.chunkToBeQueued);
 	m_GenerationSemaphore.release(event.threadJobs);
-
 }
 
 void World::GenerateTerrain()
@@ -220,10 +228,10 @@ void World::GenerateTerrain()
 	unsigned int chunkWidth = (unsigned int)(conf.CHUNK_SIZE * conf.BLOCK_SIZE);
 
 	glm::vec2 rootPosition = { conf.WORLD_WIDTH / 2, conf.WORLD_WIDTH / 2 };															// Spawn Chunk in Matric Space
-	glm::vec2 generationPosition = { conf.WORLD_WIDTH / 2 - conf.RENDER_DISTANCE, conf.WORLD_WIDTH / 2  - conf.RENDER_DISTANCE};		// Upper left edge of Spawn area in Matrix Space
+	glm::vec2 generationPosition = { conf.WORLD_WIDTH / 2 - conf.RENDER_DISTANCE, conf.WORLD_WIDTH / 2 - conf.RENDER_DISTANCE };		// Upper left edge of Spawn area in Matrix Space
 	m_WorldRootPosition = { -(int)((rootPosition.x + 0.5) * chunkWidth), 0, -(int)((rootPosition.y + 0.5) * chunkWidth) };				// Upper left edge of World in World Space
 
-	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };	
+	glm::vec3 chunkOffset = { 0.f, 0.f, 0.f };
 	for (unsigned int x = 0; x < conf.RENDER_DISTANCE * 2 + 1; x++) {
 		chunkOffset.z = 0.f;
 		for (unsigned int z = 0; z < conf.RENDER_DISTANCE * 2 + 1; z++) {
@@ -248,15 +256,15 @@ void World::GenerateTerrain()
 		if (!m_Chunks[i]) continue;
 		glm::vec2 coord = IndexToCoord(i);
 
-		Chunk* c1 = coord.y > 0									? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
-		Chunk* c2 = coord.x < conf.WORLD_WIDTH - 1				? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
-		Chunk* c3 = coord.y < conf.WORLD_WIDTH - 1				? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
-		Chunk* c4 = coord.x > 0									? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
+		Chunk* c1 = coord.y > 0 ? m_Chunks[CoordToIndex({ coord.x + 0, coord.y - 1 })] : nullptr;
+		Chunk* c2 = coord.x < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ coord.x + 1, coord.y + 0 })] : nullptr;
+		Chunk* c3 = coord.y < conf.WORLD_WIDTH - 1 ? m_Chunks[CoordToIndex({ coord.x + 0, coord.y + 1 })] : nullptr;
+		Chunk* c4 = coord.x > 0 ? m_Chunks[CoordToIndex({ coord.x - 1, coord.y + 0 })] : nullptr;
 
 		m_Chunks[i]->setChunkNeighbors(c1, c2, c3, c4);
 	}
 
-	if(conf.ENABLE_MULTITHREADING) m_GenerationSemaphore.release(m_ChunksQueuedGenerating.size());
+	if (conf.ENABLE_MULTITHREADING) m_GenerationSemaphore.release(m_ChunksQueuedGenerating.size());
 }
 
 inline int World::CoordToIndex(const glm::vec2& coord) const
@@ -273,7 +281,7 @@ inline const glm::vec2 World::IndexToCoord(unsigned int index) const
 void World::GenerationThreadJob()
 {
 	LOGC("Started generation Thread", LOG_COLOR::LOG);
-	while (true) { 
+	while (true) {
 		m_GenerationSemaphore.acquire();
 		if (!m_ExecuteGenerationJob) return;
 
@@ -359,7 +367,7 @@ void World::HandleChunkLoading()
 		m_ChunksQueuedBufferLoading.pop_front();
 	}
 	m_MutexBufferLoading.unlock();
-	
+
 	const glm::vec3& position = m_CharacterController.getPosition();
 	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - position.z) / conf.CHUNK_SIZE) };
 
@@ -631,9 +639,9 @@ void World::SetupChunkBorders()
 		v[15].Position = { position.x + 0,			position.y + 0,				position.z + chunkWidth };
 
 		v[16].Position = { position.x + 0,			position.y + chunkHeight,	position.z + chunkWidth };
-		v[17].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
-		v[18].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
-		v[19].Position = { position.x +				chunkWidth,					position.y + chunkHeight, position.z + 0 };
+		v[17].Position = { position.x + chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
+		v[18].Position = { position.x + chunkWidth,					position.y + chunkHeight, position.z + chunkWidth };
+		v[19].Position = { position.x + chunkWidth,					position.y + chunkHeight, position.z + 0 };
 
 		v[20].Position = { position.x + chunkWidth, position.y + chunkHeight,	position.z + 0 };
 		v[21].Position = { position.x + 0,			position.y + chunkHeight,	position.z + 0 };
@@ -663,5 +671,4 @@ void World::SetupLight()
 
 void World::UpdateLight()
 {
-
 }

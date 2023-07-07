@@ -48,6 +48,7 @@ public:
 	void OnInput(GLFWwindow* window, double deltaTime);
 	void OnRender();
 	void OnUpdate(double deltaTime);
+	void OnWindowResize();
 
 	// Misc
 	void UpdateProjectionMatrix(float FOV, float nearD = 0.1f, float farD = 300.f);

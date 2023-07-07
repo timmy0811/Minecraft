@@ -14,6 +14,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "config.h"
+#include "window.h"
 
 #include "Game/Handler.h"
 
@@ -21,6 +22,10 @@
 
 int main(void)
 {
+#ifndef _DEBUG
+	::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+#endif
+
 	GLFWwindow* window;
 
 	/* Initialize the library */
@@ -33,6 +38,8 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	glfwWindowHint(GLFW_RESIZABLE, 1);
 
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(conf.WIN_WIDTH, conf.WIN_HEIGHT, "Mineclone", NULL, NULL);
@@ -79,6 +86,8 @@ int main(void)
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
+		pollResizeEvent(window);
+
 		/* Render here */
 		renderer.Clear();
 		GLCall(glClearColor(0.f, 0.f, 0.f, 1.f));

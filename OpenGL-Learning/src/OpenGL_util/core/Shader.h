@@ -39,6 +39,7 @@ public:
 	~Shader();
 
 	void Bind() const;
+
 	void Unbind() const;
 
 	void SetUniform1i(const std::string& name, int v0);
@@ -67,4 +68,3 @@ public:
 
 	void SetUniformMat4f(const std::string& name, const glm::mat4& mat);
 };
-

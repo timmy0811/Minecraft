@@ -10,10 +10,10 @@
 #define LOG(message) std::cout << message << std::endl
 #define ASSERT(x) if((x)) __debugbreak();
 
-enum class LOG_COLOR { LOG = 15, WARNING = 14, OK = 10, FAULT = 12, SPECIAL_A = 11, SPECIAL_B = 13};
+enum class LOG_COLOR { LOG = 15, WARNING = 14, OK = 10, FAULT = 12, SPECIAL_A = 11, SPECIAL_B = 13 };
 
 static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-inline void LOGC(const std::string & msg, LOG_COLOR color = LOG_COLOR::LOG) {
+inline void LOGC(const std::string& msg, LOG_COLOR color = LOG_COLOR::LOG) {
 	SetConsoleTextAttribute(hConsole, (int)color);
 	std::cout << msg << '\n';
 	SetConsoleTextAttribute(hConsole, 15);
@@ -27,13 +27,16 @@ namespace Minecraft::Global {
 	inline int SAMPLER_SLOT_SPRITES = 3;
 	inline int SAMPLER_SLOT_FONTS = 9;
 	inline bool fontbound = false;
+
+	inline glm::ivec2 windowSize;
+	inline bool updateResize = true;
 }
 
 class Config {
 private:
 	const std::string m_Path;
 public:
-	Config(const std::string& path) 
+	Config(const std::string& path)
 		:m_Path(path)
 	{
 		Parse();
@@ -79,7 +82,7 @@ public:
 		MOVEMENT_PLAYER_DRAG = mainNode["config"]["game"]["movement"]["PlayerDrag"].as<float>();
 		MOVEMENT_PLAYER_DRAG_AIR = mainNode["config"]["game"]["movement"]["PlayerDragInAir"].as<float>();
 		MOVEMENT_CONTROLL_AIR = mainNode["config"]["game"]["movement"]["ControllInAir"].as<float>();
-		
+
 		MOVEMENT_SPEED_WALK = mainNode["config"]["game"]["movement"]["SpeedWalk"].as<float>();
 		MOVEMENT_SPEED_SPRINT = mainNode["config"]["game"]["movement"]["SpeedSprint"].as<float>();
 		MOVEMENT_SPEED_CROUCH = mainNode["config"]["game"]["movement"]["SpeedCrouch"].as<float>();
@@ -88,7 +91,7 @@ public:
 
 		FOV_CROUCH = mainNode["config"]["game"]["movement"]["FOVcrouching"].as<float>();
 		FOV_SPRINT = mainNode["config"]["game"]["movement"]["FOVsprinting"].as<float>();
-		FOV_WALK = mainNode["config"]["game"]["movement"]["FOVwalking"].as<float>(); 
+		FOV_WALK = mainNode["config"]["game"]["movement"]["FOVwalking"].as<float>();
 		BLOCK_INTERACTION_RANGE = mainNode["config"]["game"]["movement"]["BlockInteractionRange"].as<float>();
 
 		ENABLE_MULTITHREADING = mainNode["config"]["system"]["EnableMultithreading"].as<bool>();
@@ -100,13 +103,13 @@ public:
 	}
 
 	void Validate() {
-		if (CHUNK_HEIGHT < TERRAIN_MIN_HEIGHT + TERRAIN_STRETCH_Y - 1) LOGC("Error: Terrain Exceeding Chunk Boundaries!", LOG_COLOR::FAULT);
+		if (CHUNK_HEIGHT < TERRAIN_MIN_HEIGHT + TERRAIN_STRETCH_Y - 1) LOGC("Warning: Terrain Exceeding Chunk Boundaries!", LOG_COLOR::WARNING);
 	}
 
 	// System
 	bool ENABLE_MULTITHREADING = false;
 	unsigned int GENERATION_THREADS = 0;
-	
+
 	// Window
 	unsigned int WIN_WIDTH = 0;
 	unsigned int WIN_HEIGHT = 0;
@@ -137,7 +140,7 @@ public:
 	// Environment
 	float FOG_AFFECT_DISTANCE = 0;
 	float FOG_DENSITY = 0;
-	glm::vec3 FOG_COLOR = {0.f, 0.f, 0.f};
+	glm::vec3 FOG_COLOR = { 0.f, 0.f, 0.f };
 
 	// Movement
 	float MOVEMENT_GRAVITATION = 0.f;
