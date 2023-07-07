@@ -312,6 +312,7 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Game\gui\Inventory.h" />
     <ClInclude Include="src\Game\view\CharacterController.h" />
     <ClInclude Include="src\Game\render\CustomRenderer.h" />
@@ -636,6 +637,12 @@
     <ClInclude Include="src\vendor\yaml\yaml_wrapper.hpp" />
     <ClInclude Include="src\Game\application\TexturePacker.h" />
     <ClInclude Include="src\windowsWrapper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Minecraft.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\images\icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

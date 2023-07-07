@@ -41,10 +41,12 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 
 	YAML::Node node;
 
+	stbi_set_flip_vertically_on_load(0);
+
 	for (auto image : std::filesystem::directory_iterator(dirPath)) {
 		const std::string& path = image.path().string();
 		img = (char*)stbi_load(path.c_str(), &width, &height, &channels, 0);
-		
+
 		if (img) {
 			LOGC(("Loaded " + path + "."), LOG_COLOR::SPECIAL_A);
 
@@ -101,7 +103,6 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 
 	// Pack large images at the bottom
 	for (const std::string& p : largeImages) {
-
 	}
 
 	// Write Image
