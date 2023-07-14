@@ -295,12 +295,22 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 	}
 
 	// Limit Movement Speed
-	const float stepDistance = glm::length(glm::vec2(m_FrameVelocity.x, m_FrameVelocity.z));
-	const float cuttageFactor = m_MovementSpeed / stepDistance;
-	if (stepDistance > m_MovementSpeed) {
-		m_FrameVelocity.x *= cuttageFactor;
-		m_FrameVelocity.z *= cuttageFactor;
-		if (m_State == Minecraft::CharacterController::STATE::FLYING) m_FrameVelocity.y *= cuttageFactor;
+	if (m_State == Minecraft::CharacterController::STATE::FLYING) {
+		const float stepDistance = glm::length(glm::vec3(m_FrameVelocity.x, m_FrameVelocity.z, m_FrameVelocity.y));
+		const float cuttageFactor = m_MovementSpeed / stepDistance;
+		if (stepDistance > m_MovementSpeed) {
+			m_FrameVelocity.x *= cuttageFactor;
+			m_FrameVelocity.z *= cuttageFactor;
+			m_FrameVelocity.y *= cuttageFactor;
+		}
+	}
+	else {
+		const float stepDistance = glm::length(glm::vec2(m_FrameVelocity.x, m_FrameVelocity.z));
+		const float cuttageFactor = m_MovementSpeed / stepDistance;
+		if (stepDistance > m_MovementSpeed) {
+			m_FrameVelocity.x *= cuttageFactor;
+			m_FrameVelocity.z *= cuttageFactor;
+		}
 	}
 
 	m_BlockPosition = { std::floor(m_Camera.Position.x - r_WorldRootPosition.x),

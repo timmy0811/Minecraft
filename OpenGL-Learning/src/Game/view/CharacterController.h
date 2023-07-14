@@ -6,6 +6,8 @@
 
 #include "Game/view/Camera.h"
 
+#define MOVEMENT_FLYING 0.3f;
+
 namespace Minecraft::CharacterController {
 	enum class STATE { SPRINTING, WALKING, CROUCHING, FLYING };
 	enum class SIDE { FRONT, BACK, TOP, BOTTOM, LEFT, RIGHT, NONE, INSIDE };
@@ -51,7 +53,7 @@ public:
 			m_MovementSpeed = conf.MOVEMENT_SPEED_CROUCH;
 			break;
 		case Minecraft::CharacterController::STATE::FLYING:
-			m_MovementSpeed = 0.1f;
+			m_MovementSpeed = MOVEMENT_FLYING;
 			break;
 		}
 	}

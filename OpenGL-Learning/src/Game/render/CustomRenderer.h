@@ -34,7 +34,7 @@ namespace Minecraft::Helper {
 		Shader* shader;
 
 		LineRenderer(int count, const std::string& shaderVert, const std::string& shaderFrag)
-		: shader(new Shader(shaderVert, shaderFrag)) {
+			: shader(new Shader(shaderVert, shaderFrag)) {
 			unsigned int* indices = new unsigned int[count];
 
 			for (int i = 0; i < count; i++) {
@@ -66,6 +66,11 @@ namespace Minecraft::Helper {
 			va->Bind();
 			ib->Bind();
 			Renderer::Draw(*va, *ib, *shader, GL_LINES);
+		}
+
+		inline void DrawInstanced(const unsigned int count, const unsigned int instances) {
+			GLCall(glLineWidth(3));
+			Renderer::DrawInstancedLines(*va, *ib, *shader, count, instances);
 		}
 	};
 
@@ -109,7 +114,7 @@ namespace Minecraft::Helper {
 
 		void LoadOutlineBuffer(const glm::vec3& position, const float size) {
 			vb->Empty();
-			
+
 			Minecraft::PositionVertex v[24];
 
 			v[0].Position = { position.x + 0,		position.y + 0,		position.z + size };
@@ -381,7 +386,7 @@ namespace Minecraft::Helper {
 
 	public:
 		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity, const bool unicode = false, unsigned int sheetId = 0)
-		:fontSheet(imgPath, true), shader(new Shader("res/shaders/font/shader_font_stylized.vert", "res/shaders/font/shader_font_stylized.frag"))
+			:fontSheet(imgPath, true), shader(new Shader("res/shaders/font/shader_font_stylized.vert", "res/shaders/font/shader_font_stylized.frag"))
 		{
 			projection = glm::ortho(0.0f, (float)conf.WIN_WIDTH, 0.0f, (float)conf.WIN_HEIGHT, -1.0f, 1.0f);
 			translation = glm::vec3(0.f, 0.f, 0.f);
@@ -433,7 +438,7 @@ namespace Minecraft::Helper {
 			characterWidth = sheetWidth / charsPerRow;
 
 			if (unicode) {
-				if(symbolsUnicode.size() == 0) ParseSymbols(fontPath, this->unicode);
+				if (symbolsUnicode.size() == 0) ParseSymbols(fontPath, this->unicode);
 				symbols = &symbolsUnicode;
 			}
 			else {
@@ -448,7 +453,7 @@ namespace Minecraft::Helper {
 
 		void ParseSymbols(const std::string& fontPath, const bool unicode = false) {
 			LOGC("Parsing Fonts", LOG_COLOR::SPECIAL_A);
-			
+
 			YAML::Node mainNode = YAML::LoadFile(fontPath);
 
 			SymbolInformation informationUnknown = GatherSymbolInformation(
@@ -484,7 +489,7 @@ namespace Minecraft::Helper {
 		}
 
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="position"></param>

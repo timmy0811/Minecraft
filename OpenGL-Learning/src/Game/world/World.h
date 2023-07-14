@@ -91,7 +91,8 @@ private:
 	void OutlineSelectedBlock();
 
 	// Misc
-	inline int CoordToIndex(const glm::vec2& coord) const;
+	inline Chunk* CoordToChunkSecure(const glm::vec2& coord);
+	inline int CoordToChunkIndex(const glm::vec2& coord) const;
 	inline const glm::vec2 IndexToCoord(unsigned int index) const;
 
 	inline bool ContainsElementAtomic(std::deque<Chunk*>* list, std::mutex& mutex);
@@ -101,6 +102,7 @@ private:
 	}
 
 private:
+	unsigned int m_CountChunks;
 	glm::vec3 m_WorldRootPosition;
 	glm::vec2 m_PlayerChunkPosition;
 
