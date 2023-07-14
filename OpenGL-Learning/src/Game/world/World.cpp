@@ -10,7 +10,7 @@ World::World(GLFWwindow* window)
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_CharacterController({ 0.f, 30.f, 0.f }),
 	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
-	m_CountChunks(std::pow((double)conf.WORLD_WIDTH, 2.f))
+	m_CountChunks(conf.WORLD_WIDTH* conf.WORLD_WIDTH)
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -38,8 +38,8 @@ World::World(GLFWwindow* window)
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
-	m_ChunkBorderRenderer.shader->SetUniform1f("u_ChunkWidth", conf.CHUNK_SIZE);
-	m_ChunkBorderRenderer.shader->SetUniform1f("u_WorldWidth", conf.WORLD_WIDTH);
+	m_ChunkBorderRenderer.shader->SetUniform1f("u_ChunkWidth", (float)conf.CHUNK_SIZE);
+	m_ChunkBorderRenderer.shader->SetUniform1f("u_WorldWidth", (float)conf.WORLD_WIDTH);
 
 	m_BlockSelectionRenderer.shader->Bind();
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -392,8 +392,8 @@ void World::HandleChunkLoading()
 		hasExpanded = true;
 		LOGC("expanded terrain", LOG_COLOR::SPECIAL_A);
 
-		for (int x = 0; x < conf.WORLD_WIDTH; x++) {
-			for (int z = 0; z < conf.WORLD_WIDTH; z++) {
+		for (unsigned int x = 0; x < conf.WORLD_WIDTH; x++) {
+			for (unsigned int z = 0; z < conf.WORLD_WIDTH; z++) {
 				unsigned int index = CoordToChunkIndex({ x, z });
 				if (index == -1) continue;
 

@@ -465,7 +465,7 @@ namespace Minecraft::Helper {
 			for (auto symbol : mainNode["characters"]) {
 				const char character = symbol.first.as<char>();
 
-				int newWidth = symbol.second["width"].as<int>() / (255.f / sheetWidth);
+				int newWidth = (int)(symbol.second["width"].as<int>() / (255.f / sheetWidth));
 
 				const SymbolInformation& information = GatherSymbolInformation(
 					symbol.second["position"][0].as<int>(),
@@ -562,7 +562,7 @@ namespace Minecraft::Helper {
 
 		inline void Draw() {
 			shader->Bind();
-			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, count * 6);
+			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, (int)count * 6);
 			shader->Unbind();
 		}
 
