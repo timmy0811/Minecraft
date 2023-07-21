@@ -39,7 +39,8 @@ public:
 	void Deserialize();
 
 	// Accessors
-	void setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffset, siv::PerlinNoise& noise);
+	void setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* biomes);
+	void setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffsetH, const glm::vec3& noiseOffsetT, const glm::vec3& noiseOffsetM, Minecraft::GenerationNoise* noise);
 	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
 	void setChunkNeighbor(char index, Chunk* c);
 	void setID(const unsigned int id) { m_ID = id; };
@@ -87,9 +88,13 @@ private:
 	std::map<const std::string, Minecraft::Texture_Format>* m_TextureFormats;
 
 	// Generation Data
-	glm::vec3 m_NoiseOffset;
-	siv::PerlinNoise* m_Noise;
+	glm::vec3 m_NoiseOffset_Height;
+	glm::vec3 m_NoiseOffset_Temp;
+	glm::vec3 m_NoiseOffset_Moist;
+	Minecraft::GenerationNoise* m_Noise;
 	bool m_IsSpawnChunk;
+
+	std::vector<std::vector<Minecraft::Biome>>* m_BiomeTemplate;
 
 	// Culling
 	Chunk* m_ChunkNeighbors[4];

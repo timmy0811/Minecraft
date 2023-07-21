@@ -514,6 +514,8 @@
     </None>
     <None Include="docs\block.yaml" />
     <None Include="docs\texture.yaml" />
+    <None Include="docs\biome.yaml" />
+    <None Include="docs\structure.yaml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\OpenGL_util\core\VertexBuffer.h">

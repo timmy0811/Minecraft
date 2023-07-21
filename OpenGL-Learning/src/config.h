@@ -72,6 +72,9 @@ public:
 		TERRAIN_STRETCH_X = mainNode["config"]["game"]["terrain"]["XStretch"].as<float>();
 		TERRAIN_MIN_HEIGHT = mainNode["config"]["game"]["terrain"]["MinHeight"].as<unsigned int>();
 
+		NOISE_SIZE_MOIST = mainNode["config"]["game"]["terrain"]["NoiseSizeMoist"].as<float>();
+		NOISE_SIZE_TEMP = mainNode["config"]["game"]["terrain"]["NoiseSizeTemp"].as<float>();
+
 		FOG_AFFECT_DISTANCE = mainNode["config"]["game"]["environment"]["FogAffectDistance"].as<float>();
 		FOG_DENSITY = mainNode["config"]["game"]["environment"]["FogDensity"].as<float>();
 		FOG_COLOR.r = mainNode["config"]["game"]["environment"]["FogColor"]["r"].as<float>();
@@ -136,6 +139,9 @@ public:
 	float TERRAIN_STRETCH_X = 0;
 
 	unsigned int TERRAIN_MIN_HEIGHT = 0;
+
+	float NOISE_SIZE_MOIST = 0.f;
+	float NOISE_SIZE_TEMP = 0.f;
 
 	// Environment
 	float FOG_AFFECT_DISTANCE = 0;

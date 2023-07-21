@@ -1,16 +1,20 @@
 #include "World.h"
 
 World::World(GLFWwindow* window)
-	:m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
-	r_Window(window),
-	m_TextureMap("res/images/sheets/blocksheet.png", false),
-	m_Noise(siv::PerlinNoise::seed_type(std::time(NULL))),
+	:m_TextureMap("res/images/sheets/blocksheet.png", false),
+	m_CountChunks(conf.WORLD_WIDTH* conf.WORLD_WIDTH),
+
+	// Generation
+	m_GenerationNoise((unsigned int)std::time(NULL), (unsigned int)std::time(NULL) + 1000, (unsigned int)std::time(NULL) + 2000),
 	m_GenerationSemaphore(0),
+	//Game
+	m_CharacterController({ 0.f, 30.f, 0.f }),
+	// Graphics
+	m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
+	r_Window(window),
 	m_ChunkBorderRenderer(24, "res/shaders/universal/shader_single_color_instanced.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
-	m_CharacterController({ 0.f, 30.f, 0.f }),
-	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
-	m_CountChunks(conf.WORLD_WIDTH* conf.WORLD_WIDTH)
+	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -22,9 +26,14 @@ World::World(GLFWwindow* window)
 	m_TextureMap.Bind(Minecraft::Global::SAMPLER_SLOT_BLOCKS);
 	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
+	for (int i = 0; i < 5; i++) {
+		m_BiomeTemplate.push_back(std::vector<Minecraft::Biome>(5));
+	}
+
 	// Parse blocks before textures!!!
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
+	ParseBiomes("docs/biome.yaml");
 
 	for (unsigned int i = 0; i < conf.GENERATION_THREADS; i++) {
 		m_GenerationThreads.push_back(std::thread([this]() {
@@ -243,7 +252,11 @@ void World::GenerateTerrain()
 			m_Chunks[i] = new Chunk(&m_BlockFormats, &m_TextureFormats);
 			m_Chunks[i]->setID(i);
 			m_Chunks[i]->setGenerationData({ (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.x, 0, (-(int)((conf.RENDER_DISTANCE + 0.5) * chunkWidth)) + chunkOffset.z },
-				{ (generationPosition.x + x) * 1.f, (generationPosition.y + z) * 1.f, 1.f }, m_Noise);
+				{ (generationPosition.x + x) * 1.f, (generationPosition.y + z) * 1.f, 1.f },
+				{ (generationPosition.x) * conf.NOISE_SIZE_TEMP + x, (generationPosition.y) * conf.NOISE_SIZE_TEMP + z, 1.f },
+				{ (generationPosition.x) * conf.NOISE_SIZE_MOIST + x, (generationPosition.y) * conf.NOISE_SIZE_MOIST + z, 1.f }
+			, &m_GenerationNoise);
+			m_Chunks[i]->setBiomeTemplate(&m_BiomeTemplate);
 			if (x == conf.RENDER_DISTANCE && z == conf.RENDER_DISTANCE) m_Chunks[i]->setSpawnFlag();
 
 			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push_back(m_Chunks[i]);
@@ -388,7 +401,7 @@ void World::HandleChunkLoading()
 		m_IsGenerationInit = false;
 	}
 
-	if (currentPLayerChunkPosition != m_PlayerChunkPosition) {
+	if (currentPLayerChunkPosition != m_PlayerChunkPosition && conf.EXPAND_TERRAIN) {
 		hasExpanded = true;
 		LOGC("expanded terrain", LOG_COLOR::SPECIAL_A);
 
@@ -407,7 +420,8 @@ void World::HandleChunkLoading()
 						m_Chunks[index] = chunk;
 						chunk->setID(index);
 						chunk->setGenerationData({ m_WorldRootPosition.x + x * conf.CHUNK_SIZE, 0, m_WorldRootPosition.z + z * conf.CHUNK_SIZE },
-							{ x * 1.f, z * 1.f, 1.f }, m_Noise);
+							{ x * 1.f, z * 1.f, 1.f }, { x * conf.NOISE_SIZE_TEMP, z * conf.NOISE_SIZE_TEMP, 1.f }, { x * conf.NOISE_SIZE_MOIST, z * conf.NOISE_SIZE_MOIST, 1.f }, &m_GenerationNoise);
+						chunk->setBiomeTemplate(&m_BiomeTemplate);
 
 						index = CoordToChunkIndex({ x - 1, z });
 						if (index != -1 && m_Chunks[index] && m_Chunks[index]->IsGenerated()) ChunksReculled.insert(m_Chunks[index]);
@@ -514,6 +528,36 @@ void World::ParseTextures(const std::string& path)
 		textureFormat.uv[3].y = texture.second["uvs"]["3"][1].as<float>();
 
 		m_TextureFormats[textureFormat.name] = textureFormat;
+	}
+}
+
+void World::ParseBiomes(const std::string& path)
+{
+	LOGC("Parsing Biomes", LOG_COLOR::SPECIAL_A);
+	YAML::Node mainNode = YAML::LoadFile(path);
+
+	unsigned int count = 0;
+	for (auto biomeEntry : mainNode) {
+		Minecraft::Biome biome;
+
+		biome.name = biomeEntry.first.as<std::string>();
+		biome.id = count++;
+
+		for (int i = 0; i < biomeEntry.second["structures"].size(); i++) {
+			biome.structures.push_back(biomeEntry.second["structures"][i].as<int>());
+		}
+
+		for (int i = 0; i < biomeEntry.second["blocks"].size(); i++) {
+			biome.blocks.push_back(biomeEntry.second["blocks"][i].as<int>());
+		}
+
+		for (int i = 0; i < biomeEntry.second["moist"].size(); i++) {
+			for (int j = 0; j < biomeEntry.second["temp"].size(); j++) {
+				int x = biomeEntry.second["moist"][i].as<int>();
+				int y = biomeEntry.second["temp"][j].as<int>();
+				m_BiomeTemplate[x][y] = biome;
+			}
+		}
 	}
 }
 

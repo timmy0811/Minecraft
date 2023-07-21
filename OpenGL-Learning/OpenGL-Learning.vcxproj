@@ -172,7 +172,9 @@
     <ClCompile Include="src\Game\application\TexturePacker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="docs\biome.yaml" />
     <None Include="docs\block.yaml" />
+    <None Include="docs\structure.yaml" />
     <None Include="docs\texture.yaml" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />

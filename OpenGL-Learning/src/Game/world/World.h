@@ -81,6 +81,7 @@ private:
 
 	void ParseBlocks(const std::string& path);
 	void ParseTextures(const std::string& path);
+	void ParseBiomes(const std::string& path);
 
 	// Update
 	void UpdateLight();
@@ -131,11 +132,13 @@ private:
 	Minecraft::Helper::BlockSelectionRenderer m_BlockSelectionRenderer;
 	Minecraft::Helper::SpriteRenderer m_HUDRenderer;
 
+	std::vector<std::vector<Minecraft::Biome>> m_BiomeTemplate;
+
 	// Debug
 	unsigned int m_DrawCalls = 0;
 
 	// Noise
-	siv::PerlinNoise m_Noise;
+	Minecraft::GenerationNoise m_GenerationNoise;
 
 	// Threading
 	std::mutex m_MutexLoading, m_MutexGenerating, m_MutexUnlaoding, m_MutexCullFaces, m_MutexBufferLoading;

@@ -97,6 +97,188 @@ test:
   texture_Back: test
   texture_front: test
 
+sand:
+  type: 0
+  id: 8
+
+  reflection: 0.02
+
+  texture_top: sand
+  texture_bottom: sand
+
+  texture_left: sand
+  texture_right: sand
+  texture_Back: sand
+  texture_front: sand
+
+red_sand:
+  type: 0
+  id: 9
+
+  reflection: 0.02
+
+  texture_top: red_sand
+  texture_bottom: red_sand
+
+  texture_left: red_sand
+  texture_right: red_sand
+  texture_Back: red_sand
+  texture_front: red_sand
+
+coarse_dirt:
+  type: 0
+  id: 10
+
+  reflection: 0.02
+
+  texture_top: coarse_dirt
+  texture_bottom: coarse_dirt
+
+  texture_left: coarse_dirt
+  texture_right: coarse_dirt
+  texture_Back: coarse_dirt
+  texture_front: coarse_dirt
+
+wool_colored_blue:
+  type: 0
+  id: 11
+
+  reflection: 0.02
+
+  texture_top: wool_colored_blue
+  texture_bottom: wool_colored_blue
+
+  texture_left: wool_colored_blue
+  texture_right: wool_colored_blue
+  texture_Back: wool_colored_blue
+  texture_front: wool_colored_blue
+
+wool_colored_light_blue:
+  type: 0
+  id: 12
+
+  reflection: 0.02
+
+  texture_top: wool_colored_light_blue
+  texture_bottom: wool_colored_light_blue
+
+  texture_left: wool_colored_light_blue
+  texture_right: wool_colored_light_blue
+  texture_Back: wool_colored_light_blue
+  texture_front: wool_colored_light_blue
+
+wool_colored_magenta:
+  type: 0
+  id: 13
+
+  reflection: 0.02
+
+  texture_top: wool_colored_magenta
+  texture_bottom: wool_colored_magenta
+
+  texture_left: wool_colored_magenta
+  texture_right: wool_colored_magenta
+  texture_Back: wool_colored_magenta
+  texture_front: wool_colored_magenta
+
+wool_colored_pink:
+  type: 0
+  id: 14
+
+  reflection: 0.02
+
+  texture_top: wool_colored_pink
+  texture_bottom: wool_colored_pink
+
+  texture_left: wool_colored_pink
+  texture_right: wool_colored_pink
+  texture_Back: wool_colored_pink
+  texture_front: wool_colored_pink
+
+wool_colored_yellow:
+  type: 0
+  id: 15
+
+  reflection: 0.02
+
+  texture_top: wool_colored_yellow
+  texture_bottom: wool_colored_yellow
+
+  texture_left: wool_colored_yellow
+  texture_right: wool_colored_yellow
+  texture_Back: wool_colored_yellow
+  texture_front: wool_colored_yellow
+
+wool_colored_lime:
+  type: 0
+  id: 16
+
+  reflection: 0.02
+
+  texture_top: wool_colored_lime
+  texture_bottom: wool_colored_lime
+
+  texture_left: wool_colored_lime
+  texture_right: wool_colored_lime
+  texture_Back: wool_colored_lime
+  texture_front: wool_colored_lime
+
+wool_colored_green:
+  type: 0
+  id: 17
+
+  reflection: 0.02
+
+  texture_top: wool_colored_green
+  texture_bottom: wool_colored_green
+
+  texture_left: wool_colored_green
+  texture_right: wool_colored_green
+  texture_Back: wool_colored_green
+  texture_front: wool_colored_green
+
+wool_colored_orange:
+  type: 0
+  id: 18
+
+  reflection: 0.02
+
+  texture_top: wool_colored_orange
+  texture_bottom: wool_colored_orange
+
+  texture_left: wool_colored_orange
+  texture_right: wool_colored_orange
+  texture_Back: wool_colored_orange
+  texture_front: wool_colored_orange
+
+wool_colored_white:
+  type: 0
+  id: 19
+
+  reflection: 0.02
+
+  texture_top: wool_colored_white
+  texture_bottom: wool_colored_white
+
+  texture_left: wool_colored_white
+  texture_right: wool_colored_white
+  texture_Back: wool_colored_white
+  texture_front: wool_colored_white
+
+wool_colored_red:
+  type: 0
+  id: 20
+
+  reflection: 0.02
+
+  texture_top: wool_colored_red
+  texture_bottom: wool_colored_red
+
+  texture_left: wool_colored_red
+  texture_right: wool_colored_red
+  texture_Back: wool_colored_red
+  texture_front: wool_colored_red
+
 glass:
   type: 1
   id: 30

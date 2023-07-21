@@ -464,19 +464,27 @@ unsigned int Chunk::Generate()
 	for (unsigned int z = 0; z < conf.CHUNK_SIZE; z++) {
 		noiseStepOffset.x = 0.f;
 		for (unsigned int x = 0; x < conf.CHUNK_SIZE; x++) {
-			double noiseOnTile = m_Noise->octave2D_01((m_NoiseOffset.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X, (m_NoiseOffset.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X, 1);
+			double noiseOnTile = m_Noise->height.octave2D_01((m_NoiseOffset_Height.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X, (m_NoiseOffset_Height.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X, 1);
 			unsigned int pillarHeight = ((unsigned int)(noiseOnTile * conf.TERRAIN_STRETCH_Y) + conf.TERRAIN_MIN_HEIGHT); // TODO: 2 Octave transformation
 
 			// Temporary generation parameters
-			unsigned int maxHeightStone = pillarHeight / 2;
-			unsigned int maxHeightDirt = pillarHeight - 1;
+			unsigned int maxLayer0 = pillarHeight / 2;
+			unsigned int maxLayer1 = pillarHeight - 1;
 
 			// Build Pillar depending on Noise
+			int tempOnTile = std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Temp.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, (m_NoiseOffset_Temp.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, 1) * 5);
+			int moistOnTile = std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Moist.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, (m_NoiseOffset_Moist.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, 1) * 5);
+			Minecraft::Biome biome = (*m_BiomeTemplate)[tempOnTile][moistOnTile];
+
+			//int blockTypes = biome.blocks.size();
+			//for (int type = 0; type < blockTypes; type++) {
+			//}
+
 			unsigned int id = 0;
 			for (unsigned int i = 0; i < pillarHeight; i++) {
-				if (i < maxHeightStone) id = 4;
-				else if (i < maxHeightDirt) id = 5;
-				else id = 6;
+				if (i < maxLayer0) id = biome.blocks[2];
+				else if (i < maxLayer1) id = biome.blocks[1];
+				else id = biome.blocks[0];
 
 				if (i >= conf.CHUNK_HEIGHT) break;
 
@@ -529,11 +537,23 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, m_TransparentStaticsOrdered.size() * 6);
 }
 
-void Chunk::setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffset, siv::PerlinNoise& noise)
+//inline void Chunk::setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* temp)
+//{
+//	m_BiomeTemplate = temp;
+//}
+
+void Chunk::setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* biomes)
+{
+	m_BiomeTemplate = biomes;
+}
+
+void Chunk::setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffsetH, const glm::vec3& noiseOffsetT, const glm::vec3& noiseOffsetM, Minecraft::GenerationNoise* noise)
 {
 	this->m_Position = position;
-	this->m_NoiseOffset = noiseOffset;
-	this->m_Noise = &noise;
+	this->m_NoiseOffset_Height = noiseOffsetH;
+	this->m_NoiseOffset_Temp = noiseOffsetT;
+	this->m_NoiseOffset_Moist = noiseOffsetM;
+	this->m_Noise = noise;
 }
 
 void Chunk::setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4)

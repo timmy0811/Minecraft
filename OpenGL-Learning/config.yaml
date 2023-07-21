@@ -12,7 +12,7 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    RenderDistance: 1
+    RenderDistance: 4
     TextureInverseOffset: 100
 
     ChunkBorderColor:
@@ -22,20 +22,23 @@ config:
       a: 0.75
 
     # Experimental
-    ExpandTerrain: true
+    ExpandTerrain: false
 
   game:
     terrain:
-      WorldWidth: 32
+      WorldWidth: 64
       ChunkSize: 16
-      ChunkHeight: 40
+      ChunkHeight: 30
       BlockSize: 1.0 # Better not touch
-      YStretch: 15.0
-      XStretch: 1.5
-      MinHeight: 10
+      YStretch: 20.0
+      XStretch: 0.35
+      MinHeight: 2
+
+      NoiseSizeMoist: 0.3
+      NoiseSizeTemp: 0.3
 
     environment:
-      FogAffectDistance: 4000.0 # 15
+      FogAffectDistance: 15.0 # 15
       FogDensity: 0.5 # 0.5
 
       FogColor:

@@ -1,0 +1,134 @@
+snowy_plains:
+  moist: 
+    - 0
+    - 1
+  temp:
+    - 0
+
+  structures:
+    - 0
+  blocks: 
+    - 16
+    - 5
+    - 4
+
+tundra:
+  moist: 
+    - 2
+  temp:
+    - 0
+  structures:
+    - -1
+  blocks: 
+    - 15
+    - 5
+    - 4
+
+taiga:
+  moist: 
+    - 3
+    - 4
+  temp:
+    - 0
+    - 1
+  structures:
+    - 0
+  blocks: 
+    - 14
+    - 5
+    - 4
+
+plains:
+  moist: 
+    - 0
+    - 1
+  temp:
+    - 1
+  structures:
+    - -1
+  blocks: 
+    - 13
+    - 5
+    - 4
+
+forest:
+  moist: 
+    - 2
+  temp:
+    - 1
+    - 2
+    - 3
+  structures:
+    - 0
+  blocks: 
+    - 12
+    - 5
+    - 4
+
+flower_plains:
+  moist: 
+    - 0
+    - 1
+  temp:
+    - 2
+  structures:
+    - 2
+  blocks: 
+    - 11
+    - 5
+    - 4
+
+savana:
+  moist: 
+    - 0
+    - 1
+  temp:
+    - 3
+  structures:
+    - -1
+  blocks: 
+    - 17
+    - 4
+    - 1
+
+desert:
+  moist: 
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  temp:
+    - 4
+  structures:
+    - -1
+  blocks: 
+    - 18
+    - 4
+    - 1
+
+birch_forest:
+  moist: 
+    - 3
+    - 4
+  temp:
+    - 2
+  structures:
+    - 1
+  blocks: 
+    - 19
+    - 4
+    - 1
+
+jungle:
+  moist: 
+    - 3
+    - 4
+  temp:
+    - 3
+  structures:
+    - -1
+  blocks: 
+    - 20
+    - 4
+    - 1
