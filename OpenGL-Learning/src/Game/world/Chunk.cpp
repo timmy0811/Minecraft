@@ -476,17 +476,36 @@ unsigned int Chunk::Generate()
 			int moistOnTile = std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Moist.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, (m_NoiseOffset_Moist.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, 1) * 5);
 			Minecraft::Biome biome = (*m_BiomeTemplate)[tempOnTile][moistOnTile];
 
-			//int blockTypes = biome.blocks.size();
-			//for (int type = 0; type < blockTypes; type++) {
-			//}
-
 			unsigned int id = 0;
 			for (unsigned int i = 0; i < pillarHeight; i++) {
+				if (i >= conf.CHUNK_HEIGHT) break;
+
 				if (i < maxLayer0) id = biome.blocks[2];
 				else if (i < maxLayer1) id = biome.blocks[1];
-				else id = biome.blocks[0];
+				else {
+					id = biome.blocks[0];
+					if (!biome.structures.empty()) {
+						for (int structBlocks = 0; structBlocks < (*m_StructureTemplate)[biome.structures[0]].blocks.size(); structBlocks++) {
+							glm::vec4& blockStruct = (*m_StructureTemplate)[biome.structures[0]].blocks[structBlocks];
+							Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE + blockStruct.x,
+																				m_Position.y + i * conf.BLOCK_SIZE + blockStruct.y,
+																				m_Position.z + z * conf.BLOCK_SIZE + blockStruct.z },
+								blockStruct.a);
 
-				if (i >= conf.CHUNK_HEIGHT) break;
+							// Add block to specific buffer
+							unsigned int index;
+							switch (block.subtype) {
+							case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
+								index = CoordToIndex({ x + blockStruct.x, i + blockStruct.y, z + blockStruct.z });
+								m_BlockStatic[index] = new Minecraft::Block_static(block);
+								break;
+							case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
+								m_BlockStatic.push_back(new Minecraft::Block_static(block));
+								break;
+							}
+						}
+					}
+				};
 
 				Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE, m_Position.y + i * conf.BLOCK_SIZE, m_Position.z + z * conf.BLOCK_SIZE }, id);
 				unsigned int index;
@@ -545,6 +564,11 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 void Chunk::setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* biomes)
 {
 	m_BiomeTemplate = biomes;
+}
+
+void Chunk::setStructureTemplate(std::vector<Minecraft::Structure>* structures)
+{
+	m_StructureTemplate = structures;
 }
 
 void Chunk::setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffsetH, const glm::vec3& noiseOffsetT, const glm::vec3& noiseOffsetM, Minecraft::GenerationNoise* noise)

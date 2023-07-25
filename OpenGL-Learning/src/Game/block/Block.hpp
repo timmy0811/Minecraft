@@ -51,7 +51,9 @@ namespace Minecraft {
 	};
 
 	struct Structure {
+		std::string name;
 		unsigned int id;
+		std::vector<glm::vec4> blocks;
 	};
 
 #include "PerlinNoise/Noise.hpp"

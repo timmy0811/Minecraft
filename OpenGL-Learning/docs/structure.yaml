@@ -1,8 +1,14 @@
 oak_tree:
-  id: 0    
+  id: 0  
+  blocks:
+    - [0, 4, 0, 12]
 
 snow_tree:
-  id: 1    
+  id: 1  
+  blocks:
+    - [1, 2, 3, 12]
 
 flower:
   id: 2    
+  blocks:
+    - [1, 2, 3, 12]

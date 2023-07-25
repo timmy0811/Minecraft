@@ -82,6 +82,7 @@ private:
 	void ParseBlocks(const std::string& path);
 	void ParseTextures(const std::string& path);
 	void ParseBiomes(const std::string& path);
+	void ParseStructures(const std::string& path);
 
 	// Update
 	void UpdateLight();
@@ -133,6 +134,7 @@ private:
 	Minecraft::Helper::SpriteRenderer m_HUDRenderer;
 
 	std::vector<std::vector<Minecraft::Biome>> m_BiomeTemplate;
+	std::vector<Minecraft::Structure> m_StructureTemplate;
 
 	// Debug
 	unsigned int m_DrawCalls = 0;

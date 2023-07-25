@@ -33,6 +33,7 @@ World::World(GLFWwindow* window)
 	// Parse blocks before textures!!!
 	ParseBlocks("docs/block.yaml");
 	ParseTextures("docs/texture.yaml");
+	ParseStructures("docs/structure.yaml");
 	ParseBiomes("docs/biome.yaml");
 
 	for (unsigned int i = 0; i < conf.GENERATION_THREADS; i++) {
@@ -256,7 +257,10 @@ void World::GenerateTerrain()
 				{ (generationPosition.x) * conf.NOISE_SIZE_TEMP + x, (generationPosition.y) * conf.NOISE_SIZE_TEMP + z, 1.f },
 				{ (generationPosition.x) * conf.NOISE_SIZE_MOIST + x, (generationPosition.y) * conf.NOISE_SIZE_MOIST + z, 1.f }
 			, &m_GenerationNoise);
+
 			m_Chunks[i]->setBiomeTemplate(&m_BiomeTemplate);
+			m_Chunks[i]->setStructureTemplate(&m_StructureTemplate);
+
 			if (x == conf.RENDER_DISTANCE && z == conf.RENDER_DISTANCE) m_Chunks[i]->setSpawnFlag();
 
 			if (conf.ENABLE_MULTITHREADING) m_ChunksQueuedGenerating.push_back(m_Chunks[i]);
@@ -544,7 +548,8 @@ void World::ParseBiomes(const std::string& path)
 		biome.id = count++;
 
 		for (int i = 0; i < biomeEntry.second["structures"].size(); i++) {
-			biome.structures.push_back(biomeEntry.second["structures"][i].as<int>());
+			int structure = biomeEntry.second["structures"][i].as<int>();
+			if (structure != -1) biome.structures.push_back(structure);
 		}
 
 		for (int i = 0; i < biomeEntry.second["blocks"].size(); i++) {
@@ -558,6 +563,31 @@ void World::ParseBiomes(const std::string& path)
 				m_BiomeTemplate[x][y] = biome;
 			}
 		}
+	}
+}
+
+void World::ParseStructures(const std::string& path)
+{
+	LOGC("Parsing Structures", LOG_COLOR::SPECIAL_A);
+	YAML::Node mainNode = YAML::LoadFile(path);
+
+	unsigned int count = 0;
+	for (auto structureEntry : mainNode) {
+		Minecraft::Structure structure;
+
+		structure.name = structureEntry.first.as<std::string>();
+		structure.id = structureEntry.second["id"].as<unsigned int>();
+
+		for (int i = 0; i < structureEntry.second["blocks"].size(); i++) {
+			glm::vec4 block{};
+			block.x = structureEntry.second["blocks"][i][0].as<int>();
+			block.y = structureEntry.second["blocks"][i][1].as<int>();
+			block.z = structureEntry.second["blocks"][i][2].as<int>();
+			block.a = structureEntry.second["blocks"][i][3].as<int>();
+			structure.blocks.push_back(block);
+		}
+
+		m_StructureTemplate.push_back(structure);
 	}
 }
 

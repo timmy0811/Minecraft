@@ -12,7 +12,7 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    RenderDistance: 4
+    RenderDistance: 6
     TextureInverseOffset: 100
 
     ChunkBorderColor:
@@ -26,20 +26,21 @@ config:
 
   game:
     terrain:
-      WorldWidth: 64
+      WorldWidth: 32
       ChunkSize: 16
-      ChunkHeight: 30
+      ChunkHeight: 35
       BlockSize: 1.0 # Better not touch
       YStretch: 20.0
       XStretch: 0.35
       MinHeight: 2
-
-      NoiseSizeMoist: 0.3
-      NoiseSizeTemp: 0.3
+      
+      # Higher = smaller biomes
+      NoiseSizeMoist: 0.8
+      NoiseSizeTemp: 0.8
 
     environment:
-      FogAffectDistance: 15.0 # 15
-      FogDensity: 0.5 # 0.5
+      FogAffectDistance: 280.0 # 28
+      FogDensity: 0.3 # 0.3
 
       FogColor:
         r: 130

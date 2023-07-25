@@ -6,13 +6,13 @@ snowy_plains:
     - 0
 
   structures:
-    - 0
+    - -1
   blocks: 
-    - 16
+    - 23
     - 5
-    - 4
+    - 1
 
-tundra:
+tundra:         ##
   moist: 
     - 2
   temp:
@@ -20,38 +20,38 @@ tundra:
   structures:
     - -1
   blocks: 
-    - 15
-    - 5
-    - 4
+    - 24
+    - 25
+    - 2
 
-taiga:
+taiga:          ##
   moist: 
     - 3
     - 4
   temp:
     - 0
-    - 1
-  structures:
-    - 0
-  blocks: 
-    - 14
-    - 5
-    - 4
-
-plains:
-  moist: 
-    - 0
-    - 1
-  temp:
     - 1
   structures:
     - -1
   blocks: 
-    - 13
-    - 5
-    - 4
+    - 23
+    - 2
+    - 2
 
-forest:
+plains:         ##
+  moist: 
+    - 0
+    - 1
+  temp:
+    - 1
+  structures:
+    - 0
+  blocks: 
+    - 6
+    - 5
+    - 1
+
+forest:         ##
   moist: 
     - 2
   temp:
@@ -61,24 +61,24 @@ forest:
   structures:
     - 0
   blocks: 
-    - 12
+    - 6
     - 5
     - 4
 
-flower_plains:
+flower_plains:  ##
   moist: 
     - 0
     - 1
   temp:
     - 2
   structures:
-    - 2
+    - 0
   blocks: 
-    - 11
+    - 6
     - 5
-    - 4
+    - 1
 
-savana:
+savana:         ##
   moist: 
     - 0
     - 1
@@ -87,11 +87,11 @@ savana:
   structures:
     - -1
   blocks: 
-    - 17
-    - 4
-    - 1
+    - 9
+    - 9
+    - 22
 
-desert:
+desert:         ##
   moist: 
     - 0
     - 1
@@ -103,22 +103,22 @@ desert:
   structures:
     - -1
   blocks: 
-    - 18
-    - 4
-    - 1
+    - 8
+    - 8
+    - 21
 
-birch_forest:
+birch_forest:   ##
   moist: 
     - 3
     - 4
   temp:
     - 2
   structures:
-    - 1
+    - -1
   blocks: 
-    - 19
-    - 4
-    - 1
+    - 0
+    - 10
+    - 2
 
 jungle:
   moist: 
@@ -129,6 +129,6 @@ jungle:
   structures:
     - -1
   blocks: 
-    - 20
-    - 4
+    - 26
+    - 5
     - 1

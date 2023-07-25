@@ -40,6 +40,7 @@ public:
 
 	// Accessors
 	void setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* biomes);
+	void setStructureTemplate(std::vector<Minecraft::Structure>* structures);
 	void setGenerationData(const glm::vec3& position, const glm::vec3& noiseOffsetH, const glm::vec3& noiseOffsetT, const glm::vec3& noiseOffsetM, Minecraft::GenerationNoise* noise);
 	void setChunkNeighbors(Chunk* c1, Chunk* c2, Chunk* c3, Chunk* c4);
 	void setChunkNeighbor(char index, Chunk* c);
@@ -95,6 +96,7 @@ private:
 	bool m_IsSpawnChunk;
 
 	std::vector<std::vector<Minecraft::Biome>>* m_BiomeTemplate;
+	std::vector<Minecraft::Structure>* m_StructureTemplate;
 
 	// Culling
 	Chunk* m_ChunkNeighbors[4];

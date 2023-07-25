@@ -279,6 +279,90 @@ wool_colored_red:
   texture_Back: wool_colored_red
   texture_front: wool_colored_red
 
+sandstone:
+  type: 0
+  id: 21
+
+  reflection: 0.02
+
+  texture_top: sandstone_top
+  texture_bottom: sandstone_bottom
+
+  texture_left: sandstone_normal
+  texture_right: sandstone_normal
+  texture_Back: sandstone_normal
+  texture_front: sandstone_normal
+
+red_sandstone:
+  type: 0
+  id: 22
+
+  reflection: 0.02
+
+  texture_top: red_sandstone_top
+  texture_bottom: red_sandstone_bottom
+
+  texture_left: red_sandstone_normal
+  texture_right: red_sandstone_normal
+  texture_Back: red_sandstone_normal
+  texture_front: red_sandstone_normal
+
+snow_grass:
+  type: 0
+  id: 23
+
+  reflection: 0.02
+
+  texture_top: snow
+  texture_bottom: dirt
+
+  texture_left: grass_side_snowed
+  texture_right: grass_side_snowed
+  texture_Back: grass_side_snowed
+  texture_front: grass_side_snowed
+
+stone_granite:
+  type: 0
+  id: 24
+
+  reflection: 0.02
+
+  texture_top: stone_granite
+  texture_bottom: stone_granite
+
+  texture_left: stone_granite
+  texture_right: stone_granite
+  texture_Back: stone_granite
+  texture_front: stone_granite
+
+stone_granite_smooth:
+  type: 0
+  id: 25
+
+  reflection: 0.02
+
+  texture_top: stone_granite_smooth
+  texture_bottom: stone_granite_smooth
+
+  texture_left: stone_granite_smooth
+  texture_right: stone_granite_smooth
+  texture_Back: stone_granite_smooth
+  texture_front: stone_granite_smooth
+
+gravel:
+  type: 0
+  id: 26
+
+  reflection: 0.02
+
+  texture_top: gravel
+  texture_bottom: gravel
+
+  texture_left: gravel
+  texture_right: gravel
+  texture_Back: gravel
+  texture_front: gravel
+
 glass:
   type: 1
   id: 30
