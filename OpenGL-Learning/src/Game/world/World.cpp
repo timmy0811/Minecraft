@@ -548,8 +548,11 @@ void World::ParseBiomes(const std::string& path)
 		biome.id = count++;
 
 		for (int i = 0; i < biomeEntry.second["structures"].size(); i++) {
-			int structure = biomeEntry.second["structures"][i].as<int>();
-			if (structure != -1) biome.structures.push_back(structure);
+			int structure = biomeEntry.second["structures"][i][0].as<int>();
+			if (structure != -1) {
+				biome.structures.push_back(structure);
+				biome.structureProb.push_back(biomeEntry.second["structures"][i][1].as<float>());
+			}
 		}
 
 		for (int i = 0; i < biomeEntry.second["blocks"].size(); i++) {

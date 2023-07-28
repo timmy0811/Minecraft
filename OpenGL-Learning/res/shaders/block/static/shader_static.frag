@@ -40,6 +40,7 @@ void main(){
     vec3 I = normalize(v_FragPos - u_ViewPosition);
     vec3 Rf = reflect(I, normalize(v_Normal));
     vec4 color = texture(u_TextureMap, v_UV);
+    if(color.a <= 0.1) discard;
 
     // Fog
     float distanceToCamera = length(v_FragPos - u_ViewPosition);

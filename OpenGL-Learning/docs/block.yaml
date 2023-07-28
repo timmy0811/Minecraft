@@ -363,6 +363,48 @@ gravel:
   texture_Back: gravel
   texture_front: gravel
 
+oak_log:
+  type: 0
+  id: 27
+
+  reflection: 0.02
+
+  texture_top: log_oak_top
+  texture_bottom: log_oak_top
+
+  texture_left: log_oak
+  texture_right: log_oak
+  texture_Back: log_oak
+  texture_front: log_oak
+
+hay_block:
+  type: 0
+  id: 28
+
+  reflection: 0.02
+
+  texture_top: hay_block_top
+  texture_bottom: hay_block_top
+
+  texture_left: hay_block_side
+  texture_right: hay_block_side
+  texture_Back: hay_block_side
+  texture_front: hay_block_side
+
+leaves_acacia:
+  type: 6
+  id: 29
+
+  reflection: 0.02
+
+  texture_top: leaves_acacia
+  texture_bottom: leaves_acacia
+
+  texture_left: leaves_acacia
+  texture_right: leaves_acacia
+  texture_Back: leaves_acacia
+  texture_front: leaves_acacia
+
 glass:
   type: 1
   id: 30
@@ -376,3 +418,31 @@ glass:
   texture_right: glass
   texture_Back: glass
   texture_front: glass
+
+sandstone_smooth:
+  type: 0
+  id: 31
+
+  reflection: 0.02
+
+  texture_top: sandstone_top
+  texture_bottom: sandstone_bottom
+
+  texture_left: sandstone_smooth
+  texture_right: sandstone_smooth
+  texture_Back: sandstone_smooth
+  texture_front: sandstone_smooth
+
+sandstone_carved:
+  type: 0
+  id: 32
+
+  reflection: 0.02
+
+  texture_top: sandstone_top
+  texture_bottom: sandstone_bottom
+
+  texture_left: sandstone_carved
+  texture_right: sandstone_carved
+  texture_Back: sandstone_carved
+  texture_front: sandstone_carved

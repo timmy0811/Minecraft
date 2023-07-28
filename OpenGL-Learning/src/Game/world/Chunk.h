@@ -38,6 +38,8 @@ public:
 	void Serialize();
 	void Deserialize();
 
+	static unsigned long FastRandom512(void);
+
 	// Accessors
 	void setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* biomes);
 	void setStructureTemplate(std::vector<Minecraft::Structure>* structures);
@@ -70,6 +72,8 @@ private:
 	void FlushVertexBuffer(std::unique_ptr<VertexBuffer>& buffer);
 	void LoadVertexBufferFromMap();
 	void AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size);
+
+	void PushBlockToCollection(Minecraft::Block_static* block, const glm::vec3& position);
 
 	// Culling
 	void OrderTransparentStatics(glm::vec3 cameraPosition);

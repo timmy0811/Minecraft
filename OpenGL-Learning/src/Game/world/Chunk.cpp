@@ -287,6 +287,26 @@ void Chunk::Deserialize()
 {
 }
 
+unsigned long Chunk::FastRandom512(void)
+{
+	static unsigned long state[16] = { LONG_MAX / 2 };
+	static unsigned int index = 0;
+
+	unsigned long a, b, c, d;
+	a = state[index];
+	c = state[(index + 13) & 15];
+	b = a ^ c ^ (a << 16) ^ (c << 15);
+	c = state[(index + 9) & 15];
+	c ^= (c >> 11);
+	a = state[index] = b ^ c;
+	d = a ^ ((a << 5) & 0xDA442D24UL);
+	index = (index + 15) & 15;
+	a = state[index];
+	state[index] = a ^ b ^ d ^ (a << 2) ^ (b << 18) ^ (c << 28);
+
+	return state[index];
+}
+
 bool Chunk::IsNotCovered(const glm::vec3 pos)
 {
 	Minecraft::Block_static* neighbor = m_BlockStatic[CoordToIndex(pos)];
@@ -306,6 +326,24 @@ void Chunk::LoadVertexBufferFromMap()
 void Chunk::AddVertexBufferData(std::unique_ptr<VertexBuffer>& buffer, const void* data, size_t size)
 {
 	buffer->AddVertexData(data, (int)size);
+}
+
+void Chunk::PushBlockToCollection(Minecraft::Block_static* block, const glm::vec3& position)
+{
+	int index = 0;
+	switch (block->subtype) {
+	case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
+		index = CoordToIndex(position);
+		m_BlockStatic[index] = new Minecraft::Block_static(*block);
+		break;
+	case Minecraft::BLOCKTYPE::STATIC_ZERO_ALPHA:
+		index = CoordToIndex(position);
+		m_BlockStatic[index] = new Minecraft::Block_static(*block);
+		break;
+	case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
+		m_BlockStatic.push_back(new Minecraft::Block_static(*block));
+		break;
+	}
 }
 
 Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsigned int id)
@@ -484,42 +522,32 @@ unsigned int Chunk::Generate()
 				else if (i < maxLayer1) id = biome.blocks[1];
 				else {
 					id = biome.blocks[0];
+#define RAND_ACC 10000000
+					bool structurePlaced = false;
+					unsigned long r = FastRandom512();
 					if (!biome.structures.empty()) {
-						for (int structBlocks = 0; structBlocks < (*m_StructureTemplate)[biome.structures[0]].blocks.size(); structBlocks++) {
-							glm::vec4& blockStruct = (*m_StructureTemplate)[biome.structures[0]].blocks[structBlocks];
-							Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE + blockStruct.x,
-																				m_Position.y + i * conf.BLOCK_SIZE + blockStruct.y,
-																				m_Position.z + z * conf.BLOCK_SIZE + blockStruct.z },
-								blockStruct.a);
+						for (int structure = 0; structure < biome.structures.size(); structure++) {
+							if (r % RAND_ACC > (biome.structureProb[structure] * RAND_ACC)) continue;
+							for (int structBlocks = 0; structBlocks < (*m_StructureTemplate)[biome.structures[structure]].blocks.size(); structBlocks++) {
+								glm::vec4& blockStruct = (*m_StructureTemplate)[biome.structures[structure]].blocks[structBlocks];
+								if (x + blockStruct.x >= conf.CHUNK_SIZE || x + blockStruct.x < 0 ||
+									i + blockStruct.y >= conf.CHUNK_HEIGHT || i + blockStruct.y < 0 ||
+									z + blockStruct.z >= conf.CHUNK_SIZE || z + blockStruct.z < 0) continue;
 
-							// Add block to specific buffer
-							unsigned int index;
-							switch (block.subtype) {
-							case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
-								index = CoordToIndex({ x + blockStruct.x, i + blockStruct.y, z + blockStruct.z });
-								m_BlockStatic[index] = new Minecraft::Block_static(block);
-								break;
-							case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
-								m_BlockStatic.push_back(new Minecraft::Block_static(block));
-								break;
+								Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE + blockStruct.x,
+																					m_Position.y + i * conf.BLOCK_SIZE + blockStruct.y,
+																					m_Position.z + z * conf.BLOCK_SIZE + blockStruct.z },
+									blockStruct.a);
+
+								PushBlockToCollection(&block, { x + blockStruct.x, i + blockStruct.y, z + blockStruct.z });
+								structurePlaced = true;
 							}
 						}
 					}
 				};
 
 				Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE, m_Position.y + i * conf.BLOCK_SIZE, m_Position.z + z * conf.BLOCK_SIZE }, id);
-				unsigned int index;
-				// Add block to specific buffer
-				switch (block.subtype) {
-				case Minecraft::BLOCKTYPE::STATIC_DEFAULT:
-					index = CoordToIndex({ x, i, z });
-					m_BlockStatic[index] = new Minecraft::Block_static(block);	// TODO: Slow! 'new' instantiates the cube not in allocated space but random
-
-					break;
-				case Minecraft::BLOCKTYPE::STATIC_TRANSPARENT:
-					m_BlockStatic.push_back(new Minecraft::Block_static(block));
-					break;
-				}
+				PushBlockToCollection(&block, { x, i, z });
 			}
 			noiseStepOffset.x += (float)noiseStep;
 		}
