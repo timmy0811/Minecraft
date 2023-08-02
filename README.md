@@ -15,6 +15,9 @@ The Game features:
 * Biomes and structure scripting support
 * Better Terrainexpansion
 
+### Upcoming
+* Improved graphics including ambient occlusion and deferred rendering
+
 ![](https://github.com/timmy0811/Minecraft/blob/main/img1_1.png?raw=true)
 
 ## Debugging Window
