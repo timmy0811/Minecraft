@@ -339,7 +339,7 @@ Minecraft::CharacterController::InputChangeEvent CharacterController::ComputeInp
 		if (block->subtype == Minecraft::BLOCKTYPE::STATIC_DEFAULT && BoxIntersectsBlock(block, hitBoxVertices[0] + m_FrameVelocity, hitBoxVertices[1] + m_FrameVelocity)) {
 			// Floor
 			if (coord.y == -1) {
-				m_FrameVelocity.y = -((m_Camera.Position.y - m_CharBodyHeight) - floor(m_Camera.Position.y - m_CharBodyHeight)) * 0.99f; // Factor to avoid fall-through at y == 15
+				m_FrameVelocity.y = -((m_Camera.Position.y - m_CharBodyHeight) - floor(m_Camera.Position.y - m_CharBodyHeight)) * 0.90f; // Factor to avoid fall-through at y == 15
 				m_IsGrounded = true;
 				skipFloor = true;
 			}
