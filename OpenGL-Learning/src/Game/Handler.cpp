@@ -1,7 +1,7 @@
 #include "Handler.h"
 
 Handler::Handler(GLFWwindow* window)
-	:m_Inventory(), r_Window(window), m_FontRenderer("res/images/text/ascii_chat_1.png", "docs/font.yaml", 128, true, 1), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
+	:r_Window(window), m_FontRenderer("res/images/text/ascii_chat_1.png", "docs/font.yaml", 128, true, 1), m_World(window), m_Skybox("res/images/skybox/sky6/sky", ".jpg")
 {
 	// GLFW Input Mode configuration
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -29,7 +29,7 @@ void Handler::OnInit()
 	// Bind Cubemap to static blocks
 	m_Skybox.Bind(Minecraft::Global::SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderBlockStatic));
 
-	m_FontRenderer.PrintMultilineText("Version: 1.0 (Dev)", { 20.f, 20.f }, 4.f, {0.8f, 0.8f, 0.8f, 0.3f});
+	m_FontRenderer.PrintMultilineText("Version: 1.0 (Dev)", { 20.f, 20.f }, 4.f, { 0.8f, 0.8f, 0.8f, 0.3f });
 }
 
 void Handler::DebugWindow()
@@ -159,7 +159,6 @@ void Handler::OnRender()
 
 	// Draw Skybox at end
 	m_Skybox.OnRender();
-	m_Inventory.OnRender();
 
 	m_FontRenderer.Draw();
 }
@@ -167,7 +166,6 @@ void Handler::OnRender()
 void Handler::OnUpdate()
 {
 	m_World.OnUpdate(v_DeltaTime);
-	m_Inventory.OnUpdate();
 	m_Skybox.setMatrix(m_World.getMatrixProjection(), m_World.getMatrixView());
 
 	float currentFrame = (float)glfwGetTime();
@@ -175,6 +173,6 @@ void Handler::OnUpdate()
 	v_LastFrame = currentFrame;
 
 #ifdef _DEBUG
-	if(m_ShowDemoStats) DebugWindow();
+	if (m_ShowDemoStats) DebugWindow();
 #endif // !_DEBUG
 }

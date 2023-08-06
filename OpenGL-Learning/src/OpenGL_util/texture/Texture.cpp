@@ -5,7 +5,9 @@ Texture::Texture(const std::string& path, const bool flipUV)
 {
 	GLCall(glActiveTexture(GL_TEXTURE0));
 
-	if(flipUV) stbi_set_flip_vertically_on_load(1);
+	if (flipUV) stbi_set_flip_vertically_on_load(1);
+	else stbi_set_flip_vertically_on_load(0);
+
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 	if (!m_LocalBuffer) LOGC(("Could not load " + path), LOG_COLOR::FAULT);
 
@@ -23,10 +25,10 @@ Texture::Texture(const std::string& path, const bool flipUV)
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer)); 
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 
-	if(m_LocalBuffer) stbi_image_free(m_LocalBuffer);
+	if (m_LocalBuffer) stbi_image_free(m_LocalBuffer);
 }
 
 Texture::~Texture()
@@ -34,7 +36,7 @@ Texture::~Texture()
 	GLCall(glDeleteTextures(1, &m_RendererID));
 }
 
-int Texture::Bind(const unsigned int slot) const
+int Texture::Bind(const unsigned int slot)
 {
 	GLCall(glActiveTexture(GL_TEXTURE0 + slot));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));

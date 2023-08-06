@@ -57,6 +57,13 @@ namespace Minecraft::Helper {
 		bool FlipUvs;
 	};
 
+	struct SpriteBlueprint : public Sprite {
+		Minecraft::Sprite2DVertex vertices[4];
+
+		SpriteBlueprint(const std::string& path, const glm::vec2& position, const glm::vec2& size, const bool flipUV = false) :Sprite(path, position, size, flipUV) {}
+		SpriteBlueprint(const std::string& path, const glm::vec2& position, const glm::vec2& size, Helper::Vec2_4 uvs, const bool flipUV = false) :Sprite(path, position, size, uvs, flipUV) {}
+	};
+
 	// Functions
 	static int mapRGBToInt(const glm::vec3& color)
 	{

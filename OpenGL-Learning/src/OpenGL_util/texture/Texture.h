@@ -8,7 +8,7 @@ enum class TextureType { DIFFUSE, SPECULAR, SHINE, NORMAL, HEIGHT, DEFAULT };
 class Texture
 {
 private:
-	mutable int m_BoundID = -1;
+	int m_BoundID = -1;
 	unsigned int m_RendererID;
 	std::string m_Filepath;
 	unsigned char* m_LocalBuffer;
@@ -20,7 +20,7 @@ public:
 	Texture(const std::string& path, const bool flipUV);
 	~Texture();
 
-	int Bind(const unsigned int slot = 0) const;
+	int Bind(const unsigned int slot = 0);
 	void Unbind();
 
 	inline const std::string& GetPath() const { return m_Filepath; };
@@ -32,4 +32,3 @@ public:
 	void SetType(TextureType type) { m_Type = type; };
 	inline TextureType GetType() { return m_Type; };
 };
-

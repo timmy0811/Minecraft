@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Game/view/Camera.h"
+#include "Game/gui/Inventory.h"
 
 #define MOVEMENT_FLYING 0.3f;
 
@@ -36,6 +37,7 @@ public:
 	inline const glm::vec3& getFront() const { return m_Camera.Front; }
 	inline const glm::vec3& getUp() const { return m_Camera.Up; }
 	inline const Minecraft::Block_static* getSelectedBlock() { return m_SelectedBlock; }
+	inline void setInventoryReference(Inventory* inv) { m_Inventory = inv; }
 
 	inline const bool isOnGround() const { return m_IsGrounded; };
 
@@ -71,6 +73,7 @@ private:
 	void ProcessMouse();
 
 private:
+	Inventory* m_Inventory;
 	Minecraft::Camera3D m_Camera;
 	Minecraft::CharacterController::STATE m_State;
 	bool m_IsGrounded;

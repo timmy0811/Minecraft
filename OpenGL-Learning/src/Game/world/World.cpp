@@ -14,7 +14,7 @@ World::World(GLFWwindow* window)
 	r_Window(window),
 	m_ChunkBorderRenderer(24, "res/shaders/universal/shader_single_color_instanced.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
-	m_HUDRenderer(1, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
+	m_HUDRenderer(1, { 3, 3 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -55,7 +55,9 @@ World::World(GLFWwindow* window)
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	SetupChunkBorders();
-	m_HUDRenderer.AddSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH / 2.f - 8.f, conf.WIN_HEIGHT / 2.f - 8.f }, { 16, 16 });
+	m_HUDRenderer.PushSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH / 2.f - 8.f, conf.WIN_HEIGHT / 2.f - 8.f }, { 16, 16 });
+
+	m_CharacterController.setInventoryReference(&m_Inventory);
 }
 
 World::~World()
@@ -104,6 +106,7 @@ void World::OnRender()
 
 	m_BlockSelectionRenderer.Draw();
 	m_HUDRenderer.Draw();
+	m_Inventory.OnRender();
 }
 
 void World::NeighborChunks()
@@ -134,6 +137,8 @@ void World::OnUpdate(double deltaTime)
 	HandleChunkLoading();
 	m_CharacterController.OnUpdate(deltaTime);
 	OutlineSelectedBlock();
+
+	m_Inventory.OnUpdate();
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
@@ -217,6 +222,7 @@ const unsigned int World::getDrawCalls() const
 
 void World::OnInput(GLFWwindow* window, double deltaTime)
 {
+	m_Inventory.OnInput(window);
 	const glm::vec3& position = m_CharacterController.getPosition();
 	glm::vec2 currentPLayerChunkPosition = { std::floor(abs(m_WorldRootPosition.x - position.x) / conf.CHUNK_SIZE), std::floor(abs(m_WorldRootPosition.z - position.z) / conf.CHUNK_SIZE) };
 

@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Game\render\SpriteRenderer.cpp" />
     <ClCompile Include="src\Game\gui\Inventory.cpp" />
     <ClCompile Include="src\Game\view\CharacterController.cpp" />
     <ClCompile Include="src\config.cpp" />
@@ -315,6 +316,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\Game\render\SpriteRenderer.h" />
     <ClInclude Include="src\Game\gui\Inventory.h" />
     <ClInclude Include="src\Game\view\CharacterController.h" />
     <ClInclude Include="src\Game\render\CustomRenderer.h" />

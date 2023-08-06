@@ -7,8 +7,10 @@
 #include "config.h"
 
 // Game
+#include "Game/render/SpriteRenderer.h"
 #include "Game/render/CustomRenderer.h"
 #include "Game/view/CharacterController.h"
+#include "Game/gui/Inventory.h"
 
 // System
 #include "windowsWrapper.h"
@@ -113,6 +115,7 @@ private:
 	glm::mat4 m_MatrixTranslation;
 
 	// Objects
+	Inventory m_Inventory;
 	CharacterController m_CharacterController;
 
 	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH* conf.WORLD_WIDTH };

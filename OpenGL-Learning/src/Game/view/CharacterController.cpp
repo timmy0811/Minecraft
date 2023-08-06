@@ -109,7 +109,9 @@ bool CharacterController::InteractWithBlock(GLFWwindow* window, Chunk* chunkArra
 				break;
 			}
 			// TODO: Resolve bug when placing on chunk edge
-			chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(ClipChunkCoordinate(pos), 1);
+			unsigned int item = m_Inventory->GetHoldingItemID();
+			if (item != 9999) chunkArray[(const unsigned int)m_SelectedBlockPosition.w]->SetBlockUpdated(ClipChunkCoordinate(pos), item);
+
 			return false;
 		}
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && keyPressedRight) {
