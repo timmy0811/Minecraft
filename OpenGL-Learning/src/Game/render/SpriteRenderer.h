@@ -35,6 +35,7 @@ namespace Minecraft::Helper {
 		void PopAll();
 		void PopSprite(unsigned int id);
 
+		int PushSprite(unsigned int id);
 		unsigned int PushSprite(const Sprite& sprite);
 		unsigned int PushSprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, Helper::Vec2_4 uvs, const bool flipUV = false);
 		unsigned int PushSprite(const std::string& path, const glm::vec2& position, const glm::vec2& size, const bool flipUV = false);

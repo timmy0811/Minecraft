@@ -48,7 +48,7 @@ Minecraft::Helper::SpriteRenderer::~SpriteRenderer()
 
 void Minecraft::Helper::SpriteRenderer::Draw() const
 {
-	Renderer::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, m_IB->GetCount());
+	Renderer::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, m_SpritesOnScreen.size() * 6);
 	m_Shader->Unbind();
 }
 
@@ -70,6 +70,8 @@ void Minecraft::Helper::SpriteRenderer::PopAll()
 	m_VB->Empty();
 	m_Triangles = 0;
 	m_SpritesOnScreen.clear();
+
+	RefreshVertBuffer();
 }
 
 void Minecraft::Helper::SpriteRenderer::PopSprite(unsigned int id)
@@ -81,6 +83,16 @@ void Minecraft::Helper::SpriteRenderer::PopSprite(unsigned int id)
 	}
 
 	RefreshVertBuffer();
+}
+
+int Minecraft::Helper::SpriteRenderer::PushSprite(unsigned int id)
+{
+	if (m_Sprites.find(id) != m_Sprites.end()) {
+		m_SpritesOnScreen.push_back(m_Sprites[id]);
+		RefreshVertBuffer();
+		return id;
+	}
+	else return -1;
 }
 
 unsigned int Minecraft::Helper::SpriteRenderer::PushSprite(const Sprite& sprite)

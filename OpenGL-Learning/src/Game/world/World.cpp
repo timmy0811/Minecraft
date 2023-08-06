@@ -105,8 +105,8 @@ void World::OnRender()
 	}
 
 	m_BlockSelectionRenderer.Draw();
-	m_HUDRenderer.Draw();
 	m_Inventory.OnRender();
+	m_HUDRenderer.Draw();
 }
 
 void World::NeighborChunks()
