@@ -24,6 +24,10 @@ config:
     # Experimental
     ExpandTerrain: false
 
+    shadows:
+      MapSize: 4096
+      BindMapToPlayerPos : false
+
   game:
     terrain:
       WorldWidth: 12

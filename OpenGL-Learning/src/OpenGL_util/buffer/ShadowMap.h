@@ -7,6 +7,8 @@
 
 #include "../debug/Debug.hpp"
 
+// #define FILTER_SHADOW
+
 class ShadowMap
 {
 public:

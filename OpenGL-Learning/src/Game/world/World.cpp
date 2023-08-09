@@ -16,7 +16,7 @@ World::World(GLFWwindow* window)
 	m_ChunkBorderRenderer(24, "res/shaders/universal/shader_single_color_instanced.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_HUDRenderer(1, { 3, 3 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
-	m_ShadowMappingBuffer({ 4096, 4096 })
+	m_ShadowMappingBuffer({ conf.SHADOW_MAP_SIZE, conf.SHADOW_MAP_SIZE })
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -126,16 +126,26 @@ void World::OnUpdate(double deltaTime)
 
 	m_Inventory.OnUpdate();
 
+	//static float sinVal = 0.f;
+	//sinVal += 0.01;
+	//m_DirLight.direction = glm::normalize(glm::vec3(sin(sinVal) * 2.f, -3, cos(sinVal) * 2.f));
+
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", position.x, position.y, position.z);
 
-	glm::mat4 shadowProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.05f, 50.f);
-	glm::mat4 shadowView = glm::lookAt(position + glm::vec3(0.f, 30.f, 0.f), position + glm::vec3(5.f, 0.f, 5.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 shadowProjection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 1.0f, 80.f);
+	glm::vec3 shadowPosition;
+	if (conf.BIND_SHADOW_MAP_PLAYER_POS) {
+		shadowPosition = { position.x, position.y + 20, position.z };
+	}
+	else {
+		shadowPosition = { std::floor(position.x / conf.CHUNK_SIZE) * conf.CHUNK_SIZE + 8, position.y + 20, std::floor(position.z / conf.CHUNK_SIZE) * conf.CHUNK_SIZE + 8 };
+	}
+
+	glm::mat4 shadowView = glm::lookAt(shadowPosition, shadowPosition + m_DirLight.direction, glm::vec3(0.f, 1.f, 0.f));
 	m_MatrixMLP = shadowProjection * shadowView;
 
-	glm::vec3 lightDir = glm::normalize(glm::vec3(-5.f, 30.f, -5.f));
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_LightDir", lightDir.x, lightDir.y, lightDir.z);
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_MLP", m_MatrixMLP);
 
 	m_ShadowMappingBuffer.BindDepthTexture(12);
@@ -160,6 +170,7 @@ void World::OnWindowResize()
 
 void World::RenderShadowPass()
 {
+	glCullFace(GL_NONE);
 	m_ShadowMappingBuffer.BindAndClear();
 
 	// Render Buffers affecting shadows
@@ -168,12 +179,13 @@ void World::RenderShadowPass()
 		if (!chunk || !chunk->isLoaded()) continue;
 		chunk->OnRenderShadows(m_ShaderPackage);
 	}
+	glCullFace(GL_BACK);
 }
 
 void World::RenderLightPass()
 {
 	GLContext::BindOrigFramebuffer();
-	GLCall(glViewport(0, 0, conf.WIN_WIDTH, conf.WIN_HEIGHT));
+	GLCall(glViewport(0, 0, Minecraft::Global::windowSize.x, Minecraft::Global::windowSize.y));
 	GLContext::Clear();
 
 	{
@@ -690,7 +702,7 @@ void World::SetupLight()
 	m_DirLight.ambient = { 0.65f, 0.65f, 0.65f };
 	m_DirLight.diffuse = { 1.0f, 1.0f, 1.0f };
 	m_DirLight.specular = { 0.2f, 0.20f, 0.20f };
-	m_DirLight.direction = { 1.f, -1.f, 0.5f };
+	m_DirLight.direction = { 0.5f, -1.f, 0.5f };
 
 	m_ShaderPackage.shaderBlockStatic->Bind();
 	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);

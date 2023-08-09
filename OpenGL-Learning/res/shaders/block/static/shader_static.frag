@@ -13,7 +13,6 @@ in float v_Reflection;
 in vec4 v_LightViewPosition;
 
 uniform sampler2D u_ShadowMap;
-uniform vec3 u_LightDir;
 
 // Structs
 struct DirectionalLight{
@@ -40,6 +39,7 @@ uniform vec3 u_SkyBoxColor;
 uniform DirectionalLight u_DirLight;
 
 vec3 AffectDirectionallight(DirectionalLight DirLight, vec3 normal, vec3 viewDirection);
+float CalculateShadow();
 
 void main(){
     vec3 I = normalize(v_FragPos - u_ViewPosition);
@@ -60,16 +60,7 @@ void main(){
     vec3 viewDirection = normalize(u_ViewPosition - v_FragPos);
 
     //o_Color = (blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0)) * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
-    o_Color = blockColor  * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
-
-    // Apply shadows
-    vec3 coord = v_LightViewPosition.xyz / v_LightViewPosition.w;
-    coord *= 0.5;
-    coord += 0.5;
-    float bias = max(0.05 * (1.0 - dot(v_Normal, u_LightDir)), 0.005);
-    float closestDepth = texture(u_ShadowMap, coord.xy).r;
-    float currentDepth = coord.z;
-    o_Color *= currentDepth - 0.005 >= closestDepth ? 0.5 : 1.0;
+    o_Color = blockColor  * (1.0 - fogFactor) * (1.0 - CalculateShadow() * 0.35) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
 }
 
 // Light Functions
@@ -85,4 +76,29 @@ vec3 AffectDirectionallight(DirectionalLight DirLight, vec3 normal, vec3 viewDir
     vec3 ambient = DirLight.ambient;
 
     return (diffuse + specular + ambient);
+}
+
+float CalculateShadow(){
+    vec3 coord = v_LightViewPosition.xyz / v_LightViewPosition.w;
+    coord = coord * 0.5 + 0.5;
+    float closestDepth = texture(u_ShadowMap, coord.xy).r;
+    float currentDepth = coord.z;
+
+    // Double check bias
+    float bias = max(0.05 * (1.0 - abs(dot(normalize(v_Normal), u_DirLight.direction))), 0.005);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+
+    for(int x = -1; x <= 1; ++x){
+        for(int y = -1; y <= 1; ++y){
+            float pcfDepth = texture(u_ShadowMap, coord.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+    if(coord.z >= 1.0) shadow = 0.0;
+
+    return shadow;
 }

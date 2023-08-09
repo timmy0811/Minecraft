@@ -63,6 +63,9 @@ public:
 		CHUNK_BORDER_COLOR.b = mainNode["config"]["rendering"]["ChunkBorderColor"]["b"].as<float>();
 		CHUNK_BORDER_COLOR.a = mainNode["config"]["rendering"]["ChunkBorderColor"]["a"].as<float>();
 
+		SHADOW_MAP_SIZE = mainNode["config"]["rendering"]["shadows"]["MapSize"].as<unsigned int>();
+		BIND_SHADOW_MAP_PLAYER_POS = mainNode["config"]["rendering"]["shadows"]["BindMapToPlayerPos"].as<bool>();
+
 		WORLD_WIDTH = mainNode["config"]["game"]["terrain"]["WorldWidth"].as<unsigned int>();
 		if (WORLD_WIDTH % 2 != 0) WORLD_WIDTH += 1;
 
@@ -127,6 +130,9 @@ public:
 	bool EXPAND_TERRAIN = false;
 
 	glm::vec4 CHUNK_BORDER_COLOR = { 0.f, 0.f, 0.f, 1.f };
+
+	unsigned int SHADOW_MAP_SIZE = 1024;
+	bool BIND_SHADOW_MAP_PLAYER_POS = false;
 
 	// Game
 	// Terrain
