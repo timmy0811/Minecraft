@@ -568,7 +568,13 @@ void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage)
 	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 0.f);
-	Renderer::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
+	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
+}
+
+void Chunk::OnRenderShadows(const Minecraft::Helper::ShaderPackage& shaderPackage)
+{
+	m_DrawCalls++;
+	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderWorldShadow, (m_LoadBufferPtr / 4) * 6);
 }
 
 void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition)
@@ -581,7 +587,7 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 	m_DrawCalls++;
 	shaderPackage.shaderBlockStatic->Bind();
 	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 1.f);
-	Renderer::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, m_TransparentStaticsOrdered.size() * 6);
+	GLContext::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, m_TransparentStaticsOrdered.size() * 6);
 }
 
 //inline void Chunk::setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* temp)

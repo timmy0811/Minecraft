@@ -6,6 +6,9 @@
 #include "vendor/yaml/yaml_wrapper.hpp"
 #include "config.h"
 
+// Additional Graphics
+#include "OpenGL_util/buffer/ShadowMap.h"
+
 // Game
 #include "Game/render/SpriteRenderer.h"
 #include "Game/render/CustomRenderer.h"
@@ -51,6 +54,12 @@ public:
 	void OnRender();
 	void OnUpdate(double deltaTime);
 	void OnWindowResize();
+
+	// Render
+	void RenderShadowPass();
+	void RenderLightPass();
+
+	void RenderGUI();
 
 	// Misc
 	void UpdateProjectionMatrix(float FOV, float nearD = 0.1f, float farD = 300.f);
@@ -113,6 +122,10 @@ private:
 	glm::mat4 m_MatrixProjection;
 	glm::mat4 m_MatrixView;
 	glm::mat4 m_MatrixTranslation;
+
+	glm::mat4 m_MatrixMLP;
+
+	ShadowMap m_ShadowMappingBuffer;
 
 	// Objects
 	Inventory m_Inventory;

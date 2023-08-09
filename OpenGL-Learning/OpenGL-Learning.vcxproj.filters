@@ -105,6 +105,9 @@
     <ClCompile Include="src\Game\render\SpriteRenderer.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpenGL_util\buffer\ShadowMap.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -519,6 +522,8 @@
     <None Include="docs\texture.yaml" />
     <None Include="docs\biome.yaml" />
     <None Include="docs\structure.yaml" />
+    <None Include="res\shaders\block\shadow\shader_shadowmap.vert" />
+    <None Include="res\shaders\block\shadow\shader_shadowmap.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\OpenGL_util\core\VertexBuffer.h">
@@ -1500,6 +1505,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\render\SpriteRenderer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL_util\buffer\ShadowMap.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

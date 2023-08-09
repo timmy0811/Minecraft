@@ -48,7 +48,7 @@ Minecraft::Helper::SpriteRenderer::~SpriteRenderer()
 
 void Minecraft::Helper::SpriteRenderer::Draw() const
 {
-	Renderer::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, m_SpritesOnScreen.size() * 6);
+	GLContext::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, m_SpritesOnScreen.size() * 6);
 	m_Shader->Unbind();
 }
 

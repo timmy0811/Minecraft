@@ -73,8 +73,6 @@ int main(void)
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	GLCall(glEnable(GL_BLEND));
 
-	Renderer renderer;
-
 	ImGuiIO& io = ImGuiInit();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -82,6 +80,9 @@ int main(void)
 
 	// Game
 	Handler GameHandler = Handler(window);
+	GLContext::Init();
+
+#define CLEAR_BUFFER_MAIN
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -89,15 +90,20 @@ int main(void)
 		pollResizeEvent(window);
 
 		/* Render here */
-		renderer.Clear();
+#ifdef CLEAR_BUFFER_MAIN
+		GLContext::Clear();
 		GLCall(glClearColor(0.f, 0.f, 0.f, 1.f));
-
-		ImGuiNewFrame();
+#endif // CLEAR_BUFFER_MAIN
 
 		//Game
 		GameHandler.OnInput(window);
 		GameHandler.OnUpdate();
 		GameHandler.OnRender();
+
+		ImGuiNewFrame();
+#ifdef _DEBUG
+		GameHandler.OnRenderGUIDebug();
+#endif // !_DEBUG
 
 		ImGuiRender(io);
 

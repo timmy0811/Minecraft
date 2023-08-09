@@ -155,12 +155,18 @@ void Handler::OnInput(GLFWwindow* window)
 
 void Handler::OnRender()
 {
+	// World clears color buffer -> render world first
 	m_World.OnRender();
 
 	// Draw Skybox at end
 	m_Skybox.OnRender();
 
 	m_FontRenderer.Draw();
+}
+
+void Handler::OnRenderGUIDebug()
+{
+	if (m_ShowDemoStats) DebugWindow();
 }
 
 void Handler::OnUpdate()
@@ -171,8 +177,4 @@ void Handler::OnUpdate()
 	float currentFrame = (float)glfwGetTime();
 	v_DeltaTime = currentFrame - v_LastFrame;
 	v_LastFrame = currentFrame;
-
-#ifdef _DEBUG
-	if (m_ShowDemoStats) DebugWindow();
-#endif // !_DEBUG
 }

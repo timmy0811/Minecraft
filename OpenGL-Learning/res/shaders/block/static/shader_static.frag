@@ -10,6 +10,11 @@ flat in int v_TexIndex;
 in vec3 v_FragPos;
 in float v_Reflection;
 
+in vec4 v_LightViewPosition;
+
+uniform sampler2D u_ShadowMap;
+uniform vec3 u_LightDir;
+
 // Structs
 struct DirectionalLight{
     vec3 direction;
@@ -54,7 +59,17 @@ void main(){
 
     vec3 viewDirection = normalize(u_ViewPosition - v_FragPos);
 
-    o_Color = (blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0)) * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
+    //o_Color = (blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0)) * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
+    o_Color = blockColor  * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
+
+    // Apply shadows
+    vec3 coord = v_LightViewPosition.xyz / v_LightViewPosition.w;
+    coord *= 0.5;
+    coord += 0.5;
+    float bias = max(0.05 * (1.0 - dot(v_Normal, u_LightDir)), 0.005);
+    float closestDepth = texture(u_ShadowMap, coord.xy).r;
+    float currentDepth = coord.z;
+    o_Color *= currentDepth - 0.005 >= closestDepth ? 0.5 : 1.0;
 }
 
 // Light Functions

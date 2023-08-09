@@ -12,7 +12,7 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    RenderDistance: 1
+    RenderDistance: 2
     TextureInverseOffset: 100
 
     ChunkBorderColor:
@@ -26,11 +26,11 @@ config:
 
   game:
     terrain:
-      WorldWidth: 32
+      WorldWidth: 12
       ChunkSize: 16
       ChunkHeight: 15
       BlockSize: 1.0 # Better not touch
-      YStretch: 5.0
+      YStretch: 10.0
       XStretch: 0.45
       MinHeight: 2
       

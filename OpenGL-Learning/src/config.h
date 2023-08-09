@@ -26,6 +26,7 @@ namespace Minecraft::Global {
 	inline int SAMPLER_SLOT_SKYBOX = 2;
 	inline int SAMPLER_SLOT_SPRITES = 3;
 	inline int SAMPLER_SLOT_FONTS = 9;
+	inline int SAMPLER_SLOT_SHADOWMAP = 12;
 	inline bool fontbound = false;
 
 	inline glm::ivec2 windowSize;

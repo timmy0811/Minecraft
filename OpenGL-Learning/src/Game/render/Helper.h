@@ -18,9 +18,11 @@ namespace Minecraft::Helper {
 
 	struct ShaderPackage {
 		Shader* shaderBlockStatic;
+		Shader* shaderWorldShadow;
 
 		~ShaderPackage() {
 			delete shaderBlockStatic;
+			delete shaderWorldShadow;
 		}
 	};
 

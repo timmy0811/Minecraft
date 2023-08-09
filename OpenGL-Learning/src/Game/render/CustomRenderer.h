@@ -65,12 +65,12 @@ namespace Minecraft::Helper {
 			shader->Bind();
 			va->Bind();
 			ib->Bind();
-			Renderer::Draw(*va, *ib, *shader, GL_LINES);
+			GLContext::Draw(*va, *ib, *shader, GL_LINES);
 		}
 
 		inline void DrawInstanced(const unsigned int count, const unsigned int instances) {
 			GLCall(glLineWidth(3));
-			Renderer::DrawInstancedLines(*va, *ib, *shader, count, instances);
+			GLContext::DrawInstancedLines(*va, *ib, *shader, count, instances);
 		}
 	};
 
@@ -160,7 +160,7 @@ namespace Minecraft::Helper {
 			shader->Bind();
 			va->Bind();
 			ib->Bind();
-			Renderer::Draw(*va, *ib, *shader, GL_LINES);
+			GLContext::Draw(*va, *ib, *shader, GL_LINES);
 		}
 	};
 
@@ -401,7 +401,7 @@ namespace Minecraft::Helper {
 
 		inline void Draw() {
 			shader->Bind();
-			Renderer::Draw(*va, *ib, *shader, GL_TRIANGLES, (int)count * 6);
+			GLContext::Draw(*va, *ib, *shader, GL_TRIANGLES, (int)count * 6);
 			shader->Unbind();
 		}
 

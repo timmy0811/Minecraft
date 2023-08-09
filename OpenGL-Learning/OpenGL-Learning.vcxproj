@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\OpenGL_util\buffer\ShadowMap.cpp" />
     <ClCompile Include="src\Game\render\SpriteRenderer.cpp" />
     <ClCompile Include="src\Game\gui\Inventory.cpp" />
     <ClCompile Include="src\Game\view\CharacterController.cpp" />
@@ -177,6 +178,8 @@
     <None Include="docs\block.yaml" />
     <None Include="docs\structure.yaml" />
     <None Include="docs\texture.yaml" />
+    <None Include="res\shaders\block\shadow\shader_shadowmap.frag" />
+    <None Include="res\shaders\block\shadow\shader_shadowmap.vert" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
@@ -316,6 +319,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\OpenGL_util\buffer\ShadowMap.h" />
     <ClInclude Include="src\Game\render\SpriteRenderer.h" />
     <ClInclude Include="src\Game\gui\Inventory.h" />
     <ClInclude Include="src\Game\view\CharacterController.h" />

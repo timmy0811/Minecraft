@@ -18,6 +18,7 @@ public:
 
 	void OnInput(GLFWwindow* window);
 	void OnRender();
+	void OnRenderGUIDebug();
 	void OnUpdate();
 
 private:

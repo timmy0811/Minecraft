@@ -10,11 +10,13 @@ World::World(GLFWwindow* window)
 	//Game
 	m_CharacterController({ 0.f, 30.f, 0.f }),
 	// Graphics
-	m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag") },
 	r_Window(window),
+	m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag"),
+					 new Shader("res/shaders/block/shadow/shader_shadowmap.vert", "res/shaders/block/shadow/shader_shadowmap.frag") },
 	m_ChunkBorderRenderer(24, "res/shaders/universal/shader_single_color_instanced.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
-	m_HUDRenderer(1, { 3, 3 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag")
+	m_HUDRenderer(1, { 3, 3 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
+	m_ShadowMappingBuffer({ 4096, 4096 })
 {
 	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
 	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
@@ -85,28 +87,12 @@ World::~World()
 
 void World::OnRender()
 {
-	m_TextureMap.Bind(Minecraft::Global::SAMPLER_SLOT_BLOCKS); // Why?
+	// m_TextureMap.Bind(Minecraft::Global::SAMPLER_SLOT_BLOCKS); // Why?
 
-	// Render opac objects
-	for (Chunk* chunk : m_Chunks) {
-		if (!chunk || !chunk->isLoaded()) continue;
-		chunk->OnRender(m_ShaderPackage);
-	}
+	RenderShadowPass();
+	RenderLightPass();
 
-	// Render transparent objects
-	for (Chunk* chunk : m_Chunks) {
-		if (!chunk) continue;
-		chunk->OnRenderTransparents(m_ShaderPackage, m_CharacterController.getPosition());
-	}
-
-	if (m_DrawChunkBorder) {
-		m_ChunkBorderRenderer.DrawInstanced(24, m_CountChunks);
-		m_DrawCalls++;
-	}
-
-	m_BlockSelectionRenderer.Draw();
-	m_Inventory.OnRender();
-	m_HUDRenderer.Draw();
+	RenderGUI();
 }
 
 void World::NeighborChunks()
@@ -144,11 +130,25 @@ void World::OnUpdate(double deltaTime)
 	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
 	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", position.x, position.y, position.z);
 
+	glm::mat4 shadowProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.05f, 50.f);
+	glm::mat4 shadowView = glm::lookAt(position + glm::vec3(0.f, 30.f, 0.f), position + glm::vec3(5.f, 0.f, 5.f), glm::vec3(0.f, 1.f, 0.f));
+	m_MatrixMLP = shadowProjection * shadowView;
+
+	glm::vec3 lightDir = glm::normalize(glm::vec3(-5.f, 30.f, -5.f));
+	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_LightDir", lightDir.x, lightDir.y, lightDir.z);
+	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_MLP", m_MatrixMLP);
+
+	m_ShadowMappingBuffer.BindDepthTexture(12);
+	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_ShadowMap", 12);
+
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
 
 	m_BlockSelectionRenderer.shader->Bind();
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
+
+	m_ShaderPackage.shaderWorldShadow->Bind();
+	m_ShaderPackage.shaderWorldShadow->SetUniformMat4f("u_MLP", m_MatrixMLP);
 }
 
 void World::OnWindowResize()
@@ -156,6 +156,51 @@ void World::OnWindowResize()
 	if (Minecraft::Global::updateResize) {
 		UpdateProjectionMatrix(conf.FOV, 0.1f, 300.f);
 	}
+}
+
+void World::RenderShadowPass()
+{
+	m_ShadowMappingBuffer.BindAndClear();
+
+	// Render Buffers affecting shadows
+	// Render opac objects
+	for (Chunk* chunk : m_Chunks) {
+		if (!chunk || !chunk->isLoaded()) continue;
+		chunk->OnRenderShadows(m_ShaderPackage);
+	}
+}
+
+void World::RenderLightPass()
+{
+	GLContext::BindOrigFramebuffer();
+	GLCall(glViewport(0, 0, conf.WIN_WIDTH, conf.WIN_HEIGHT));
+	GLContext::Clear();
+
+	{
+		for (Chunk* chunk : m_Chunks) {
+			if (!chunk || !chunk->isLoaded()) continue;
+			chunk->OnRender(m_ShaderPackage);
+		}
+
+		// Render transparent objects
+		for (Chunk* chunk : m_Chunks) {
+			if (!chunk) continue;
+			chunk->OnRenderTransparents(m_ShaderPackage, m_CharacterController.getPosition());
+		}
+
+		if (m_DrawChunkBorder) {
+			m_ChunkBorderRenderer.DrawInstanced(24, m_CountChunks);
+			m_DrawCalls++;
+		}
+
+		m_BlockSelectionRenderer.Draw();
+	}
+}
+
+void World::RenderGUI()
+{
+	m_Inventory.OnRender();
+	m_HUDRenderer.Draw();
 }
 
 void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
