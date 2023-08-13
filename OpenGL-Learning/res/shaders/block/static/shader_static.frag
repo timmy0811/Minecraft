@@ -60,7 +60,7 @@ void main(){
     vec3 viewDirection = normalize(u_ViewPosition - v_FragPos);
 
     //o_Color = (blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0)) * (1.0 - fogFactor) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
-    o_Color = blockColor  * (1.0 - fogFactor) * (1.0 - CalculateShadow() * 0.35) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
+    o_Color = blockColor * vec4(AffectDirectionallight(u_DirLight, v_Normal, viewDirection), 1.0) * (1.0 - fogFactor) * (1.0 - CalculateShadow() * 0.35) + (vec4(u_SkyBoxColor * fogFactor, 1.0));
 }
 
 // Light Functions
@@ -71,7 +71,7 @@ vec3 AffectDirectionallight(DirectionalLight DirLight, vec3 normal, vec3 viewDir
     vec3 reflectDirection = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 16);
 
-    vec3 diffuse = diffAngle * DirLight.diffuse;
+    vec3 diffuse = diffAngle * DirLight.diffuse * 0.5 + 0.5;
     vec3 specular = spec * DirLight.specular;
     vec3 ambient = DirLight.ambient;
 
@@ -92,7 +92,7 @@ float CalculateShadow(){
 
     for(int x = -1; x <= 1; ++x){
         for(int y = -1; y <= 1; ++y){
-            float pcfDepth = texture(u_ShadowMap, coord.xy + vec2(x, y) * texelSize).r; 
+            float pcfDepth = texture(u_ShadowMap, coord.xy + vec2(x, y) * texelSize).r;
             shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;        
         }    
     }
