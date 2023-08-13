@@ -93,7 +93,7 @@ float CalculateShadow(){
     for(int x = -1; x <= 1; ++x){
         for(int y = -1; y <= 1; ++y){
             float pcfDepth = texture(u_ShadowMap, coord.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;        
+            shadow += currentDepth - 0.002 > pcfDepth ? 1.0 : 0.0;        
         }    
     }
     shadow /= 9.0;

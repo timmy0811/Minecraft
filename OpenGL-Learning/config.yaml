@@ -12,8 +12,8 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    RenderDistance: 4
-    TextureInverseOffset: 100
+    RenderDistance: 1
+    TextureInverseOffset: 0.005
 
     ChunkBorderColor:
       r: 1

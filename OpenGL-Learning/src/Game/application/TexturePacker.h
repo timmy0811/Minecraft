@@ -24,7 +24,7 @@ namespace Minecraft::Image {
 class TexturePacker
 {
 public:
-	static const bool PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float accur = 1.f);
+	static const bool PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float shrinkInwards = 0.f);
 
 private:
 	static std::vector<std::string> m_PackedTextures;

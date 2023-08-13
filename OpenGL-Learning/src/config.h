@@ -55,7 +55,7 @@ public:
 		MAX_BUFFER_FACES = mainNode["config"]["rendering"]["MaxBufferFaces"].as<unsigned int>();
 		TEXTURE_SIZE = mainNode["config"]["rendering"]["TextureSize"].as<unsigned int>();
 		RENDER_DISTANCE = mainNode["config"]["rendering"]["RenderDistance"].as<unsigned int>();
-		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<unsigned int>();
+		TEXTURE_INVERSE_OFFSET = mainNode["config"]["rendering"]["TextureInverseOffset"].as<float>();
 		EXPAND_TERRAIN = mainNode["config"]["rendering"]["ExpandTerrain"].as<bool>();
 
 		CHUNK_BORDER_COLOR.r = mainNode["config"]["rendering"]["ChunkBorderColor"]["r"].as<float>();
@@ -126,7 +126,7 @@ public:
 	unsigned int MAX_BUFFER_FACES = 0;
 	unsigned int TEXTURE_SIZE = 0;
 	unsigned int RENDER_DISTANCE = 0;
-	unsigned int TEXTURE_INVERSE_OFFSET = 0;
+	float TEXTURE_INVERSE_OFFSET = 0.f;
 	bool EXPAND_TERRAIN = false;
 
 	glm::vec4 CHUNK_BORDER_COLOR = { 0.f, 0.f, 0.f, 1.f };

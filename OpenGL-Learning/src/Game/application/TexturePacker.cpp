@@ -17,7 +17,7 @@ inline int TexturePacker::CoordinateToIndex(int x, int y, int width)
 	return y * width + x;
 }
 
-const bool TexturePacker::PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float accur)
+const bool TexturePacker::PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float shrinkInwards)
 {
 	// Get amount of images
 	unsigned int amountFiles = 0;
@@ -65,11 +65,12 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 				const std::string& filename = filenameEXT.substr(0, filenameEXT.find_last_of("."));
 
 				// Might be incorrect
-				float x0 = std::ceil(((float)offsetX / pngOutWidth) * accur) / accur;
-				float x1 = std::floor((((float)offsetX + width) / pngOutWidth) * accur) / accur;
+				float shrink = width * abs(shrinkInwards);
+				float x0 = ((float)offsetX + shrink) / pngOutWidth;
+				float x1 = ((float)offsetX + width - shrink) / pngOutWidth;
 
-				float y0 = std::ceil(((float)offsetY / pngOutWidth) * accur) / accur;
-				float y1 = std::floor((((float)offsetY + height) / pngOutWidth) * accur) / accur;
+				float y0 = ((float)offsetY + shrink) / pngOutWidth;
+				float y1 = ((float)offsetY + height - shrink) / pngOutWidth;
 
 				node[filename]["uvs"]["0"].push_back(x0);
 				node[filename]["uvs"]["0"].push_back(y1);
