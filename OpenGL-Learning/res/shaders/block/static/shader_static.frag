@@ -71,7 +71,7 @@ vec3 AffectDirectionallight(DirectionalLight DirLight, vec3 normal, vec3 viewDir
     vec3 reflectDirection = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 16);
 
-    vec3 diffuse = diffAngle * DirLight.diffuse * 0.5 + 0.5;
+    vec3 diffuse = diffAngle * DirLight.diffuse * 0.5;
     vec3 specular = spec * DirLight.specular;
     vec3 ambient = DirLight.ambient;
 

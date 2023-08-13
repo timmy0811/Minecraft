@@ -46,6 +46,7 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 	for (auto image : std::filesystem::directory_iterator(dirPath)) {
 		const std::string& path = image.path().string();
 		img = (char*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+		if (channels != 4) continue;
 
 		if (img) {
 			LOGC(("Loaded " + path + "."), LOG_COLOR::SPECIAL_A);

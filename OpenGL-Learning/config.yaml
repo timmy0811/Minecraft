@@ -11,9 +11,10 @@ config:
     FOV: 65.0
 
     MaxBufferFaces: 2000
-    TextureSize: 16
-    RenderDistance: 1
-    TextureInverseOffset: 0.005
+    TextureSize: 64
+    TexturePack: "block" # To change a TP: Pack Textures and restart Game
+    RenderDistance: 3
+    TextureInverseOffset: 0.0085
 
     ChunkBorderColor:
       r: 1
@@ -32,15 +33,15 @@ config:
     terrain:
       WorldWidth: 12
       ChunkSize: 16
-      ChunkHeight: 25
+      ChunkHeight: 35
       BlockSize: 1.0 # Better not touch
-      YStretch: 15.0
+      YStretch: 20.0
       XStretch: 0.45
       MinHeight: 2
       
       # Higher = smaller biomes
-      NoiseSizeMoist: 1.0
-      NoiseSizeTemp: 1.0
+      NoiseSizeMoist: 1.5
+      NoiseSizeTemp: 1.5
 
     environment:
       FogAffectDistance: 37.0 # 28

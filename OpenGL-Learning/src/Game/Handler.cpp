@@ -100,7 +100,7 @@ void Handler::DebugWindow()
 	{
 		keyPressedP = true;
 		std::cout << "Packing Textures..." << '\n';
-		Packer.PackTextures("res\\images\\block", "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", conf.TEXTURE_INVERSE_OFFSET);
+		Packer.PackTextures("res\\images\\" + conf.TEXTURE_PACK, "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", conf.TEXTURE_INVERSE_OFFSET);
 	}
 	else if (glfwGetKey(r_Window, GLFW_KEY_P) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
 

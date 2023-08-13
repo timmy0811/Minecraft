@@ -397,13 +397,13 @@ leaves_acacia:
 
   reflection: 0.02
 
-  texture_top: leaves_acacia
-  texture_bottom: leaves_acacia
+  texture_top: leaves_birch
+  texture_bottom: leaves_birch
 
-  texture_left: leaves_acacia
-  texture_right: leaves_acacia
-  texture_Back: leaves_acacia
-  texture_front: leaves_acacia
+  texture_left: leaves_birch
+  texture_right: leaves_birch
+  texture_Back: leaves_birch
+  texture_front: leaves_birch
 
 glass:
   type: 1

@@ -527,12 +527,46 @@ unsigned int Chunk::Generate()
 					unsigned long r = FastRandom512();
 					if (!biome.structures.empty()) {
 						for (int structure = 0; structure < biome.structures.size(); structure++) {
-							if (r % RAND_ACC > (biome.structureProb[structure] * RAND_ACC)) continue;
+							if (r % RAND_ACC > (biome.structureProb[structure] * RAND_ACC) || structurePlaced) continue;
 							for (int structBlocks = 0; structBlocks < (*m_StructureTemplate)[biome.structures[structure]].blocks.size(); structBlocks++) {
 								glm::vec4& blockStruct = (*m_StructureTemplate)[biome.structures[structure]].blocks[structBlocks];
-								if (x + blockStruct.x >= conf.CHUNK_SIZE || x + blockStruct.x < 0 ||
+								/*if (x + blockStruct.x >= conf.CHUNK_SIZE || x + blockStruct.x < 0 ||
 									i + blockStruct.y >= conf.CHUNK_HEIGHT || i + blockStruct.y < 0 ||
-									z + blockStruct.z >= conf.CHUNK_SIZE || z + blockStruct.z < 0) continue;
+									z + blockStruct.z >= conf.CHUNK_SIZE || z + blockStruct.z < 0) continue;*/
+
+								if (x + blockStruct.x >= conf.CHUNK_SIZE) {
+									if (m_ChunkNeighbors[1] && z + blockStruct.z < conf.CHUNK_SIZE && z + blockStruct.z >= 0) {
+										m_ChunkNeighbors[1]->SetBlock({ x + blockStruct.x - conf.CHUNK_SIZE,
+																		i + blockStruct.y,
+																		z + blockStruct.z }, blockStruct.a);
+									}
+									continue;
+								}
+								else if (x + blockStruct.x < 0) {
+									if (m_ChunkNeighbors[3] && z + blockStruct.z < conf.CHUNK_SIZE && z + blockStruct.z >= 0) {
+										m_ChunkNeighbors[3]->SetBlock({ x + blockStruct.x + conf.CHUNK_SIZE,
+																		i + blockStruct.y,
+																		z + blockStruct.z }, blockStruct.a);
+									}
+									continue;
+								}
+
+								if (z + blockStruct.z >= conf.CHUNK_SIZE) {
+									if (m_ChunkNeighbors[2] && x + blockStruct.x < conf.CHUNK_SIZE && x + blockStruct.x >= 0) {
+										m_ChunkNeighbors[2]->SetBlock({ x + blockStruct.x,
+																		i + blockStruct.y,
+																		z + blockStruct.z - conf.CHUNK_SIZE }, blockStruct.a);
+									}
+									continue;
+								}
+								else if (z + blockStruct.z < 0) {
+									if (m_ChunkNeighbors[0] && x + blockStruct.x < conf.CHUNK_SIZE && x + blockStruct.x >= 0) {
+										m_ChunkNeighbors[0]->SetBlock({ x + blockStruct.x,
+																	i + blockStruct.y,
+																	z + blockStruct.z + conf.CHUNK_SIZE }, blockStruct.a);
+									}
+									continue;
+								}
 
 								Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE + blockStruct.x,
 																					m_Position.y + i * conf.BLOCK_SIZE + blockStruct.y,
