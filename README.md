@@ -1,5 +1,5 @@
 # Minecraft... more like Mineclone?!
-Watch a full fletched Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
+Watch a full featured Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
 
 The Game features:
 * Dynamic Terrain Generation using multi stage Perlin Noise
@@ -12,13 +12,14 @@ The Game features:
 * Texture Packer for generation Sprite Sheets
 
 ### Last update
+* SHADOWS!!!
 * Biomes and structure scripting support
 * Better Terrainexpansion
 
 ### Upcoming
 * Improved graphics including ambient occlusion and deferred rendering
 
-![](https://github.com/timmy0811/Minecraft/blob/main/img1_1.png?raw=true)
+![](https://github.com/timmy0811/Minecraft/blob/main/img1_3.png?raw=true)
 
 ## Debugging Window
-![](https://github.com/timmy0811/Minecraft/blob/main/img2_1.png?raw=true)
+![](https://github.com/timmy0811/Minecraft/blob/main/img2_4.png?raw=true)
