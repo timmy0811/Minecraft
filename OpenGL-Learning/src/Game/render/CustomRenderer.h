@@ -227,7 +227,7 @@ namespace Minecraft::Helper {
 		explicit FontRenderer(const std::string& imgPath, const std::string& fontPath, int capacity, const bool unicode = false, unsigned int sheetId = 0)
 			:fontSheet(imgPath, true), shader(new Shader("res/shaders/font/shader_font_stylized.vert", "res/shaders/font/shader_font_stylized.frag"))
 		{
-			projection = glm::ortho(0.0f, (float)conf.WIN_WIDTH, 0.0f, (float)conf.WIN_HEIGHT, -1.0f, 1.0f);
+			projection = glm::ortho(0.0f, (float)conf.WIN_WIDTH_INIT, 0.0f, (float)conf.WIN_HEIGHT_INIT, -1.0f, 1.0f);
 			translation = glm::vec3(0.f, 0.f, 0.f);
 			view = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f));
 			this->unicode = unicode;

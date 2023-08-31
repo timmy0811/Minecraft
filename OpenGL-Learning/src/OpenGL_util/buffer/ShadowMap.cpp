@@ -51,7 +51,7 @@ bool ShadowMap::Init(const glm::ivec2& size)
 
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
-	return false;
+	return true;
 }
 
 void ShadowMap::BindAndClear()

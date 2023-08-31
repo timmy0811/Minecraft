@@ -26,7 +26,7 @@
 namespace Minecraft::Helper {
 	class SpriteRenderer {
 	public:
-		SpriteRenderer(int maxSprites, glm::uvec2 samplerSlotRange, const std::string& shaderVert, const std::string& shaderFrag);
+		SpriteRenderer(int maxSprites, glm::uvec2 samplerSlotRange, const int slotDefault, const std::string& shaderVert, const std::string& shaderFrag);
 		~SpriteRenderer();
 
 		void Draw() const;
@@ -47,6 +47,8 @@ namespace Minecraft::Helper {
 		void DeleteSprite(unsigned int id);
 		void DeleteAll();
 
+		void BindTextures();
+
 	private:
 		void RefreshVertBuffer();
 		void UpdateSamplerArray();
@@ -66,6 +68,7 @@ namespace Minecraft::Helper {
 
 		Shader* m_Shader;
 		size_t m_Triangles = 0;
+		int m_BindSlotStart = 0;
 
 		std::vector<Texture*> m_Samplers;
 		std::map<unsigned int, SpriteBlueprint*> m_Sprites;

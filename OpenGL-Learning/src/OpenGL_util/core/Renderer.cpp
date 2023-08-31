@@ -27,7 +27,7 @@ void GLContext::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader&
 	shader.Bind();
 	va.Bind();
 	ib.Bind();
-	GLCall(glDrawElements(mode, c, GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(mode, (int)c, GL_UNSIGNED_INT, nullptr));
 }
 
 void GLContext::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader, size_t count)
@@ -35,7 +35,7 @@ void GLContext::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader&
 	shader.Bind();
 	va.Bind();
 	ib.Bind();
-	GLCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(GL_TRIANGLES, (int)count, GL_UNSIGNED_INT, nullptr));
 }
 
 void GLContext::DrawArray(const VertexArray& va, const Shader& shader, size_t first, size_t count)
@@ -50,5 +50,5 @@ void GLContext::DrawInstancedLines(const VertexArray& va, const IndexBuffer& ib,
 	shader.Bind();
 	va.Bind();
 	ib.Bind();
-	GLCall(glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, nullptr, instances));
+	GLCall(glDrawElementsInstanced(GL_LINES, (int)count, GL_UNSIGNED_INT, nullptr, (int)instances));
 }

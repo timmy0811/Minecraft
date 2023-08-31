@@ -24,6 +24,7 @@ public:
 	void OnUpdate();
 	void OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage);
 	void OnRenderShadows(const Minecraft::Helper::ShaderPackage& shaderPackage);
+	void OnRenderGeometry(const Minecraft::Helper::ShaderPackage& shaderPackage);
 	void OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition);
 
 	// Buffers

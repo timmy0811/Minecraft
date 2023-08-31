@@ -22,12 +22,18 @@ inline void LOGC(const std::string& msg, LOG_COLOR color = LOG_COLOR::LOG) {
 namespace Minecraft::Global {
 	inline int TEXTURE_BINDING = 0;
 
-	inline int SAMPLER_SLOT_BLOCKS = 1;
-	inline int SAMPLER_SLOT_SKYBOX = 2;
-	inline int SAMPLER_SLOT_SPRITES = 3;
-	inline int SAMPLER_SLOT_FONTS = 9;
-	inline int SAMPLER_SLOT_SHADOWMAP = 12;
-	inline bool fontbound = false;
+	// TODO: Sort by drawcall
+	constexpr inline int SAMPLER_SLOT_BLOCKS = 1;
+	constexpr inline int SAMPLER_SLOT_SKYBOX = 2;
+	constexpr inline int SAMPLER_SLOT_SPRITES = 3;
+	constexpr inline int SAMPLER_SLOT_GBUF = 8;
+	constexpr inline int SAMPLER_SLOT_SSAO_UNFILTERED = 8;
+	constexpr inline int SAMPLER_SLOT_SSAO_FILTERED = 7;
+	constexpr inline int SAMPLER_SLOT_SSAONOISE = 12;
+	constexpr inline int SAMPLER_SLOT_FONTS = 13;
+	constexpr inline int SAMPLER_SLOT_SHADOWMAP = 15;
+
+	constexpr inline bool fontbound = false;
 
 	inline glm::ivec2 windowSize;
 	inline bool updateResize = true;
@@ -48,8 +54,8 @@ public:
 		LOGC("Parsing Config", LOG_COLOR::SPECIAL_A);
 		YAML::Node mainNode = YAML::LoadFile(m_Path);
 
-		WIN_WIDTH = mainNode["config"]["window"]["Width"].as<unsigned int>();
-		WIN_HEIGHT = mainNode["config"]["window"]["Height"].as<unsigned int>();
+		WIN_WIDTH_INIT = mainNode["config"]["window"]["Width"].as<unsigned int>();
+		WIN_HEIGHT_INIT = mainNode["config"]["window"]["Height"].as<unsigned int>();
 
 		FOV = mainNode["config"]["rendering"]["FOV"].as<float>();
 		MAX_BUFFER_FACES = mainNode["config"]["rendering"]["MaxBufferFaces"].as<unsigned int>();
@@ -119,8 +125,8 @@ public:
 	unsigned int GENERATION_THREADS = 0;
 
 	// Window
-	unsigned int WIN_WIDTH = 0;
-	unsigned int WIN_HEIGHT = 0;
+	unsigned int WIN_WIDTH_INIT = 0;
+	unsigned int WIN_HEIGHT_INIT = 0;
 
 	// Rendering
 	float FOV = 0.f;

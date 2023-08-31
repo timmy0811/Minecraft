@@ -16,7 +16,7 @@ void OnWindowResize() {
 bool pollResizeEvent(GLFWwindow* window) {
 	static bool init = true;
 	if (init) {
-		Minecraft::Global::windowSize = { conf.WIN_WIDTH, conf.WIN_HEIGHT };
+		Minecraft::Global::windowSize = { conf.WIN_WIDTH_INIT, conf.WIN_HEIGHT_INIT };
 		init = false;
 	}
 

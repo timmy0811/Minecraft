@@ -1,6 +1,9 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "OpenGL_util/core/Shader.h"
+#include "OpenGL_util/core/Renderer.h"
 
 namespace Minecraft::Helper {
 	// Structs
@@ -17,13 +20,62 @@ namespace Minecraft::Helper {
 	};
 
 	struct ShaderPackage {
-		Shader* shaderBlockStatic;
-		Shader* shaderWorldShadow;
+		Shader* shaderWorld;
+		Shader* shaderShadowGeneration;
+		Shader* shaderGBuffer;
 
 		~ShaderPackage() {
-			delete shaderBlockStatic;
-			delete shaderWorldShadow;
+			delete shaderWorld;
+			delete shaderShadowGeneration;
+			delete shaderGBuffer;
 		}
+	};
+
+	struct ScreenQuad {
+		ScreenQuad() 
+		{
+			m_MatProjectionVertex = glm::ortho(0.0f, (float)conf.WIN_WIDTH_INIT, 0.0f, (float)conf.WIN_HEIGHT_INIT, -1.0f, 1.0f);
+
+			unsigned int index[] = {
+				0, 1, 2, 2, 3, 0
+			};
+
+			m_IndexBuffer = std::make_unique<IndexBuffer>(index, 6);
+			m_VertexBuffer = std::make_unique<VertexBuffer>(4, sizeof(Minecraft::PositionVertex));
+
+			Minecraft::PositionVertex vert[] = {
+				glm::vec3(-1.f, -1.f, 0.f),
+				glm::vec3(1.f, -1.f, 0.f),
+				glm::vec3(1.f, 1.f, 0.f),
+				glm::vec3(-1.f, 1.f, 0.f)
+			};
+
+			m_VertexBuffer->Bind();
+			m_VertexBuffer->AddVertexData(vert, sizeof(Minecraft::PositionVertex) * 4);
+
+			m_VertexBufferLayout = std::make_unique<VertexBufferLayout>();
+			m_VertexBufferLayout->Push<float>(3);	// Position
+
+			m_VertexArray = std::make_unique<VertexArray>();
+			m_VertexArray->AddBuffer(*m_VertexBuffer, *m_VertexBufferLayout);
+		}
+
+		void Draw(const Shader& shader) {
+			GLContext::Draw(*m_VertexArray, *m_IndexBuffer, shader, GL_TRIANGLES, 6);
+		}
+
+		// Only used for custom dimensions
+		void SetProjectionMat(Shader& shader) {
+			shader.Bind();
+			shader.SetUniformMat4f("u_ScreenQuadProj", m_MatProjectionVertex);
+		}
+
+		std::unique_ptr<VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<IndexBuffer> m_IndexBuffer;
+		std::unique_ptr<VertexBufferLayout> m_VertexBufferLayout;
+		std::unique_ptr<VertexArray> m_VertexArray;
+
+		glm::mat4 m_MatProjectionVertex;
 	};
 
 	struct Sprite {

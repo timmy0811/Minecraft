@@ -27,7 +27,7 @@ Handler::Handler(GLFWwindow* window)
 void Handler::OnInit()
 {
 	// Bind Cubemap to static blocks
-	m_Skybox.Bind(Minecraft::Global::SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderBlockStatic));
+	m_Skybox.Bind(Minecraft::Global::SAMPLER_SLOT_SKYBOX, *(m_World.getShaderPackage().shaderWorld));
 
 	m_FontRenderer.PrintMultilineText("Version: 1.0 (Dev)", { 20.f, 20.f }, 4.f, { 0.8f, 0.8f, 0.8f, 0.3f });
 }
@@ -161,7 +161,9 @@ void Handler::OnRender()
 	// Draw Skybox at end
 	m_Skybox.OnRender();
 
+	glDepthFunc(GL_ALWAYS);
 	m_FontRenderer.Draw();
+	glDepthFunc(GL_LESS);
 }
 
 void Handler::OnRenderGUIDebug()

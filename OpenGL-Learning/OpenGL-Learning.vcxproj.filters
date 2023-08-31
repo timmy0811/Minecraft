@@ -108,6 +108,12 @@
     <ClCompile Include="src\OpenGL_util\buffer\ShadowMap.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpenGL_util\buffer\GBuffer.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL_util\advanced\SSAO.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -524,6 +530,14 @@
     <None Include="docs\structure.yaml" />
     <None Include="res\shaders\block\shadow\shader_shadowmap.vert" />
     <None Include="res\shaders\block\shadow\shader_shadowmap.frag" />
+    <None Include="res\shaders\block\gbuffer\shader_gbuffer_gen.frag" />
+    <None Include="res\shaders\block\gbuffer\shader_gbuffer_gen.vert" />
+    <None Include="res\shaders\block\ssao\shader_ssao.frag" />
+    <None Include="res\shaders\block\ssao\shader_ssao.vert" />
+    <None Include="res\shaders\block\static\shader_world.vert" />
+    <None Include="res\shaders\block\static\shader_world.frag" />
+    <None Include="res\shaders\block\ssao\shader_ssao_blur.vert" />
+    <None Include="res\shaders\block\ssao\shader_ssao_blur.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\OpenGL_util\core\VertexBuffer.h">
@@ -1508,6 +1522,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="src\OpenGL_util\buffer\ShadowMap.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL_util\buffer\GBuffer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL_util\advanced\SSAO.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

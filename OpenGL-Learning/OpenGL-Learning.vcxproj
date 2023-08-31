@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\OpenGL_util\buffer\GBuffer.cpp" />
     <ClCompile Include="src\OpenGL_util\buffer\ShadowMap.cpp" />
     <ClCompile Include="src\Game\render\SpriteRenderer.cpp" />
     <ClCompile Include="src\Game\gui\Inventory.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\vendor\stb_image\stb_image_write.cpp" />
     <ClCompile Include="src\vendor\yaml\yaml_wrapper.cpp" />
     <ClCompile Include="src\Game\application\TexturePacker.cpp" />
+    <ClCompile Include="src\OpenGL_util\advanced\SSAO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="docs\biome.yaml" />
@@ -180,6 +182,14 @@
     <None Include="docs\texture.yaml" />
     <None Include="res\shaders\block\shadow\shader_shadowmap.frag" />
     <None Include="res\shaders\block\shadow\shader_shadowmap.vert" />
+    <None Include="res\shaders\block\gbuffer\shader_gbuffer_gen.frag" />
+    <None Include="res\shaders\block\gbuffer\shader_gbuffer_gen.vert" />
+    <None Include="res\shaders\block\ssao\shader_ssao.vert" />
+    <None Include="res\shaders\block\ssao\shader_ssao.frag" />
+    <None Include="res\shaders\block\ssao\shader_ssao_blur.frag" />
+    <None Include="res\shaders\block\ssao\shader_ssao_blur.vert" />
+    <None Include="res\shaders\block\static\shader_world.frag" />
+    <None Include="res\shaders\block\static\shader_world.vert" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
@@ -318,6 +328,7 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\OpenGL_util\buffer\GBuffer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\OpenGL_util\buffer\ShadowMap.h" />
     <ClInclude Include="src\Game\render\SpriteRenderer.h" />
@@ -646,6 +657,7 @@
     <ClInclude Include="src\Game\application\TexturePacker.h" />
     <ClInclude Include="src\window.h" />
     <ClInclude Include="src\windowsWrapper.h" />
+    <ClInclude Include="src\OpenGL_util\advanced\SSAO.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Minecraft.rc" />

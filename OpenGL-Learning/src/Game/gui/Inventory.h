@@ -31,6 +31,8 @@ public:
 	void OnUpdate();
 	void OnInput(GLFWwindow* window);
 
+	void BindSprites();
+
 private:
 	static void OnScrollCallback(GLFWwindow* window, double xpos, double ypos);
 	void ToggleGUIState(Minecraft::GUI_STATE state, GLFWwindow* window);

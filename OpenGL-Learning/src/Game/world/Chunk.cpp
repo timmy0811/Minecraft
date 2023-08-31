@@ -370,12 +370,12 @@ Minecraft::Block_static Chunk::CreateBlockStatic(const glm::vec3& position, unsi
 	};
 
 	glm::vec3 normals[6] = {
-		{ 0, 0, 1 }, // F
-		{ 1, 0, 0 }, // R
-		{ -1, 0, 0 }, // L
-		{ 0, 0, -1 }, // B
-		{ 0, 1, 0 }, // U
-		{ 0, -1, 0 }  // D
+		{ 0.f, 0.f, 1.f }, // F
+		{ 1.f, 0.f, 0.f }, // R
+		{ -1.f, 0.f, 0.f }, // L
+		{ 0.f, 0.f, -1.f }, // B
+		{ 0.f, 1.f, 0.f }, // U
+		{ 0.f, -1.f, 0.f }  // D
 	};
 
 	// Setting Texture IDs
@@ -510,8 +510,8 @@ unsigned int Chunk::Generate()
 			unsigned int maxLayer1 = pillarHeight - 1;
 
 			// Build Pillar depending on Noise
-			int tempOnTile = std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Temp.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, (m_NoiseOffset_Temp.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, 1) * 5);
-			int moistOnTile = std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Moist.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, (m_NoiseOffset_Moist.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, 1) * 5);
+			int tempOnTile = (int)std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Temp.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, (m_NoiseOffset_Temp.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_TEMP, 1) * 5);
+			int moistOnTile = (int)std::floor(m_Noise->temp.octave2D_01((m_NoiseOffset_Moist.x + noiseStepOffset.x) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, (m_NoiseOffset_Moist.y + noiseStepOffset.y) * conf.TERRAIN_STRETCH_X * conf.NOISE_SIZE_MOIST, 1) * 5);
 			Minecraft::Biome biome = (*m_BiomeTemplate)[tempOnTile][moistOnTile];
 
 			unsigned int id = 0;
@@ -538,7 +538,7 @@ unsigned int Chunk::Generate()
 									if (m_ChunkNeighbors[1] && z + blockStruct.z < conf.CHUNK_SIZE && z + blockStruct.z >= 0) {
 										m_ChunkNeighbors[1]->SetBlock({ x + blockStruct.x - conf.CHUNK_SIZE,
 																		i + blockStruct.y,
-																		z + blockStruct.z }, blockStruct.a);
+																		z + blockStruct.z }, (unsigned int)blockStruct.a);
 									}
 									continue;
 								}
@@ -546,7 +546,7 @@ unsigned int Chunk::Generate()
 									if (m_ChunkNeighbors[3] && z + blockStruct.z < conf.CHUNK_SIZE && z + blockStruct.z >= 0) {
 										m_ChunkNeighbors[3]->SetBlock({ x + blockStruct.x + conf.CHUNK_SIZE,
 																		i + blockStruct.y,
-																		z + blockStruct.z }, blockStruct.a);
+																		z + blockStruct.z }, (unsigned int)blockStruct.a);
 									}
 									continue;
 								}
@@ -555,7 +555,7 @@ unsigned int Chunk::Generate()
 									if (m_ChunkNeighbors[2] && x + blockStruct.x < conf.CHUNK_SIZE && x + blockStruct.x >= 0) {
 										m_ChunkNeighbors[2]->SetBlock({ x + blockStruct.x,
 																		i + blockStruct.y,
-																		z + blockStruct.z - conf.CHUNK_SIZE }, blockStruct.a);
+																		z + blockStruct.z - conf.CHUNK_SIZE }, (unsigned int)blockStruct.a);
 									}
 									continue;
 								}
@@ -563,7 +563,7 @@ unsigned int Chunk::Generate()
 									if (m_ChunkNeighbors[0] && x + blockStruct.x < conf.CHUNK_SIZE && x + blockStruct.x >= 0) {
 										m_ChunkNeighbors[0]->SetBlock({ x + blockStruct.x,
 																	i + blockStruct.y,
-																	z + blockStruct.z + conf.CHUNK_SIZE }, blockStruct.a);
+																	z + blockStruct.z + conf.CHUNK_SIZE }, (unsigned int)blockStruct.a);
 									}
 									continue;
 								}
@@ -571,7 +571,7 @@ unsigned int Chunk::Generate()
 								Minecraft::Block_static block = CreateBlockStatic({ m_Position.x + x * conf.BLOCK_SIZE + blockStruct.x,
 																					m_Position.y + i * conf.BLOCK_SIZE + blockStruct.y,
 																					m_Position.z + z * conf.BLOCK_SIZE + blockStruct.z },
-									blockStruct.a);
+									(unsigned int)blockStruct.a);
 
 								PushBlockToCollection(&block, { x + blockStruct.x, i + blockStruct.y, z + blockStruct.z });
 								structurePlaced = true;
@@ -600,15 +600,21 @@ void Chunk::OnRender(const Minecraft::Helper::ShaderPackage& shaderPackage)
 {
 	// Draw default static blocks
 	m_DrawCalls++;
-	shaderPackage.shaderBlockStatic->Bind();
-	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 0.f);
-	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, (m_LoadBufferPtr / 4) * 6);
+	shaderPackage.shaderWorld->Bind();
+	shaderPackage.shaderWorld->SetUniform1f("u_Refraction", 0.f);
+	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderWorld, (m_LoadBufferPtr / 4) * 6);
 }
 
 void Chunk::OnRenderShadows(const Minecraft::Helper::ShaderPackage& shaderPackage)
 {
 	m_DrawCalls++;
-	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderWorldShadow, (m_LoadBufferPtr / 4) * 6);
+	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderShadowGeneration, (m_LoadBufferPtr / 4) * 6);
+}
+
+void Chunk::OnRenderGeometry(const Minecraft::Helper::ShaderPackage& shaderPackage)
+{
+	m_DrawCalls++;
+	GLContext::Draw(*m_VAstatic, *m_IBstatic, *shaderPackage.shaderGBuffer, (m_LoadBufferPtr / 4) * 6);
 }
 
 void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderPackage, const glm::vec3& cameraPosition)
@@ -619,9 +625,9 @@ void Chunk::OnRenderTransparents(const Minecraft::Helper::ShaderPackage& shaderP
 	LoadVertexBufferFromMap();
 
 	m_DrawCalls++;
-	shaderPackage.shaderBlockStatic->Bind();
-	shaderPackage.shaderBlockStatic->SetUniform1f("u_Refraction", 1.f);
-	GLContext::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderBlockStatic, m_TransparentStaticsOrdered.size() * 6);
+	shaderPackage.shaderWorld->Bind();
+	shaderPackage.shaderWorld->SetUniform1f("u_Refraction", 1.f);
+	GLContext::Draw(*m_VAtransparentStatic, *m_IBstatic, *shaderPackage.shaderWorld, m_TransparentStaticsOrdered.size() * 6);
 }
 
 //inline void Chunk::setBiomeTemplate(std::vector<std::vector<Minecraft::Biome>>* temp)

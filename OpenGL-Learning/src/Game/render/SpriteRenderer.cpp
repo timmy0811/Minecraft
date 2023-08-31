@@ -1,8 +1,8 @@
 #include "SpriteRenderer.h"
 
-Minecraft::Helper::SpriteRenderer::SpriteRenderer(int maxSprites, glm::uvec2 samplerSlotRange, const std::string& shaderVert, const std::string& shaderFrag)
-	: m_Shader(new Shader(shaderVert, shaderFrag)), m_SamplerRangeLow(samplerSlotRange.x), m_SamplerRangeHigh(samplerSlotRange.y) {
-	m_MatProjection = glm::ortho(0.0f, (float)conf.WIN_WIDTH, 0.0f, (float)conf.WIN_HEIGHT, -1.0f, 1.0f);
+Minecraft::Helper::SpriteRenderer::SpriteRenderer(int maxSprites, glm::uvec2 samplerSlotRange, const int slotDefault, const std::string& shaderVert, const std::string& shaderFrag)
+	: m_Shader(new Shader(shaderVert, shaderFrag)), m_SamplerRangeLow(samplerSlotRange.x), m_SamplerRangeHigh(samplerSlotRange.y), m_BindSlotStart(slotDefault) {
+	m_MatProjection = glm::ortho(0.0f, (float)conf.WIN_WIDTH_INIT, 0.0f, (float)conf.WIN_HEIGHT_INIT, -1.0f, 1.0f);
 	m_MatTranslation = glm::vec3(0.f, 0.f, 0.f);
 	m_MatView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f));
 
@@ -48,7 +48,7 @@ Minecraft::Helper::SpriteRenderer::~SpriteRenderer()
 
 void Minecraft::Helper::SpriteRenderer::Draw() const
 {
-	GLContext::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, m_SpritesOnScreen.size() * 6);
+	GLContext::Draw(*m_VA, *m_IB, *m_Shader, GL_TRIANGLES, (int)m_SpritesOnScreen.size() * 6);
 	m_Shader->Unbind();
 }
 
@@ -198,7 +198,7 @@ void Minecraft::Helper::SpriteRenderer::SetSpritePosition(const glm::vec2& posit
 {
 	SpriteBlueprint* bp = m_Sprites[id];
 
-	int h = abs(bp->vertices[0].Position.y - bp->vertices[3].Position.y), w = abs(bp->vertices[0].Position.x - bp->vertices[1].Position.x);
+	float h = abs(bp->vertices[0].Position.y - bp->vertices[3].Position.y), w = abs(bp->vertices[0].Position.x - bp->vertices[1].Position.x);
 
 	bp->vertices[0].Position = position;
 	bp->vertices[1].Position = { position.x + w, position.y + 0.f };
@@ -222,6 +222,15 @@ void Minecraft::Helper::SpriteRenderer::DeleteAll()
 		delete it->second;
 	}
 	m_Sprites.clear();
+}
+
+void Minecraft::Helper::SpriteRenderer::BindTextures()
+{
+	for (int i = 0; i < m_Samplers.size(); i++) {
+		m_Samplers[i]->Bind(m_BindSlotStart + i);
+	}
+
+	UpdateSamplerArray();
 }
 
 void Minecraft::Helper::SpriteRenderer::RefreshVertBuffer()
@@ -250,7 +259,7 @@ void Minecraft::Helper::SpriteRenderer::UpdateSamplerArray()
 				LOGC("Error: Trying to bind a texture outside of defined sampler range!", LOG_COLOR::FAULT);
 				m_SamplerPtr = 0;
 			}
-			sampler[i] = m_Samplers[i]->Bind(Minecraft::Global::SAMPLER_SLOT_SPRITES + m_SamplerRangeLow + m_SamplerPtr);
+			sampler[i] = m_Samplers[i]->Bind((unsigned int)m_BindSlotStart + m_SamplerRangeLow + (unsigned int)m_SamplerPtr);
 		}
 	}
 

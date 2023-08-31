@@ -8,6 +8,7 @@
 
 // Additional Graphics
 #include "OpenGL_util/buffer/ShadowMap.h"
+#include "OpenGL_util/advanced/SSAO.h"
 
 // Game
 #include "Game/render/SpriteRenderer.h"
@@ -58,6 +59,8 @@ public:
 	// Render
 	void RenderShadowPass();
 	void RenderLightPass();
+	void RenderSSAOPass();
+	void RenderGeometryPass();
 
 	void RenderGUI();
 
@@ -126,12 +129,20 @@ private:
 	glm::mat4 m_MatrixMLP;
 
 	ShadowMap m_ShadowMappingBuffer;
+	SSAO m_SSAO;
+	Minecraft::Helper::ScreenQuad m_ScreenQuad;
+	Framebuffer m_GBuffer;
+	Framebuffer m_SSAOBuffer;
+	Framebuffer m_SSAOBlurBuffer;
+
+	Shader m_ShaderSSAO;
+	Shader m_ShaderSSAOBlur;
 
 	// Objects
 	Inventory m_Inventory;
 	CharacterController m_CharacterController;
 
-	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH* conf.WORLD_WIDTH };
+	std::vector<Chunk*> m_Chunks{ conf.WORLD_WIDTH * conf.WORLD_WIDTH };
 	std::deque<Chunk*> m_ChunksQueuedGenerating, m_ChunksQueuedSerialize, m_ChunksQueuedDeserialize, m_ChunksQueuedCulling, m_ChunksQueuedBufferLoading;
 
 	std::map<unsigned int, Minecraft::Block_format> m_BlockFormats;

@@ -11,22 +11,58 @@ World::World(GLFWwindow* window)
 	m_CharacterController({ 0.f, 30.f, 0.f }),
 	// Graphics
 	r_Window(window),
-	m_ShaderPackage{ new Shader("res/shaders/block/static/shader_static.vert", "res/shaders/block/static/shader_static.frag"),
-					 new Shader("res/shaders/block/shadow/shader_shadowmap.vert", "res/shaders/block/shadow/shader_shadowmap.frag") },
+
+	m_GBuffer({ conf.WIN_WIDTH_INIT, conf.WIN_HEIGHT_INIT }, true, DepthBufferType::WRITE_READ),
+	m_SSAOBuffer({ conf.WIN_WIDTH_INIT, conf.WIN_HEIGHT_INIT }, false),
+	m_SSAOBlurBuffer({ conf.WIN_WIDTH_INIT, conf.WIN_HEIGHT_INIT }, false),
+
+	m_ShaderPackage{ new Shader("res/shaders/block/static/shader_world.vert", "res/shaders/block/static/shader_world.frag"),
+					 new Shader("res/shaders/block/shadow/shader_shadowmap.vert", "res/shaders/block/shadow/shader_shadowmap.frag"),
+					 new Shader("res/shaders/block/gbuffer/shader_gbuffer_gen.vert", "res/shaders/block/gbuffer/shader_gbuffer_gen.frag") },
+	m_ShaderSSAO("res/shaders/block/ssao/shader_ssao.vert", "res/shaders/block/ssao/shader_ssao.frag"),
+	m_ShaderSSAOBlur("res/shaders/block/ssao/shader_ssao_blur.vert", "res/shaders/block/ssao/shader_ssao_blur.frag"),
+
 	m_ChunkBorderRenderer(24, "res/shaders/universal/shader_single_color_instanced.vert", "res/shaders/universal/shader_single_color.frag"),
 	m_BlockSelectionRenderer("res/shaders/universal/shader_single_color.vert", "res/shaders/universal/shader_single_color.frag"),
-	m_HUDRenderer(1, { 3, 3 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
+	m_HUDRenderer(1, { 3, 3 }, Minecraft::Global::SAMPLER_SLOT_SPRITES, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
 	m_ShadowMappingBuffer({ conf.SHADOW_MAP_SIZE, conf.SHADOW_MAP_SIZE })
 {
-	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
-	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH / (float)conf.WIN_HEIGHT, 0.1f, 300.f);
+	// GBuffer
+	m_GBuffer.Bind();
+	m_GBuffer.PushColorAttribute(GL_RGBA16F, GL_RGBA, GL_FLOAT); // Position
+	m_GBuffer.PushColorAttribute(GL_RGBA16F, GL_RGBA, GL_FLOAT); // UV
+	m_GBuffer.PushColorAttribute(GL_RGBA16F, GL_RGBA, GL_FLOAT); // Normal
+	m_GBuffer.PushColorAttribute(GL_RGBA16F, GL_RGBA, GL_FLOAT); // TexIndex, Reflectiveness
 
-	m_ShaderPackage.shaderBlockStatic->Bind();
-	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
+	m_SSAOBuffer.Bind();
+	m_SSAOBuffer.PushColorAttribute(GL_RED, GL_RED, GL_FLOAT);
+
+	m_SSAOBlurBuffer.Bind();
+	m_SSAOBlurBuffer.PushColorAttribute(GL_RED, GL_RED, GL_FLOAT);
+
+	// m_GBuffer.Validate();
+	m_GBuffer.Unbind();
+	m_ScreenQuad.SetProjectionMat(*m_ShaderPackage.shaderWorld);
+
+	// Shader
+	m_MatrixView = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.5f));
+	m_MatrixProjection = glm::perspective(glm::radians(conf.FOV), (float)conf.WIN_WIDTH_INIT / (float)conf.WIN_HEIGHT_INIT, 0.1f, 300.f);
+
+	m_SSAO.GenerateSampleKernel();
+	m_SSAO.GenerateSSAONoiseMap();
+
+	m_ShaderSSAO.Bind();
+	m_ShaderSSAO.SetUniform3fv("u_SSAOKernel", 64, m_SSAO.getKernelAllocator());
+
+	m_ShaderPackage.shaderGBuffer->Bind();
+	m_ShaderPackage.shaderGBuffer->SetUniformMat4f("u_Projection", m_MatrixProjection);
+
+	m_ShaderPackage.shaderWorld->Bind();
+	m_ShaderPackage.shaderWorld->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	// Experimental Texture Setup
 	m_TextureMap.Bind(Minecraft::Global::SAMPLER_SLOT_BLOCKS);
-	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
+	m_ShaderPackage.shaderWorld->SetUniform1i("u_TextureMap", m_TextureMap.GetBoundPort());
 
 	for (int i = 0; i < 5; i++) {
 		m_BiomeTemplate.push_back(std::vector<Minecraft::Biome>(5));
@@ -57,7 +93,7 @@ World::World(GLFWwindow* window)
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	SetupChunkBorders();
-	m_HUDRenderer.PushSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH / 2.f - 8.f, conf.WIN_HEIGHT / 2.f - 8.f }, { 16, 16 });
+	m_HUDRenderer.PushSprite("res/images/hud/crossair.png", { conf.WIN_WIDTH_INIT / 2.f - 8.f, conf.WIN_HEIGHT_INIT / 2.f - 8.f }, { 16, 16 });
 
 	m_CharacterController.setInventoryReference(&m_Inventory);
 }
@@ -89,6 +125,8 @@ void World::OnRender()
 {
 	// m_TextureMap.Bind(Minecraft::Global::SAMPLER_SLOT_BLOCKS); // Why?
 
+	RenderGeometryPass();
+	RenderSSAOPass();
 	RenderShadowPass();
 	RenderLightPass();
 
@@ -130,9 +168,14 @@ void World::OnUpdate(double deltaTime)
 	//sinVal += 0.01;
 	//m_DirLight.direction = glm::normalize(glm::vec3(sin(sinVal) * 2.f, -3, cos(sinVal) * 2.f));
 
-	m_ShaderPackage.shaderBlockStatic->Bind();
-	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_View", m_MatrixView);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_ViewPosition", position.x, position.y, position.z);
+	m_ShaderPackage.shaderWorld->Bind();
+	m_ShaderPackage.shaderWorld->SetUniformMat4f("u_InvWorldView", glm::inverse(m_MatrixView));
+	m_ShaderPackage.shaderWorld->SetUniform3f("u_ViewPosition", position.x, position.y, position.z);
+	m_ShaderPackage.shaderWorld->SetUniform2f("u_Resolution", (float)Minecraft::Global::windowSize.x, (float)Minecraft::Global::windowSize.y);
+	m_ShaderPackage.shaderWorld->SetUniform1i("gBuf_Position", Minecraft::Global::SAMPLER_SLOT_GBUF);
+	m_ShaderPackage.shaderWorld->SetUniform1i("gBuf_UV", Minecraft::Global::SAMPLER_SLOT_GBUF + 1);
+	m_ShaderPackage.shaderWorld->SetUniform1i("gBuf_Normal", Minecraft::Global::SAMPLER_SLOT_GBUF + 2);
+	m_ShaderPackage.shaderWorld->SetUniform1i("gBuf_Misc", Minecraft::Global::SAMPLER_SLOT_GBUF + 3);
 
 	glm::mat4 shadowProjection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 1.0f, 80.f);
 	glm::vec3 shadowPosition;
@@ -146,10 +189,11 @@ void World::OnUpdate(double deltaTime)
 	glm::mat4 shadowView = glm::lookAt(shadowPosition, shadowPosition + m_DirLight.direction, glm::vec3(0.f, 1.f, 0.f));
 	m_MatrixMLP = shadowProjection * shadowView;
 
-	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_MLP", m_MatrixMLP);
+	m_ShaderPackage.shaderWorld->SetUniformMat4f("u_MLP", m_MatrixMLP);
 
-	m_ShadowMappingBuffer.BindDepthTexture(12);
-	m_ShaderPackage.shaderBlockStatic->SetUniform1i("u_ShadowMap", 12);
+	m_ShaderPackage.shaderGBuffer->Bind();
+	m_ShaderPackage.shaderGBuffer->SetUniformMat4f("u_View", m_MatrixView);
+	m_ShaderPackage.shaderGBuffer->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
@@ -157,8 +201,22 @@ void World::OnUpdate(double deltaTime)
 	m_BlockSelectionRenderer.shader->Bind();
 	m_BlockSelectionRenderer.shader->SetUniformMat4f("u_View", m_MatrixView);
 
-	m_ShaderPackage.shaderWorldShadow->Bind();
-	m_ShaderPackage.shaderWorldShadow->SetUniformMat4f("u_MLP", m_MatrixMLP);
+	m_ShaderPackage.shaderShadowGeneration->Bind();
+	m_ShaderPackage.shaderShadowGeneration->SetUniformMat4f("u_MLP", m_MatrixMLP);
+
+	m_ShaderSSAO.Bind();
+	m_ShaderSSAO.SetUniformMat4f("u_Projection", m_MatrixProjection);
+	m_ShaderSSAO.SetUniform2f("u_Resolution", (float)Minecraft::Global::windowSize.x, (float)Minecraft::Global::windowSize.y);
+	m_ShaderSSAO.SetUniform1i("gBuf_Position", Minecraft::Global::SAMPLER_SLOT_GBUF);
+	m_ShaderSSAO.SetUniform1i("gBuf_UV", Minecraft::Global::SAMPLER_SLOT_GBUF + 1);
+	m_ShaderSSAO.SetUniform1i("gBuf_Normal", Minecraft::Global::SAMPLER_SLOT_GBUF + 2);
+	m_ShaderSSAO.SetUniform1i("gBuf_Misc", Minecraft::Global::SAMPLER_SLOT_GBUF + 3);
+
+	m_ShaderSSAO.SetUniform1i("u_Noise", Minecraft::Global::SAMPLER_SLOT_SSAONOISE);
+
+	m_ShaderSSAOBlur.Bind();
+	m_ShaderSSAOBlur.SetUniform2f("u_Resolution", (float)Minecraft::Global::windowSize.x, (float)Minecraft::Global::windowSize.y);
+	m_ShaderSSAOBlur.SetUniform1i("u_SSAO", Minecraft::Global::SAMPLER_SLOT_GBUF);
 }
 
 void World::OnWindowResize()
@@ -173,8 +231,6 @@ void World::RenderShadowPass()
 	glCullFace(GL_NONE);
 	m_ShadowMappingBuffer.BindAndClear();
 
-	// Render Buffers affecting shadows
-	// Render opac objects
 	for (Chunk* chunk : m_Chunks) {
 		if (!chunk || !chunk->isLoaded()) continue;
 		chunk->OnRenderShadows(m_ShaderPackage);
@@ -188,39 +244,84 @@ void World::RenderLightPass()
 	GLCall(glViewport(0, 0, Minecraft::Global::windowSize.x, Minecraft::Global::windowSize.y));
 	GLContext::Clear();
 
+	m_ShadowMappingBuffer.BindDepthTexture(Minecraft::Global::SAMPLER_SLOT_SHADOWMAP);
+	size_t gBufferSize = m_GBuffer.AttachementCount();
+
+	m_ShaderPackage.shaderWorld->Bind();
+	m_ShaderPackage.shaderWorld->SetUniform1i("u_ShadowMap", Minecraft::Global::SAMPLER_SLOT_SHADOWMAP);
+	m_ShaderPackage.shaderWorld->SetUniform1i("gBuf_Depth", Minecraft::Global::SAMPLER_SLOT_GBUF + (int)gBufferSize);
+	m_ShaderPackage.shaderWorld->SetUniform1i("u_SSAOSampler", Minecraft::Global::SAMPLER_SLOT_SSAO_FILTERED);
+
+	m_GBuffer.BindTextures(Minecraft::Global::SAMPLER_SLOT_GBUF);
+	m_SSAOBlurBuffer.BindTexture(0, Minecraft::Global::SAMPLER_SLOT_SSAO_FILTERED);
+
+	m_GBuffer.BindDepthTexture(Minecraft::Global::SAMPLER_SLOT_GBUF + (unsigned int)gBufferSize);
+	GLContext::BindOrigFramebuffer();
+
 	{
-		for (Chunk* chunk : m_Chunks) {
-			if (!chunk || !chunk->isLoaded()) continue;
-			chunk->OnRender(m_ShaderPackage);
-		}
+		// Render GBuffer to ScreenQuad
+		m_ScreenQuad.Draw(*m_ShaderPackage.shaderWorld);
 
-		// Render transparent objects
-		for (Chunk* chunk : m_Chunks) {
-			if (!chunk) continue;
-			chunk->OnRenderTransparents(m_ShaderPackage, m_CharacterController.getPosition());
-		}
-
+		glDepthFunc(GL_ALWAYS);
+		// TODO: Adjust Depth Test if needed (Use GBuffer Depth, not from ScreenQuad)
 		if (m_DrawChunkBorder) {
 			m_ChunkBorderRenderer.DrawInstanced(24, m_CountChunks);
 			m_DrawCalls++;
 		}
 
+		//// Render transparent objects ontop of GBuffer
+		//for (Chunk* chunk : m_Chunks) {
+		//	if (!chunk) continue;
+		//	chunk->OnRenderTransparents(m_ShaderPackage, m_CharacterController.getPosition());
+		//}
+
 		m_BlockSelectionRenderer.Draw();
+		glDepthFunc(GL_LESS);
 	}
+}
+
+void World::RenderSSAOPass()
+{
+	m_SSAOBuffer.BindAndClear();
+	m_SSAO.BindNoiseTex(Minecraft::Global::SAMPLER_SLOT_SSAONOISE);
+	m_ScreenQuad.Draw(m_ShaderSSAO);
+
+	m_SSAOBuffer.BindTexture(0, Minecraft::Global::SAMPLER_SLOT_SSAO_UNFILTERED);
+
+	m_SSAOBlurBuffer.BindAndClear();
+	m_ScreenQuad.Draw(m_ShaderSSAOBlur);
+	m_SSAOBlurBuffer.Unbind();
+}
+
+void World::RenderGeometryPass()
+{
+	m_GBuffer.BindAndClear();
+
+	for (Chunk* chunk : m_Chunks) {
+		if (!chunk || !chunk->isLoaded()) continue;
+		chunk->OnRenderGeometry(m_ShaderPackage);
+	}
+
+	m_GBuffer.Unbind();
 }
 
 void World::RenderGUI()
 {
+	glDepthFunc(GL_ALWAYS);
+	m_Inventory.BindSprites();
 	m_Inventory.OnRender();
+
+	m_HUDRenderer.BindTextures();
 	m_HUDRenderer.Draw();
+	glDepthFunc(GL_LESS);
 }
 
 void World::UpdateProjectionMatrix(float FOV, float nearD, float farD)
 {
 	m_MatrixProjection = glm::perspective(glm::radians(FOV), (float)Minecraft::Global::windowSize.x / (float)Minecraft::Global::windowSize.y, nearD, farD);
 
-	m_ShaderPackage.shaderBlockStatic->Bind();
-	m_ShaderPackage.shaderBlockStatic->SetUniformMat4f("u_Projection", m_MatrixProjection);
+	m_ShaderPackage.shaderWorld->Bind();
+	m_ShaderPackage.shaderWorld->SetUniformMat4f("u_Projection", m_MatrixProjection);
 
 	m_ChunkBorderRenderer.shader->Bind();
 	m_ChunkBorderRenderer.shader->SetUniformMat4f("u_Projection", m_MatrixProjection);
@@ -646,10 +747,10 @@ void World::ParseStructures(const std::string& path)
 
 		for (int i = 0; i < structureEntry.second["blocks"].size(); i++) {
 			glm::vec4 block{};
-			block.x = structureEntry.second["blocks"][i][0].as<int>();
-			block.y = structureEntry.second["blocks"][i][1].as<int>();
-			block.z = structureEntry.second["blocks"][i][2].as<int>();
-			block.a = structureEntry.second["blocks"][i][3].as<int>();
+			block.x = (float)structureEntry.second["blocks"][i][0].as<int>();
+			block.y = (float)structureEntry.second["blocks"][i][1].as<int>();
+			block.z = (float)structureEntry.second["blocks"][i][2].as<int>();
+			block.a = (float)structureEntry.second["blocks"][i][3].as<int>();
 			structure.blocks.push_back(block);
 		}
 
@@ -702,15 +803,15 @@ void World::SetupLight()
 	m_DirLight.ambient = { 0.65f, 0.65f, 0.65f };
 	m_DirLight.diffuse = { 1.0f, 1.0f, 1.0f };
 	m_DirLight.specular = { 0.2f, 0.20f, 0.20f };
-	m_DirLight.direction = { 0.5f, -1.f, 0.5f };
+	m_DirLight.direction = { 0.5f, -1.f, 0.7f };
 
-	m_ShaderPackage.shaderBlockStatic->Bind();
-	m_ShaderPackage.shaderBlockStatic->SetUniformDirectionalLight("u_DirLight", m_DirLight);
+	m_ShaderPackage.shaderWorld->Bind();
+	m_ShaderPackage.shaderWorld->SetUniformDirectionalLight("u_DirLight", m_DirLight);
 
 	// Fog
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogAffectDistance", conf.FOG_AFFECT_DISTANCE);
-	m_ShaderPackage.shaderBlockStatic->SetUniform1f("u_FogDensity", conf.FOG_DENSITY);
-	m_ShaderPackage.shaderBlockStatic->SetUniform3f("u_SkyBoxColor", conf.FOG_COLOR.r / 255.f, conf.FOG_COLOR.g / 255.f, conf.FOG_COLOR.b / 255.f);
+	m_ShaderPackage.shaderWorld->SetUniform1f("u_FogAffectDistance", conf.FOG_AFFECT_DISTANCE);
+	m_ShaderPackage.shaderWorld->SetUniform1f("u_FogDensity", conf.FOG_DENSITY);
+	m_ShaderPackage.shaderWorld->SetUniform3f("u_SkyBoxColor", conf.FOG_COLOR.r / 255.f, conf.FOG_COLOR.g / 255.f, conf.FOG_COLOR.b / 255.f);
 }
 
 void World::UpdateLight()

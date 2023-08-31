@@ -24,9 +24,9 @@ namespace Minecraft {
 	};
 
 	struct Block_format {
-		BLOCKTYPE type;
+		BLOCKTYPE type = BLOCKTYPE::NONE;
 		std::string name;
-		unsigned int id;
+		unsigned int id = 0;
 
 		float reflection = 0.f;
 
@@ -45,7 +45,7 @@ namespace Minecraft {
 
 	struct Biome {
 		std::string name;
-		unsigned int id;
+		unsigned int id = 0;
 		std::vector<unsigned int> structures;
 		std::vector<float> structureProb;
 		std::vector<unsigned int> blocks;
@@ -53,7 +53,7 @@ namespace Minecraft {
 
 	struct Structure {
 		std::string name;
-		unsigned int id;
+		unsigned int id = 0;
 		std::vector<glm::vec4> blocks;
 	};
 

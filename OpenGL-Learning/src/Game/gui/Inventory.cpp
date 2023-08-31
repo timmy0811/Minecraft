@@ -3,7 +3,7 @@
 #define highlightscale  1.045
 
 Inventory::Inventory()
-	:m_GUIRenderer(32, { 4, 5 }, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
+	:m_GUIRenderer(32, { 4, 5 }, Minecraft::Global::SAMPLER_SLOT_SPRITES, "res/shaders/sprite/shader_sprite.vert", "res/shaders/sprite/shader_sprite.frag"),
 	m_FontRendererHUD("res/images/text/ascii_chat_1.png", "docs/font.yaml", 128, true, 1)
 {
 	PushSprites();
@@ -70,27 +70,27 @@ void Inventory::PushSprites()
 {
 	Minecraft::Helper::Vec2_4 v;
 
-	// Hotbar_Highlight
-	v.u0 = { 0.001894, 0.017937 };	// 3
-	v.u1 = { 0.043561, 0.017937 };	// 2
-	v.u2 = { 0.043561, 0.071749 };	// 1
-	v.u3 = { 0.001894, 0.071749 };	// 0
-
-	float w = conf.WIN_WIDTH * 0.45f * conf.GUI_SCALE;
-	float h = w / 8.691f;
-
-	float scaleOffset = (h * highlightscale - h) / 2.f;
-	m_Sprite_Hotbar_Highlight = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH / 2.f - w / 2.f - scaleOffset , -scaleOffset }, { h * highlightscale , h * highlightscale }, v, true);
-	m_Sprite_Hotbar_Highlight.Id = m_GUIRenderer.PushSprite(m_Sprite_Hotbar_Highlight);
-
 	// Hotbar
 	v.u0 = { 0.f, 0.071749 };		// left lower
 	v.u1 = { 0.344697, 0.071749 };	// right lower
 	v.u2 = { 0.344697, 0.121076 };	// right upper
 	v.u3 = { 0.f, 0.121076 };		// left upper
 
-	m_Sprite_Hotbar = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH / 2.f - w / 2.f, 0 }, { w , h }, v, true);
+	float w = conf.WIN_WIDTH_INIT * 0.45f * conf.GUI_SCALE;
+	float h = w / 8.691f;
+
+	m_Sprite_Hotbar = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH_INIT / 2.f - w / 2.f, 0 }, { w , h }, v, true);
 	m_Sprite_Hotbar.Id = m_GUIRenderer.PushSprite(m_Sprite_Hotbar);
+
+	// Hotbar_Highlight
+	v.u0 = { 0.001894, 0.017937 };	// 3
+	v.u1 = { 0.043561, 0.017937 };	// 2
+	v.u2 = { 0.043561, 0.071749 };	// 1
+	v.u3 = { 0.001894, 0.071749 };	// 0
+
+	float scaleOffset = (float)(h * highlightscale - h) / 2.f;
+	m_Sprite_Hotbar_Highlight = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH_INIT / 2.f - w / 2.f - scaleOffset , -scaleOffset }, { h * highlightscale , h * highlightscale }, v, true);
+	m_Sprite_Hotbar_Highlight.Id = m_GUIRenderer.PushSprite(m_Sprite_Hotbar_Highlight);
 
 	// Inventory
 	v.u0 = { 0.f, 0.627803f };		// left lower
@@ -98,10 +98,10 @@ void Inventory::PushSprites()
 	v.u2 = { 0.33333f, 1.f };	// right upper
 	v.u3 = { 0.f, 1.f };		// left upper
 
-	h = conf.WIN_HEIGHT * 0.75f * conf.GUI_SCALE;
+	h = conf.WIN_HEIGHT_INIT * 0.75f * conf.GUI_SCALE;
 	w = h;
 
-	m_Sprite_Inventory = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH / 2.f - w / 2.f, (conf.WIN_HEIGHT - h) / 2.f }, { w , h }, v, true);
+	m_Sprite_Inventory = Minecraft::Helper::Sprite("res/images/hud/containers.png", { conf.WIN_WIDTH_INIT / 2.f - w / 2.f, (conf.WIN_HEIGHT_INIT - h) / 2.f }, { w , h }, v, true);
 	m_Sprite_Inventory.Id = m_GUIRenderer.PushSprite(m_Sprite_Inventory);
 	m_GUIRenderer.PopSprite(m_Sprite_Inventory.Id);
 }
@@ -117,8 +117,8 @@ void Inventory::OnUpdate()
 	std::string item = "Cobblestone";
 	static bool init = true;
 	if (init) {
-		float h = (conf.WIN_WIDTH * 0.45f * conf.GUI_SCALE) / 8.691f + 4.f;
-		m_FontRendererHUD.PrintMultilineText(item.c_str(), { conf.WIN_WIDTH / 2.f - conf.WIN_WIDTH * 0.45f * conf.GUI_SCALE / 2.f, h }, 3.f, { 0.3f, 0.3f, 0.3f, 0.3f });
+		float h = (conf.WIN_WIDTH_INIT * 0.45f * conf.GUI_SCALE) / 8.691f + 4.f;
+		m_FontRendererHUD.PrintMultilineText(item.c_str(), { conf.WIN_WIDTH_INIT / 2.f - conf.WIN_WIDTH_INIT * 0.45f * conf.GUI_SCALE / 2.f, h }, 3.f, { 0.3f, 0.3f, 0.3f, 0.3f });
 		init = false;
 	}
 }
@@ -128,11 +128,11 @@ void Inventory::OnInput(GLFWwindow* window)
 	glfwSetScrollCallback(window, OnScrollCallback);
 
 	if (MouseScrolled) {
-		float w = conf.WIN_WIDTH * 0.45f * conf.GUI_SCALE;
+		float w = conf.WIN_WIDTH_INIT * 0.45f * conf.GUI_SCALE;
 		float h = w / 8.691f;
 
-		float scaleOffset = (h * highlightscale - h) / 2.f;
-		m_GUIRenderer.SetSpritePosition({ conf.WIN_WIDTH / 2.f - w / 2.f - scaleOffset + (w / 9.f) * m_HotbarItemPtr , -scaleOffset }, m_Sprite_Hotbar_Highlight.Id);
+		float scaleOffset = (float)(h * highlightscale - h) / 2.f;
+		m_GUIRenderer.SetSpritePosition({ conf.WIN_WIDTH_INIT / 2.f - w / 2.f - scaleOffset + (w / 9.f) * m_HotbarItemPtr , -scaleOffset }, m_Sprite_Hotbar_Highlight.Id);
 
 		MouseScrolled = false;
 	}
@@ -145,4 +145,9 @@ void Inventory::OnInput(GLFWwindow* window)
 		else ToggleGUIState(Minecraft::GUI_STATE::HOTBAR, window);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE && keyPressedE) keyPressedE = false;
+}
+
+void Inventory::BindSprites()
+{
+	m_GUIRenderer.BindTextures();
 }
