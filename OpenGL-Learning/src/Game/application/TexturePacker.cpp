@@ -17,14 +17,39 @@ inline int TexturePacker::CoordinateToIndex(int x, int y, int width)
 	return y * width + x;
 }
 
-const bool TexturePacker::PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float shrinkInwards)
+inline std::string&& TexturePacker::getPNGSuffix(const std::string& path)
 {
+	std::string name = path.substr(0, path.find('.'));
+	return std::move(name.substr(name.size() - 2));
+}
+
+const bool TexturePacker::PackTextures(const std::string& dirPath, const std::string& sheetPath, const std::string& yamlPath, const float shrinkInwards, Minecraft::Image::TextureType imgType)
+{
+	std::string suffix;
+
+	switch (imgType) {
+	case Minecraft::Image::TextureType::ALBEDO:
+		suffix = "";
+		break;
+	case Minecraft::Image::TextureType::NORMAL:
+		suffix = "_n";
+		break;
+	case Minecraft::Image::TextureType::SPECULAR:
+		suffix = "_s";
+		break;
+	default:
+		return false;
+	}
+
 	// Get amount of images
 	unsigned int amountFiles = 0;
-
 	for (auto image : std::filesystem::directory_iterator(dirPath)) {
-		amountFiles++;
+		std::string name = image.path().string().substr(0, image.path().string().find('.'));
+		name = name.substr(name.size() - 2);
+		if (suffix == "" && name != "_n" && name != "_s" ||
+			name == suffix && (suffix == "_n" || suffix == "_s")) amountFiles++;	// Update if new Texturetypes get added
 	}
+	if (amountFiles <= 0) return false;
 
 	unsigned int pngOutWidth = roundUp((int)sqrt(amountFiles * conf.TEXTURE_SIZE * conf.TEXTURE_SIZE), conf.TEXTURE_SIZE);
 	unsigned int pngOutHeight = 0;
@@ -45,6 +70,11 @@ const bool TexturePacker::PackTextures(const std::string& dirPath, const std::st
 
 	for (auto image : std::filesystem::directory_iterator(dirPath)) {
 		const std::string& path = image.path().string();
+		std::string name = path.substr(0, path.find('.'));
+		name = name.substr(name.size() - 2);
+		if (!(suffix == "" && name != "_n" && name != "_s" ||
+			name == suffix && (suffix == "_n" || suffix == "_s"))) continue;
+
 		img = (char*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 		if (channels != 4) continue;
 

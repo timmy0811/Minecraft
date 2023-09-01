@@ -12,7 +12,7 @@ config:
 
     MaxBufferFaces: 2000
     TextureSize: 16
-    TexturePack: "block" # To change a TP: Pack Textures and restart Game
+    TexturePack: "block_3" # To change a TP: Pack Textures and restart Game
     RenderDistance: 4
     TextureInverseOffset: 0.0085
 
@@ -35,7 +35,7 @@ config:
       ChunkSize: 16
       ChunkHeight: 40
       BlockSize: 1.0 # Better not touch
-      YStretch: 15.0
+      YStretch: 5.0
       XStretch: 0.45
       MinHeight: 2
       

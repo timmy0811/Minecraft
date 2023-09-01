@@ -100,7 +100,10 @@ void Handler::DebugWindow()
 	{
 		keyPressedP = true;
 		std::cout << "Packing Textures..." << '\n';
-		Packer.PackTextures("res\\images\\" + conf.TEXTURE_PACK, "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", conf.TEXTURE_INVERSE_OFFSET);
+		Packer.PackTextures("res\\images\\block_packs\\" + conf.TEXTURE_PACK, "res\\images\\sheets\\blocksheet.png", "docs\\texture.yaml", conf.TEXTURE_INVERSE_OFFSET, Minecraft::Image::TextureType::ALBEDO);
+
+		std::cout << "Packing Normals..." << '\n';
+		Packer.PackTextures("res\\images\\block_packs\\" + conf.TEXTURE_PACK, "res\\images\\sheets\\blocksheet_n.png", "docs\\texture_n.yaml", conf.TEXTURE_INVERSE_OFFSET, Minecraft::Image::TextureType::NORMAL);
 	}
 	else if (glfwGetKey(r_Window, GLFW_KEY_P) == GLFW_RELEASE && keyPressedP) keyPressedP = false;
 
