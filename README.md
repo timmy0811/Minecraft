@@ -12,7 +12,7 @@ The Game features:
 * Texture Packer for generation Sprite Sheets
 
 ### Last update
-* SHADOWS!!!
+* SHADOWS!!! and Ambient Occlusion (SSAO)
 * Biomes and structure scripting support
 * Better Terrainexpansion
 
