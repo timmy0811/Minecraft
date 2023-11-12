@@ -2,7 +2,7 @@
 Watch a full featured Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
 
 The Game features:
-* Dynamic Terrain Generation using multi stage Perlin Noise
+* Dynamic Terrain Generation using multi-stage Perlin Noise
 * Multithreaded Chunk Loading depending on the players position
 * Highly custonizable YAML-Config
 * Advanced Player Collision
