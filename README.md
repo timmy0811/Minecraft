@@ -1,7 +1,10 @@
+<img align="left" src="https://github.com/timmy0811/Minecraft/blob/main/logo2.png" width="200" height="200">
+
 # Minecraft... more like Mineclone?!
 Watch a full featured Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
-
+<br /> <br /> <br /> <br />
 The Game features:
+
 * Dynamic Terrain Generation using multi-stage Perlin Noise
 * Multithreaded Chunk Loading depending on the players position
 * Highly custonizable YAML-Config
