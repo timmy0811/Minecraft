@@ -1,7 +1,7 @@
 <img align="left" src="https://github.com/timmy0811/Minecraft/blob/main/logo2.png" width="200" height="200">
 
 # Minecraft... more like Mineclone?!
-Watch a full featured Minecraft clone evolving. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
+Even though I have not worked on this project for a while and it contains a lot of bugs and lacks a correct delta-time implementation, this Minecraft clone covers the main game mechanics that it's bigger brother features. Using modern OpenGL and other technologies for efficient rendering, this project is my largest and most complex so far. I hope you enjoy!
 <br /> <br /> <br /> <br />
 The Game features:
 
